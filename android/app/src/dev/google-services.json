@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "700354654809",
+    "project_id": "cengli-dev",
+    "storage_bucket": "cengli-dev.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:700354654809:android:2db01e998da67e1841f748",
+        "android_client_info": {
+          "package_name": "com.cengli.androidapp.dev"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "700354654809-p049tss62gfk79t1bfd9rv4190aln46k.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.cengli.androidapp.dev",
+            "certificate_hash": "ecd5d0f046d6927cff0d74cfe3659e05ed7ca53b"
+          }
+        },
+        {
+          "client_id": "700354654809-43o5j4fg4isa1600j9rjb6rfgs85ccob.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA0VMeKd1zd1n3nwK19pYXbeNfMtp7AKZY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "700354654809-43o5j4fg4isa1600j9rjb6rfgs85ccob.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

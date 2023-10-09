@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "460325585383",
+    "firebase_url": "https://cengli-fa0e8-default-rtdb.asia-southeast1.firebasedatabase.app",
+    "project_id": "cengli-fa0e8",
+    "storage_bucket": "cengli-fa0e8.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:460325585383:android:200e873972e191dd0e3d42",
+        "android_client_info": {
+          "package_name": "com.cengli.androidapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDss3YOT5yu7cyG1UaaIUU2C7RwjcB1BQ0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
