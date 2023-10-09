@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>700354654809-ntptrq00t9k4kc0m9s2c9couil55ved3.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.700354654809-ntptrq00t9k4kc0m9s2c9couil55ved3</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>700354654809-p049tss62gfk79t1bfd9rv4190aln46k.apps.googleusercontent.com</string>
+	<key>API_KEY</key>
+	<string>AIzaSyDE6h95H6vZ2ozuHGcMkNvOza1ViY0UtuY</string>
+	<key>GCM_SENDER_ID</key>
+	<string>700354654809</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>com.cengli.iosapp.dev</string>
+	<key>PROJECT_ID</key>
+	<string>cengli-dev</string>
+	<key>STORAGE_BUCKET</key>
+	<string>cengli-dev.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:700354654809:ios:4064cb0ae1c4f6c841f748</string>
+</dict>
+</plist>
