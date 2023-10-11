@@ -726,6 +726,9 @@ PODS:
   - flutter_webrtc (0.9.36):
     - Flutter
     - WebRTC-SDK (= 114.5735.08)
+  - fluttertoast (0.0.2):
+    - Flutter
+    - Toast
   - FMDB (2.7.5):
     - FMDB/standard (= 2.7.5)
   - FMDB/standard (2.7.5)
@@ -841,6 +844,7 @@ PODS:
   - sqflite (0.0.3):
     - Flutter
     - FMDB (>= 2.7.5)
+  - Toast (4.0.0)
   - WebRTC-SDK (114.5735.08)
 
 DEPENDENCIES:
@@ -854,6 +858,7 @@ DEPENDENCIES:
   - flutter_localization (from `.symlinks/plugins/flutter_localization/ios`)
   - flutter_secure_storage (from `.symlinks/plugins/flutter_secure_storage/ios`)
   - flutter_webrtc (from `.symlinks/plugins/flutter_webrtc/ios`)
+  - fluttertoast (from `.symlinks/plugins/fluttertoast/ios`)
   - google_sign_in_ios (from `.symlinks/plugins/google_sign_in_ios/ios`)
   - local_auth_ios (from `.symlinks/plugins/local_auth_ios/ios`)
   - openpgp (from `.symlinks/plugins/openpgp/ios`)
@@ -888,6 +893,7 @@ SPEC REPOS:
     - nanopb
     - PromisesObjC
     - RecaptchaInterop
+    - Toast
     - WebRTC-SDK
 
 EXTERNAL SOURCES:
@@ -911,6 +917,8 @@ EXTERNAL SOURCES:
     :path: ".symlinks/plugins/flutter_secure_storage/ios"
   flutter_webrtc:
     :path: ".symlinks/plugins/flutter_webrtc/ios"
+  fluttertoast:
+    :path: ".symlinks/plugins/fluttertoast/ios"
   google_sign_in_ios:
     :path: ".symlinks/plugins/google_sign_in_ios/ios"
   local_auth_ios:
@@ -950,6 +958,7 @@ SPEC CHECKSUMS:
   flutter_localization: f43b18844a2b3d2c71fd64f04ffd6b1e64dd54d4
   flutter_secure_storage: 23fc622d89d073675f2eaa109381aefbcf5a49be
   flutter_webrtc: 55df3aaa802114dad390191a46c2c8d535751268
+  fluttertoast: 31b00dabfa7fb7bacd9e7dbee580d7a2ff4bf265
   FMDB: 2ce00b547f966261cd18927a3ddb07cb6f3db82a
   google_sign_in_ios: 1256ff9d941db546373826966720b0c24804bcdd
   GoogleSignIn: 5651ce3a61e56ca864160e79b484cd9ed3f49b7a
@@ -968,8 +977,9 @@ SPEC CHECKSUMS:
   shared_preferences_foundation: 5b919d13b803cadd15ed2dc053125c68730e5126
   sign_in_with_apple: f3bf75217ea4c2c8b91823f225d70230119b8440
   sqflite: 31f7eba61e3074736dff8807a9b41581e4f7f15a
+  Toast: 91b396c56ee72a5790816f40d3a94dd357abc196
   WebRTC-SDK: c24d2a6c9f571f2ed42297cb8ffba9557093142b
 
 PODFILE CHECKSUM: 4e8f8b2be68aeea4c0d5beb6ff1e79fface1d048
 
-COCOAPODS: 1.11.2
+COCOAPODS: 1.13.0

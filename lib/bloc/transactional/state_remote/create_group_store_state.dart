@@ -1,3 +1,4 @@
+import '../../../data/modules/transactional/model/group.dart';
 import '../transactional.dart';
 
 class CreateGroupStoreLoadingState extends TransactionalState {
@@ -17,9 +18,10 @@ class CreateGroupStoreErrorState extends TransactionalState {
 }
 
 class CreateGroupStoreSuccessState extends TransactionalState {
-
-  const CreateGroupStoreSuccessState() : super();
+  final Group group;
+  
+  const CreateGroupStoreSuccessState(this.group) : super();
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [group];
 }

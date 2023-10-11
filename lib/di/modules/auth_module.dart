@@ -1,8 +1,8 @@
 import 'package:cengli/bloc/auth/auth.dart';
-import 'package:cengli/data/auth/auth_remote_data_store.dart';
-import 'package:cengli/data/auth/auth_remote_repository.dart';
-import 'package:cengli/data/auth/remote/auth_api.dart';
-import 'package:cengli/data/auth/remote/auth_api_client.dart';
+import 'package:cengli/data/modules/auth/auth_remote_data_store.dart';
+import 'package:cengli/data/modules/auth/auth_remote_repository.dart';
+import 'package:cengli/data/modules/auth/remote/auth_api.dart';
+import 'package:cengli/data/modules/auth/remote/auth_api_client.dart';
 import 'package:cengli/di/injector.dart';
 import 'package:dio/dio.dart';
 

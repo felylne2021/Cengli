@@ -60,3 +60,12 @@ class CheckWalletEvent extends AuthEvent {
   @override
   List<Object?> get props => [];
 }
+
+class CheckUsernameEvent extends AuthEvent {
+  final String username;
+
+  const CheckUsernameEvent(this.username);
+
+  @override
+  List<Object?> get props => [username];
+}

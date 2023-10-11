@@ -1,4 +1,5 @@
-import 'package:cengli/data/transactional/model/group.dart';
+import 'package:cengli/data/modules/transactional/model/group.dart';
+
 import '../transactional.dart';
 
 class FetchGroupsStoreLoadingState extends TransactionalState {

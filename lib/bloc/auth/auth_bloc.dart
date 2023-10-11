@@ -4,23 +4,22 @@ import 'dart:typed_data';
 
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:cengli/bloc/auth/auth.dart';
-import 'package:cengli/data/auth/auth_remote_repository.dart';
-import 'package:cengli/data/auth/model/device_data.dart';
-import 'package:cengli/data/auth/model/request/create_wallet_request.dart';
-import 'package:cengli/data/auth/model/request/predict_signer_address_request.dart';
-import 'package:cengli/data/auth/model/user_profile.dart';
-import 'package:cengli/presentation/chat/signer.dart';
+import 'package:cengli/data/modules/auth/auth_remote_repository.dart';
+import 'package:cengli/data/modules/auth/model/device_data.dart';
+import 'package:cengli/data/modules/auth/model/request/create_wallet_request.dart';
+import 'package:cengli/data/modules/auth/model/request/predict_signer_address_request.dart';
+import 'package:cengli/utils/signer.dart';
 import 'package:cengli/services/session_service.dart';
 import 'package:cengli/utils/utils.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:uuid/uuid.dart';
 import 'package:velix/velix.dart';
 import 'package:webauthn/webauthn.dart';
-import 'package:cengli/push_protocol/push_restapi_dart.dart' as push;
+import 'package:cengli/services/push_protocol/push_restapi_dart.dart' as push;
 import 'package:ethers/signers/wallet.dart' as ethers;
+
+import '../../data/modules/auth/model/user_profile.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRemoteRepository _authRepository;
@@ -33,6 +32,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<SignOutEvent>(_onSignOut, transformer: sequential());
     on<CreateWalletEvent>(_onCreateWallet, transformer: sequential());
     on<CheckWalletEvent>(_onCheckWallet, transformer: sequential());
+    on<CheckUsernameEvent>(_onCheckUsername, transformer: sequential());
   }
 
   Future<void> _onEmailSignIn(
@@ -234,8 +234,23 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(CheckWalletSuccessState(walletAddress != null));
     } on AppException catch (error) {
       emit(CheckWalletErrorState(error.message));
+    } on ApiException catch (error) {
+      emit(CheckWalletErrorState(error.message));
     } catch (error) {
       emit(CheckWalletErrorState(error.toString()));
+    }
+  }
+
+  Future<void> _onCheckUsername(
+      CheckUsernameEvent event, Emitter<AuthState> emit) async {
+    emit(const CheckUsernameLoadingState());
+    try {
+      final isExist = await _authRepository.checkUsername(event.username);
+      emit(CheckUsernameSuccessState(isExist));
+    } on AppException catch (error) {
+      emit(CheckUsernameErrorState(error.message));
+    } catch (error) {
+      emit(CheckUsernameErrorState(error.toString()));
     }
   }
 }
