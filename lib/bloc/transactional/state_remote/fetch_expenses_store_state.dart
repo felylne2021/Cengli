@@ -1,4 +1,5 @@
-import 'package:cengli/data/transactional/model/expense.dart';
+import 'package:cengli/data/modules/transactional/model/expense.dart';
+
 import '../transactional.dart';
 
 class FetchExpensesStoreLoadingState extends TransactionalState {

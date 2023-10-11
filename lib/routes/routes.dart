@@ -1,8 +1,12 @@
-import 'package:cengli/presentation/chat/group/chat_room/chat_room_screen.dart';
-import 'package:cengli/presentation/chat/group/conversations/conversations_screen.dart';
+import 'package:cengli/data/modules/auth/model/user_profile.dart';
+import 'package:cengli/presentation/chat/chat_new_page.dart';
+import 'package:cengli/presentation/chat/chat_page.dart';
+import 'package:cengli/presentation/chat/chat_room_page.dart';
+import 'package:cengli/presentation/group/create_group_member_page.dart';
+import 'package:cengli/presentation/group/create_group_page.dart';
 import 'package:cengli/presentation/home/home_page.dart';
+import 'package:cengli/presentation/launch_screen/onboarding_screen.dart';
 import 'package:cengli/presentation/membership/pin_input_page.dart';
-import 'package:cengli/push_protocol/src/models/src/requests_model.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -28,16 +32,34 @@ class AppRouter {
       case HomePage.routeName:
         return CupertinoPageRoute(
             builder: (_) => const HomePage(), settings: settings);
-      case ChatRoomScreen.routeName:
+      case ChatRoomPage.routeName:
         return CupertinoPageRoute(
-            builder: (_) => ChatRoomScreen(room: settings.arguments as Feeds),
+            builder: (_) =>
+                ChatRoomPage(argument: settings.arguments as ChatRoomArgument),
             settings: settings);
       case PinInputPage.routeName:
         return CupertinoPageRoute(
-            builder: (_) => const PinInputPage(), settings: settings);
-      case ConversationsScreen.routeName:
+            builder: (_) => PinInputPage(
+                  argument: settings.arguments as PinInputArgument,
+                ),
+            settings: settings);
+      case OnboardingPage.routeName:
         return CupertinoPageRoute(
-            builder: (_) => const ConversationsScreen(), settings: settings);
+            builder: (_) => const OnboardingPage(), settings: settings);
+      case ChatPage.routeName:
+        return CupertinoPageRoute(
+            builder: (_) => const ChatPage(), settings: settings);
+      case ChatNewPage.routeName:
+        return CupertinoPageRoute(
+            builder: (_) => const ChatNewPage(), settings: settings);
+      case CreateGroupMemberPage.routeName:
+        return CupertinoPageRoute(
+            builder: (_) => const CreateGroupMemberPage(), settings: settings);
+      case CreateGroupPage.routeName:
+        return CupertinoPageRoute(
+            builder: (_) => CreateGroupPage(
+                members: settings.arguments as List<UserProfile>),
+            settings: settings);
     }
   }
 }

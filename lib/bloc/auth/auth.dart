@@ -9,3 +9,4 @@ export 'state/apple_sign_in_state.dart';
 export 'state/create_wallet_state.dart';
 export 'state/predict_signer_state.dart';
 export 'state/check_wallet_state.dart';
+export 'state/check_username_state.dart';

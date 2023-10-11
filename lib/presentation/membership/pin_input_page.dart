@@ -1,10 +1,26 @@
+import 'package:cengli/bloc/auth/auth.dart';
 import 'package:cengli/presentation/home/home_page.dart';
 import 'package:cengli/services/session_service.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:pinput/pinput.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:kinetix/kinetix.dart';
+
+import '../../utils/widget_util.dart';
+
+enum PinPurpose { login, payment }
+
+class PinInputArgument {
+  final PinPurpose pinPurpose;
+  final String? username;
+
+  PinInputArgument(this.pinPurpose, this.username);
+}
 
 class PinInputPage extends StatefulWidget {
-  const PinInputPage({super.key});
+  final PinInputArgument argument;
+
+  const PinInputPage({super.key, required this.argument});
   static const String routeName = '/pin_input_page';
 
   @override
@@ -12,92 +28,131 @@ class PinInputPage extends StatefulWidget {
 }
 
 class _PinInputPageState extends State<PinInputPage> {
+  final focusNode = FocusNode();
+
+  TextEditingController controller = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    focusNode.requestFocus();
+  }
+
   @override
   Widget build(BuildContext context) {
-    final pinController = TextEditingController();
-    final focusNode = FocusNode();
-    final formKey = GlobalKey<FormState>();
-
-    const focusedBorderColor = Color.fromRGBO(23, 171, 144, 1);
-    const fillColor = Color.fromRGBO(243, 246, 249, 0);
-    const borderColor = Color.fromRGBO(23, 171, 144, 0.4);
-
-    final defaultPinTheme = PinTheme(
-      width: 56,
-      height: 56,
-      textStyle: const TextStyle(
-        fontSize: 22,
-        color: Color.fromRGBO(30, 60, 87, 1),
-      ),
-      decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(19),
-        border: Border.all(color: borderColor),
-      ),
-    );
-
-    return Form(
-      key: formKey,
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Directionality(
-            textDirection: TextDirection.ltr,
-            child: Pinput(
-              controller: pinController,
-              focusNode: focusNode,
-              androidSmsAutofillMethod:
-                  AndroidSmsAutofillMethod.smsUserConsentApi,
-              listenForMultipleSmsOnAndroid: true,
-              defaultPinTheme: defaultPinTheme,
-              separatorBuilder: (index) => const SizedBox(width: 8),
-              validator: (value) {},
-              hapticFeedbackType: HapticFeedbackType.lightImpact,
-              onCompleted: (pin) {
-                debugPrint('onCompleted: $pin');
-              },
-              onChanged: (value) {
-                debugPrint('onChanged: $value');
-              },
-              cursor: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
+    return MultiBlocListener(
+        listeners: [
+          BlocListener<AuthBloc, AuthState>(listenWhen: (previous, state) {
+            return state is CreateWalletSuccessState ||
+                state is CreateWalletLoadingState ||
+                state is CreateWalletErrorState;
+          }, listener: ((context, state) {
+            if (state is CreateWalletSuccessState) {
+              hideLoading();
+              Navigator.of(context).pushNamedAndRemoveUntil(
+                  HomePage.routeName, (route) => false);
+            } else if (state is CreateWalletLoadingState) {
+              showLoading();
+            } else if (state is CreateWalletErrorState) {
+              showToast(state.message);
+              hideLoading();
+            }
+          })),
+        ],
+        child: Scaffold(
+          appBar: KxAppBarCenterTitle(
+              elevationType: KxElevationAppBarEnum.ghost,
+              appBarTitle: "Enter Pin",
+              leadingWidget: const Icon(
+                CupertinoIcons.chevron_left_circle,
+                color: KxColors.neutral700,
+              ),
+              leadingCallback: () => Navigator.of(context).pop()),
+          body: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Spacer(),
+              Stack(
+                alignment: Alignment.center,
                 children: [
-                  Container(
-                    margin: const EdgeInsets.only(bottom: 9),
-                    width: 22,
-                    height: 1,
-                    color: focusedBorderColor,
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: List.generate(6, (index) {
+                      return Container(
+                        margin: const EdgeInsets.symmetric(horizontal: 6),
+                        width: 18,
+                        height: 18,
+                        decoration: BoxDecoration(
+                          color: index < controller.text.length
+                              ? Colors.black
+                              : Colors.transparent,
+                          border: Border.all(color: Colors.black, width: 1),
+                          borderRadius: BorderRadius.circular(18),
+                        ),
+                      );
+                    }),
+                  ),
+                  TextField(
+                    focusNode: focusNode,
+                    showCursor: false,
+                    controller: controller,
+                    keyboardType: TextInputType.number,
+                    textAlign: TextAlign.center,
+                    maxLength: 6,
+                    style: const TextStyle(
+                        color: Colors.transparent, fontSize: 18),
+                    decoration: const InputDecoration(
+                      counterText: '',
+                      enabledBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.transparent),
+                      ),
+                      focusedBorder: UnderlineInputBorder(
+                        borderSide: BorderSide(color: Colors.transparent),
+                      ),
+                      contentPadding: EdgeInsets.symmetric(vertical: 15),
+                    ),
+                    onChanged: (value) {
+                      setState(() {});
+                    },
                   ),
                 ],
               ),
-              focusedPinTheme: defaultPinTheme.copyWith(
-                decoration: defaultPinTheme.decoration!.copyWith(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: focusedBorderColor),
-                ),
-              ),
-              submittedPinTheme: defaultPinTheme.copyWith(
-                decoration: defaultPinTheme.decoration!.copyWith(
-                  color: fillColor,
-                  borderRadius: BorderRadius.circular(19),
-                  border: Border.all(color: focusedBorderColor),
-                ),
-              ),
-              errorPinTheme: defaultPinTheme.copyBorderWith(
-                border: Border.all(color: Colors.redAccent),
-              ),
-            ),
+              const Spacer(),
+              KxTextButton(
+                      argument: KxTextButtonArgument(
+                          onPressed: () => _didTapSubmit(),
+                          buttonText: "Submit",
+                          buttonColor: KxColors.auxiliary400,
+                          buttonTextStyle: KxTypography(
+                              type: KxFontType.buttonMedium,
+                              color: KxColors.neutral700),
+                          buttonSize: KxButtonSizeEnum.medium,
+                          buttonType: KxButtonTypeEnum.primary,
+                          buttonShape: KxButtonShapeEnum.square,
+                          buttonContent: KxButtonContentEnum.text))
+                  .padding(const EdgeInsets.symmetric(horizontal: 16)),
+              16.0.height,
+            ],
           ),
-          TextButton(
-            onPressed: () {
-              focusNode.unfocus();
-              SessionService.setPin(pinController.text);
-              Navigator.of(context).pushNamedAndRemoveUntil(
-                  HomePage.routeName, (route) => false);
-            },
-            child: const Text('Submit'),
-          ),
-        ],
-      ),
-    );
+        ));
+  }
+
+  _login() async {
+    context
+        .read<AuthBloc>()
+        .add(CreateWalletEvent(widget.argument.username ?? ""));
+  }
+
+  _didTapSubmit() {
+    switch (widget.argument.pinPurpose) {
+      case PinPurpose.login:
+        focusNode.unfocus();
+        SessionService.setPin(controller.text);
+        _login();
+        break;
+      case PinPurpose.payment:
+        // TODO: Handle this case.
+        break;
+    }
   }
 }

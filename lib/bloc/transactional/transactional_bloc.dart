@@ -1,26 +1,23 @@
-
 import 'package:bloc_concurrency/bloc_concurrency.dart';
-import 'package:cengli/data/transactional/transactional_local_repository.dart';
+import 'package:cengli/data/modules/transactional/model/group.dart';
+import 'package:cengli/data/modules/transactional/transactional_local_repository.dart';
+import 'package:cengli/data/modules/transactional/transactional_remote_repository.dart';
+import 'package:cengli/utils/signer.dart';
+import 'package:cengli/services/push_protocol/push_restapi_dart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:velix/velix.dart';
+import 'package:ethers/signers/wallet.dart' as ethers;
 
-import '../../data/transactional/transactional_remote_repository.dart';
+import '../../services/services.dart';
 import 'transactional.dart';
 
 class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
-  final TransactionalLocalRepository _transactionLocalRepository;
+  final TransactionalLocalRepository _transactionalLocalRepository;
   final TransactionalRemoteRepository _transactionRepository;
 
   TransactionalBloc(
-      this._transactionLocalRepository, this._transactionRepository)
+      this._transactionalLocalRepository, this._transactionRepository)
       : super(const TransactionalInitiateState()) {
-    //local
-    on<CreateGroupEvent>(_createGroup, transformer: sequential());
-    on<FetchGroupsEvent>(_fetchGroups, transformer: sequential());
-    on<CreateExpenseEvent>(_createExpense, transformer: sequential());
-    on<FetchExpensesEvent>(_fetchExpenses, transformer: sequential());
-    on<FetchParticipantsEvent>(_fetchParticipants, transformer: sequential());
-
     //Remote
     on<CreateGroupStoreEvent>(_createGroupStore, transformer: sequential());
     on<FetchGroupsStoreEvent>(_fetchGroupsStore, transformer: sequential());
@@ -28,75 +25,13 @@ class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
     on<FetchExpensesStoreEvent>(_fetchExpensesStore, transformer: sequential());
     on<MigrateDataEvent>(_migrateData, transformer: sequential());
     on<JoinGroupEvent>(_joinGroup, transformer: sequential());
-  }
 
-  //local
-  Future<void> _createGroup(
-      CreateGroupEvent event, Emitter<TransactionalState> emit) async {
-    emit(const CreateGroupLoadingState());
-    try {
-      await _transactionLocalRepository.createGroup(
-          event.group, event.participants);
-      emit(const CreateGroupSuccessState());
-    } on AppException catch (error) {
-      emit(CreateGroupErrorState(error.message));
-    } catch (error) {
-      emit(CreateGroupErrorState(error.toString()));
-    }
-  }
-
-  Future<void> _fetchGroups(
-      FetchGroupsEvent event, Emitter<TransactionalState> emit) async {
-    emit(const FetchGroupsLoadingState());
-    try {
-      final groups = await _transactionLocalRepository.getGroups();
-      emit(FetchGroupsSuccessState(groups));
-    } on AppException catch (error) {
-      emit(FetchGroupsErrorState(error.message));
-    } catch (error) {
-      emit(FetchGroupsErrorState(error.toString()));
-    }
-  }
-
-  Future<void> _createExpense(
-      CreateExpenseEvent event, Emitter<TransactionalState> emit) async {
-    emit(const CreateExpenseLoadingState());
-    try {
-      await _transactionLocalRepository.createExpense(event.expense);
-      emit(const CreateExpenseSuccessState());
-    } on AppException catch (error) {
-      emit(CreateExpenseErrorState(error.message));
-    } catch (error) {
-      emit(CreateExpenseErrorState(error.toString()));
-    }
-  }
-
-  Future<void> _fetchExpenses(
-      FetchExpensesEvent event, Emitter<TransactionalState> emit) async {
-    emit(const FetchGroupsLoadingState());
-    try {
-      final groups =
-          await _transactionLocalRepository.getExpenses(event.groupId);
-      emit(FetchExpensesSuccessState(groups));
-    } on AppException catch (error) {
-      emit(FetchExpensesErrorState(error.message));
-    } catch (error) {
-      emit(FetchExpensesErrorState(error.toString()));
-    }
-  }
-
-  Future<void> _fetchParticipants(
-      FetchParticipantsEvent event, Emitter<TransactionalState> emit) async {
-    emit(const FetchParticipantsLoadingState());
-    try {
-      final participants =
-          await _transactionLocalRepository.getParticipants(event.groupId);
-      emit(FetchParticipantsSuccessState(participants));
-    } on AppException catch (error) {
-      emit(FetchParticipantsErrorState(error.message));
-    } catch (error) {
-      emit(FetchParticipantsErrorState(error.toString()));
-    }
+    //*TODO: setup local database
+    on<CreateGroupEvent>(_createGroup, transformer: sequential());
+    on<FetchGroupsEvent>(_fetchGroups, transformer: sequential());
+    on<CreateExpenseEvent>(_createExpense, transformer: sequential());
+    on<FetchExpensesEvent>(_fetchExpenses, transformer: sequential());
+    on<FetchParticipantsEvent>(_fetchParticipants, transformer: sequential());
   }
 
   //Remote
@@ -104,8 +39,28 @@ class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
       CreateGroupStoreEvent event, Emitter<TransactionalState> emit) async {
     emit(const CreateGroupStoreLoadingState());
     try {
-      await _transactionRepository.createGroup(event.group);
-      emit(const CreateGroupStoreSuccessState());
+      final walletAddress = await SessionService.getWalletAddress();
+      final privateKey = await SessionService.getSignerAddress(walletAddress);
+
+      final group = await createGroup(
+          groupName: event.group.name ?? "",
+          signer: EthersSigner(
+              ethersWallet: ethers.Wallet.fromPrivateKey(privateKey),
+              address: walletAddress),
+          groupDescription: event.group.groupDescription ?? "",
+          members: event.group.members ?? [],
+          admins: [],
+          isPublic: false);
+
+      
+      final storeGroup = Group(
+          id: group?.chatId ?? "",
+          name: event.group.name,
+          members: event.group.members ?? []);
+
+      await _transactionRepository.createGroup(storeGroup);
+
+      emit(CreateGroupStoreSuccessState(storeGroup));
     } on AppException catch (error) {
       emit(CreateGroupStoreErrorState(error.message));
     } catch (error) {
@@ -175,6 +130,75 @@ class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
       emit(JoinGroupErrorState(error.message));
     } catch (error) {
       emit(JoinGroupErrorState(error.toString()));
+    }
+  }
+
+  //local
+  Future<void> _createGroup(
+      CreateGroupEvent event, Emitter<TransactionalState> emit) async {
+    emit(const CreateGroupLoadingState());
+    try {
+      await _transactionalLocalRepository.createGroup(
+          event.group, event.participants);
+      emit(const CreateGroupSuccessState());
+    } on AppException catch (error) {
+      emit(CreateGroupErrorState(error.message));
+    } catch (error) {
+      emit(CreateGroupErrorState(error.toString()));
+    }
+  }
+
+  Future<void> _fetchGroups(
+      FetchGroupsEvent event, Emitter<TransactionalState> emit) async {
+    emit(const FetchGroupsLoadingState());
+    try {
+      final groups = await _transactionalLocalRepository.getGroups();
+      emit(FetchGroupsSuccessState(groups));
+    } on AppException catch (error) {
+      emit(FetchGroupsErrorState(error.message));
+    } catch (error) {
+      emit(FetchGroupsErrorState(error.toString()));
+    }
+  }
+
+  Future<void> _createExpense(
+      CreateExpenseEvent event, Emitter<TransactionalState> emit) async {
+    emit(const CreateExpenseLoadingState());
+    try {
+      await _transactionalLocalRepository.createExpense(event.expense);
+      emit(const CreateExpenseSuccessState());
+    } on AppException catch (error) {
+      emit(CreateExpenseErrorState(error.message));
+    } catch (error) {
+      emit(CreateExpenseErrorState(error.toString()));
+    }
+  }
+
+  Future<void> _fetchExpenses(
+      FetchExpensesEvent event, Emitter<TransactionalState> emit) async {
+    emit(const FetchGroupsLoadingState());
+    try {
+      final groups =
+          await _transactionalLocalRepository.getExpenses(event.groupId);
+      emit(FetchExpensesSuccessState(groups));
+    } on AppException catch (error) {
+      emit(FetchExpensesErrorState(error.message));
+    } catch (error) {
+      emit(FetchExpensesErrorState(error.toString()));
+    }
+  }
+
+  Future<void> _fetchParticipants(
+      FetchParticipantsEvent event, Emitter<TransactionalState> emit) async {
+    emit(const FetchParticipantsLoadingState());
+    try {
+      final participants =
+          await _transactionalLocalRepository.getParticipants(event.groupId);
+      emit(FetchParticipantsSuccessState(participants));
+    } on AppException catch (error) {
+      emit(FetchParticipantsErrorState(error.message));
+    } catch (error) {
+      emit(FetchParticipantsErrorState(error.toString()));
     }
   }
 }

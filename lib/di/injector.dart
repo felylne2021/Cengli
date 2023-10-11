@@ -1,5 +1,6 @@
 import 'package:cengli/data/network/header_interceptor.dart';
 import 'package:cengli/di/modules/auth_module.dart';
+import 'package:cengli/di/modules/membership_module.dart';
 import 'package:cengli/di/modules/transaction_module.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
@@ -37,4 +38,5 @@ void injectModules() async {
 
   injectAuthModule();
   injectTransactionModule();
+  injectMembershipModule();
 }

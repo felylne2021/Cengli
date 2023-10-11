@@ -1,6 +1,6 @@
 import 'dart:convert';
-import 'package:cengli/presentation/chat/signer.dart';
-import 'package:cengli/push_protocol/push_restapi_dart.dart';
+import 'package:cengli/utils/signer.dart';
+import 'package:cengli/services/push_protocol/push_restapi_dart.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:ethers/signers/wallet.dart' as ethers;
 
@@ -8,8 +8,10 @@ enum PrefKey {
   walletAddress("wallet-address"),
   commeth("cometh-connect-"),
   isLoggedIn("is_logged_in"),
+  isFirstInstall("is_first_install"),
   encryptedPrivateKey("encrypted_private_key"),
-  pin("pin");
+  pin("pin"),
+  ;
 
   final String key;
 
@@ -17,6 +19,28 @@ enum PrefKey {
 }
 
 class SessionService {
+  // Session
+  static Future<bool> isLoggedIn() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(PrefKey.isLoggedIn.key) ?? false;
+  }
+
+  static void setLogin(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool(PrefKey.isLoggedIn.key, value);
+  }
+
+  static Future<bool> isFirstInstall() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(PrefKey.isFirstInstall.key) ?? true;
+  }
+
+  static void setFirstInstall(bool value) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setBool(PrefKey.isFirstInstall.key, value);
+  }
+
+  // Pin
   static void setPin(String value) async {
     final prefs = await SharedPreferences.getInstance();
     prefs.setString(PrefKey.pin.key, value);
@@ -28,16 +52,7 @@ class SessionService {
     return pin == value;
   }
 
-  static Future<bool> isLoggedIn() async {
-    final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(PrefKey.isLoggedIn.key) ?? false;
-  }
-
-  static void setLogin(bool value) async {
-    final prefs = await SharedPreferences.getInstance();
-    prefs.setBool(PrefKey.isLoggedIn.key, value);
-  }
-
+  // Wallet
   static Future<String> getWalletAddress() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(PrefKey.walletAddress.key) ?? "";

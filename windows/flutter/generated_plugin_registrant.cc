@@ -13,7 +13,6 @@
 #include <flutter_webrtc/flutter_web_r_t_c_plugin.h>
 #include <local_auth_windows/local_auth_plugin.h>
 #include <openpgp/openpgp_plugin.h>
-#include <smart_auth/smart_auth_plugin.h>
 
 void RegisterPlugins(flutter::PluginRegistry* registry) {
   FirebaseAuthPluginCApiRegisterWithRegistrar(
@@ -30,6 +29,4 @@ void RegisterPlugins(flutter::PluginRegistry* registry) {
       registry->GetRegistrarForPlugin("LocalAuthPlugin"));
   OpenpgpPluginRegisterWithRegistrar(
       registry->GetRegistrarForPlugin("OpenpgpPlugin"));
-  SmartAuthPluginRegisterWithRegistrar(
-      registry->GetRegistrarForPlugin("SmartAuthPlugin"));
 }

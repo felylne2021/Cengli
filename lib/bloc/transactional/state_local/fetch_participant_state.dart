@@ -1,4 +1,4 @@
-import 'package:cengli/data/transactional/model/participant.dart';
+import 'package:cengli/data/modules/transactional/model/participant.dart';
 import '../transactional.dart';
 
 class FetchParticipantsLoadingState extends TransactionalState {

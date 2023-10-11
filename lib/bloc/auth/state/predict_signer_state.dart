@@ -1,5 +1,5 @@
 import 'package:cengli/bloc/auth/auth.dart';
-import 'package:cengli/data/auth/model/response/signer_address_response.dart';
+import 'package:cengli/data/modules/auth/model/response/signer_address_response.dart';
 
 class PredictSignerLoadingState extends AuthState {
   const PredictSignerLoadingState() : super();

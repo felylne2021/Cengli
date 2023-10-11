@@ -1,5 +1,5 @@
-import 'package:cengli/data/transactional/model/group.dart';
-import 'package:cengli/data/transactional/model/expense.dart';
+import 'package:cengli/data/modules/transactional/model/expense.dart';
+import 'package:cengli/data/modules/transactional/model/group.dart';
 import 'package:velix/velix.dart';
 
 abstract class TransactionalEvent extends BaseEvent {

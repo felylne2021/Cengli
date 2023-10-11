@@ -1,4 +1,5 @@
 import 'package:cengli/bloc/auth/auth.dart';
+import 'package:cengli/bloc/membership/membership.dart';
 import 'package:cengli/bloc/transactional/transactional.dart';
 import 'package:cengli/presentation/home/home_page.dart';
 import 'package:cengli/presentation/launch_screen/launch_screen.dart';
@@ -22,6 +23,7 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   final TransactionalBloc _transactionalBloc = locator.get();
   final AuthBloc _authBloc = locator.get();
+  final MembershipBloc _membershipBloc = locator.get();
 
   final _navigatorKey = locator<NavigationService>().navigatorKey;
   final _dynamicLink = locator<DynamicLinkService>();
@@ -85,6 +87,7 @@ class _AppState extends State<App> {
         providers: [
           BlocProvider(create: (context) => _authBloc),
           BlocProvider(create: (context) => _transactionalBloc),
+          BlocProvider(create: (context) => _membershipBloc),
         ],
         child: MaterialApp(
           supportedLocales: const [Locale('en')],
