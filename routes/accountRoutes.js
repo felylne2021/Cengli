@@ -26,7 +26,7 @@ export const accountRoutes = async (server) => {
       return reply.code(200).send(ACCOUNT_ASSETS_RESPONSE);
     } catch (error) {
       console.log('Error getting assets: ', error);
-      return reply.code(500).send({ message: 'Error getting assets' });
+      return reply.code(500).send({ message: error });
     }
   })
 
