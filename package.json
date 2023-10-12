@@ -1,0 +1,41 @@
+{
+  "name": "cengli",
+  "version": "1.0.0",
+  "description": "ETHOnline 2022 Hackathon Project",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prisma-generate": "prisma generate",
+    "migrate": "prisma migrate dev --name init",
+    "dev": "nodemon index.js",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/felylne2021/Cengli.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/felylne2021/Cengli/issues"
+  },
+  "homepage": "https://github.com/felylne2021/Cengli#readme",
+  "dependencies": {
+    "@fastify/cors": "^8.4.0",
+    "@prisma/client": "^5.4.2",
+    "axios": "^1.5.1",
+    "dotenv": "^16.3.1",
+    "fastify": "^4.24.0",
+    "nanoid": "^5.0.1",
+    "node-cron": "^3.0.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20.8.4",
+    "eslint": "^8.51.0",
+    "nodemon": "^3.0.1",
+    "prisma": "^5.4.2",
+    "ts-node": "^10.9.1",
+    "typescript": "^5.2.2"
+  }
+}
