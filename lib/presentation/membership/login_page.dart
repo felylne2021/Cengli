@@ -1,12 +1,14 @@
 import 'package:cengli/presentation/membership/pin_input_page.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cengli/presentation/reusable/appbar/custom_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kinetix/kinetix.dart';
 export 'package:kinetix/extensions/kx_widget_ext.dart';
 
 import '../../bloc/auth/auth.dart';
+import '../../services/services.dart';
 import '../../utils/widget_util.dart';
+import '../../values/values.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -18,18 +20,13 @@ class LoginPage extends StatefulWidget {
 
 class _LoginPageState extends State<LoginPage> {
   final TextEditingController controller = TextEditingController();
+  ValueNotifier<bool> isValid = ValueNotifier(false);
+  ValueNotifier<String> errorMessage = ValueNotifier("");
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: KxAppBarCenterTitle(
-            elevationType: KxElevationAppBarEnum.ghost,
-            appBarTitle: "Create Account",
-            leadingWidget: const Icon(
-              CupertinoIcons.chevron_left_circle,
-              color: KxColors.neutral700,
-            ),
-            leadingCallback: () => Navigator.of(context).pop()),
+        appBar: CustomAppbarWithBackButton(appbarTitle: "Create Account"),
         body: MultiBlocListener(
             listeners: [
               BlocListener<AuthBloc, AuthState>(listenWhen: (previous, state) {
@@ -38,13 +35,14 @@ class _LoginPageState extends State<LoginPage> {
                     state is CheckUsernameErrorState;
               }, listener: ((context, state) {
                 if (state is CheckUsernameSuccessState) {
+                  SessionService.setUsername(controller.text);
                   hideLoading();
                   if (state.isExist) {
-                    showToast("Username already exist");
+                    errorMessage.value = "This username is taken";
+                    isValid.value = false;
                   } else {
-                    Navigator.of(context).pushNamed(PinInputPage.routeName,
-                        arguments: PinInputArgument(
-                            PinPurpose.login, controller.text));
+                    errorMessage.value = "";
+                    isValid.value = true;
                   }
                 } else if (state is CheckUsernameLoadingState) {
                   showLoading();
@@ -60,26 +58,59 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    KxFilledTextField(
-                      title: "Make your username for your Cengli Account",
-                      controller: controller,
-                      hint: "Username",
+                    ValueListenableBuilder(
+                      valueListenable: errorMessage,
+                      builder: (context, value, child) {
+                        return KxFilledTextField(
+                          title: "Make your username for your Cengli Account",
+                          controller: controller,
+                          hint: "Username",
+                          errorMessage: value.isEmpty ? null : value,
+                          suffix: InkWell(
+                              onTap: () => _checkUsername(),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 12, vertical: 10),
+                                margin: const EdgeInsets.only(right: 6),
+                                decoration: BoxDecoration(
+                                    color: primaryGreen600,
+                                    borderRadius: BorderRadius.circular(12)),
+                                child: Text("Check",
+                                    style: KxTypography(
+                                        type: KxFontType.buttonMedium,
+                                        color: KxColors.neutral700)),
+                              )),
+                        );
+                      },
                     ),
-                    const SizedBox(height: 30),
+                    30.0.height,
                     const Spacer(),
-                    KxTextButton(
-                            argument: KxTextButtonArgument(
-                                onPressed: () => _checkUsername(),
-                                buttonText: "Continue",
-                                buttonColor: KxColors.auxiliary400,
-                                buttonTextStyle: KxTypography(
-                                    type: KxFontType.buttonMedium,
-                                    color: KxColors.neutral700),
-                                buttonSize: KxButtonSizeEnum.medium,
-                                buttonType: KxButtonTypeEnum.primary,
-                                buttonShape: KxButtonShapeEnum.square,
-                                buttonContent: KxButtonContentEnum.text))
-                        .padding(const EdgeInsets.symmetric(horizontal: 16))
+                    ValueListenableBuilder(
+                      valueListenable: isValid,
+                      builder: (context, value, child) {
+                        return KxTextButton(
+                                isDisabled: !value,
+                                argument: KxTextButtonArgument(
+                                    onPressed: () => Navigator.of(context)
+                                        .pushNamed(PinInputPage.routeName,
+                                            arguments: PinInputArgument(
+                                                PinPurpose.login,
+                                                controller.text)),
+                                    buttonText: "Continue",
+                                    buttonColor: primaryGreen600,
+                                    buttonTextStyle: KxTypography(
+                                        type: KxFontType.buttonMedium,
+                                        color: value
+                                            ? KxColors.neutral700
+                                            : KxColors.neutral500),
+                                    buttonSize: KxButtonSizeEnum.medium,
+                                    buttonType: KxButtonTypeEnum.primary,
+                                    buttonShape: KxButtonShapeEnum.square,
+                                    buttonContent: KxButtonContentEnum.text))
+                            .padding(
+                                const EdgeInsets.symmetric(horizontal: 16));
+                      },
+                    )
                   ],
                 ),
               ),

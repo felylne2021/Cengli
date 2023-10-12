@@ -11,6 +11,7 @@ enum PrefKey {
   isFirstInstall("is_first_install"),
   encryptedPrivateKey("encrypted_private_key"),
   pin("pin"),
+  username("username"),
   ;
 
   final String key;
@@ -50,6 +51,17 @@ class SessionService {
     final prefs = await SharedPreferences.getInstance();
     final String pin = prefs.getString(PrefKey.pin.key) ?? "";
     return pin == value;
+  }
+
+  // Username
+  static void setUsername(String value) async {
+    final prefs = await SharedPreferences.getInstance();
+    prefs.setString(PrefKey.username.key, value);
+  }
+
+  static Future<String> getUsername() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(PrefKey.username.key) ?? "";
   }
 
   // Wallet

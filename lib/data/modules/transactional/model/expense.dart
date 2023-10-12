@@ -8,6 +8,8 @@ class Expense extends Equatable {
   @JsonKey(name: 'id')
   final String? id;
 
+  @JsonKey(name: 'title')
+  final String? title;
   @JsonKey(name: 'group_id')
   final String? groupId;
 
@@ -20,10 +22,16 @@ class Expense extends Equatable {
   @JsonKey(name: 'date')
   final String? date;
 
-  const Expense({this.id, this.groupId, this.amount, this.category, this.date});
+  const Expense(
+      {this.id,
+      this.title,
+      this.groupId,
+      this.amount,
+      this.category,
+      this.date});
 
   @override
-  List<Object?> get props => [id, groupId, amount, category, date];
+  List<Object?> get props => [id, title, groupId, amount, category, date];
 
   Map<String, dynamic> toJson() => _$ExpenseToJson(this);
 

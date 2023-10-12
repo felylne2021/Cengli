@@ -1,9 +1,10 @@
-import 'package:cengli/presentation/home/home_page.dart';
+import 'package:cengli/presentation/home/home_tab_bar.dart';
 import 'package:cengli/presentation/launch_screen/onboarding_screen.dart';
 import 'package:cengli/presentation/membership/login_page.dart';
 import 'package:cengli/services/session_service.dart';
 import 'package:flutter/material.dart';
-import 'package:kinetix/kinetix.dart';
+
+import '../../values/values.dart';
 
 class LaunchScreenPage extends StatefulWidget {
   const LaunchScreenPage({super.key});
@@ -22,9 +23,9 @@ class _LaunchScreenPageState extends State<LaunchScreenPage> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: KxColors.auxiliary600,
-      body: Center(child: Text("Launch Screen")),
+    return Scaffold(
+      backgroundColor: primaryGreen600,
+      body: const Center(child: Text("Launch Screen")),
     );
   }
 
@@ -35,7 +36,7 @@ class _LaunchScreenPageState extends State<LaunchScreenPage> {
     if (isLogin) {
       if (!mounted) return;
       Navigator.of(context)
-          .pushNamedAndRemoveUntil(HomePage.routeName, (route) => false);
+          .pushNamedAndRemoveUntil(HomeTabBarPage.routeName, (route) => false);
     } else {
       if (isFirstInstall) {
         SessionService.setFirstInstall(false);

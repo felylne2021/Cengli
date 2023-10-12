@@ -69,3 +69,12 @@ class CheckUsernameEvent extends AuthEvent {
   @override
   List<Object?> get props => [username];
 }
+
+class GetUserDataEvent extends AuthEvent {
+  final String username;
+
+  const GetUserDataEvent(this.username);
+
+  @override
+  List<Object?> get props => [username];
+}

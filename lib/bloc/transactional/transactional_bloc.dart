@@ -52,9 +52,9 @@ class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
           admins: [],
           isPublic: false);
 
-      
       final storeGroup = Group(
           id: group?.chatId ?? "",
+          groupDescription: event.group.groupDescription,
           name: event.group.name,
           members: event.group.members ?? []);
 
@@ -99,6 +99,7 @@ class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
     emit(const FetchGroupsStoreLoadingState());
     try {
       final groups = await _transactionRepository.getExpenses(event.groupId);
+      print(groups);
       emit(FetchExpensesStoreSuccessState(groups));
     } on AppException catch (error) {
       emit(FetchExpensesStoreErrorState(error.message));

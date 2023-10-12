@@ -2,6 +2,8 @@ import 'package:cengli/presentation/launch_screen/components/onboarding_bottom_s
 import 'package:flutter/material.dart';
 import 'package:kinetix/kinetix.dart';
 
+import '../../values/values.dart';
+
 class OnboardingItem {
   final String title;
   final String caption;
@@ -37,9 +39,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: KxColors.auxiliary600,
-      body: Center(),
+    return Scaffold(
+      backgroundColor: primaryGreen600,
+      body: const Center(),
     );
   }
 

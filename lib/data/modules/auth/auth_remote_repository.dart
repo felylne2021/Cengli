@@ -18,4 +18,5 @@ abstract class AuthRemoteRepository {
       PredictSignerAddressRequest param);
   Future<CreateWalletResponse> getWalletAddress(String ownerAddres);
   Future<bool> checkUsername(String username);
+  Future<UserProfile> getUserData(String username);
 }

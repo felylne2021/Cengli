@@ -4,6 +4,7 @@ import 'dart:typed_data';
 
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:cengli/bloc/auth/auth.dart';
+import 'package:cengli/bloc/auth/state/get_user_state.dart';
 import 'package:cengli/data/modules/auth/auth_remote_repository.dart';
 import 'package:cengli/data/modules/auth/model/device_data.dart';
 import 'package:cengli/data/modules/auth/model/request/create_wallet_request.dart';
@@ -33,6 +34,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<CreateWalletEvent>(_onCreateWallet, transformer: sequential());
     on<CheckWalletEvent>(_onCheckWallet, transformer: sequential());
     on<CheckUsernameEvent>(_onCheckUsername, transformer: sequential());
+    on<GetUserDataEvent>(_onGetUserData, transformer: sequential());
   }
 
   Future<void> _onEmailSignIn(
@@ -195,7 +197,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               os: Platform.isAndroid ? "android" : "ios",
               platform: 'Mobile')));
 
-      //Create push protocol acount
+      //Create push protocol account
       final user = await push.createUser(
           signer: EthersSigner(
               ethersWallet:
@@ -251,6 +253,21 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(CheckUsernameErrorState(error.message));
     } catch (error) {
       emit(CheckUsernameErrorState(error.toString()));
+    }
+  }
+
+  Future<void> _onGetUserData(
+      GetUserDataEvent event, Emitter<AuthState> emit) async {
+    emit(const GetUserDataLoadingState());
+
+    try {
+      final UserProfile userProfile =
+          await _authRepository.getUserData(event.username);
+      emit(GetUserDataSuccessState(userProfile));
+    } on AppException catch (error) {
+      emit(GetUserDataErrorState(error.message));
+    } catch (error) {
+      emit(GetUserDataErrorState(error.toString()));
     }
   }
 }

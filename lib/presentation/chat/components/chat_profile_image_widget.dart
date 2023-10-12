@@ -1,6 +1,7 @@
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
-import 'package:kinetix/kinetix.dart';
+
+import '../../../values/values.dart';
 
 class ProfileProfileImageWidget extends StatelessWidget {
   final String? imageUrl;
@@ -14,7 +15,7 @@ class ProfileProfileImageWidget extends StatelessWidget {
         height: 64,
         width: 64,
         decoration: BoxDecoration(
-          border: Border.all(color: KxColors.auxiliary600),
+          border: Border.all(color: primaryGreen600),
           shape: BoxShape.circle,
           color: Colors.white,
         ),
@@ -30,7 +31,7 @@ class ProfileProfileImageWidget extends StatelessWidget {
           height: 64,
           width: 64,
           decoration: BoxDecoration(
-            border: Border.all(color: KxColors.auxiliary600),
+            border: Border.all(color: primaryGreen600),
             shape: BoxShape.circle,
             image: DecorationImage(
               image: NetworkImage(
@@ -50,7 +51,7 @@ class ProfileProfileImageWidget extends StatelessWidget {
         height: 64,
         width: 64,
         decoration: BoxDecoration(
-          border: Border.all(color: KxColors.auxiliary600),
+          border: Border.all(color: primaryGreen600),
           shape: BoxShape.circle,
           image: DecorationImage(
             image: MemoryImage(
@@ -65,9 +66,9 @@ class ProfileProfileImageWidget extends StatelessWidget {
         height: 64,
         width: 64,
         decoration: BoxDecoration(
-          border: Border.all(color: KxColors.auxiliary600),
+          border: Border.all(color: primaryGreen600),
           shape: BoxShape.circle,
-          color: KxColors.auxiliary600,
+          color: primaryGreen600,
         ),
       );
     }

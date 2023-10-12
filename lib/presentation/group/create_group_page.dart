@@ -2,13 +2,16 @@ import 'package:cengli/bloc/transactional/transactional.dart';
 import 'package:cengli/data/modules/auth/model/user_profile.dart';
 import 'package:cengli/data/modules/transactional/model/group.dart';
 import 'package:cengli/presentation/group/components/user_item_widget.dart';
-import 'package:cengli/presentation/home/home_page.dart';
+import 'package:cengli/presentation/home/home_tab_bar.dart';
 import 'package:cengli/services/push_protocol/push_restapi_dart.dart' as push;
 import 'package:cengli/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kinetix/kinetix.dart';
+
+import '../../values/values.dart';
+import '../reusable/appbar/custom_appbar.dart';
 
 class CreateGroupPage extends StatefulWidget {
   final List<UserProfile> members;
@@ -27,11 +30,8 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: KxAppBarCenterTitle(
-          elevationType: KxElevationAppBarEnum.ghost,
-          appBarTitle: "New Group",
-          leadingCallback: () => Navigator.of(context).pop(),
-          leadingWidget: const Icon(CupertinoIcons.chevron_left_circle_fill),
+        appBar: CustomAppbarBackAndCenter(
+          appbarTitle: "New Group",
           trailingWidgets: [
             InkWell(
               onTap: () {
@@ -46,7 +46,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                    color: KxColors.auxiliary700,
+                    color: primaryGreen600,
                     borderRadius: BorderRadius.circular(20)),
                 child: Text(
                   "Create",
@@ -67,7 +67,8 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
             if (state is CreateGroupStoreSuccessState) {
               hideLoading();
               Navigator.of(context).pushNamedAndRemoveUntil(
-                  HomePage.routeName, (route) => false);
+                  HomeTabBarPage.routeName, (route) => false,
+                  arguments: 1);
             } else if (state is CreateGroupStoreLoadingState) {
               showLoading();
             } else if (state is CreateGroupStoreErrorState) {
@@ -121,17 +122,13 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
         Column(
             children: List.generate(widget.members.length, (index) {
           return Container(
-              margin: const EdgeInsets.symmetric(vertical: 6),
-              child: Column(
-                children: [
-                  UserItemWidget(
-                      name: widget.members[index].name ?? "",
-                      username: widget.members[index].userName ?? "",
-                      address: widget.members[index].walletAddress ?? ""),
-                  12.0.height,
-                  const Divider(thickness: 1, color: KxColors.neutral200)
-                ],
-              ));
+            margin: const EdgeInsets.symmetric(vertical: 6),
+            child: UserItemWidget(
+                isShowDivider: true,
+                name: widget.members[index].name ?? "",
+                username: widget.members[index].userName ?? "",
+                address: widget.members[index].walletAddress ?? ""),
+          );
         })).padding(const EdgeInsets.symmetric(horizontal: 16)),
       ],
     ).padding(const EdgeInsets.symmetric(vertical: 24)));

@@ -3,6 +3,8 @@ import 'package:cengli/utils/wallet_util.dart';
 import 'package:flutter/material.dart';
 import 'package:kinetix/kinetix.dart';
 
+import '../../../values/colors.dart';
+
 class ChatBubbleWidget extends StatelessWidget {
   final String name;
   final String message;
@@ -23,9 +25,9 @@ class ChatBubbleWidget extends StatelessWidget {
           height: 36,
           width: 36,
           decoration: BoxDecoration(
-            border: Border.all(color: KxColors.auxiliary600),
+            border: Border.all(color: primaryGreen600),
             shape: BoxShape.circle,
-            color: KxColors.auxiliary600,
+            color: primaryGreen600,
           ),
         ),
         12.0.width,
