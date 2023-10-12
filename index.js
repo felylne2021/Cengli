@@ -1,12 +1,8 @@
 import dotenv from 'dotenv';
 dotenv.config();
 
-import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
-
-import MarkdownIt from 'markdown-it';
-
 
 import Fastify from 'fastify';
 import fastifyCors from '@fastify/cors'
@@ -34,7 +30,7 @@ fastify.register(fastifyStatic, {
 });
 
 
-fastify.get('/check', async (request, reply) => {
+fastify.get('/check', async () => {
   return { message: "Cengli Backend ✌️" }
 })
 
