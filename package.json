@@ -10,7 +10,7 @@
     "migrate": "prisma migrate dev --name init",
     "dev": "nodemon index.js",
     "postinstall": "prisma generate",
-    "start": "npx prisma generate && node index.js"
+    "start": "prisma generate && node index.js"
   },
   "repository": {
     "type": "git",
