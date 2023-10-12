@@ -24,10 +24,12 @@
   "homepage": "https://github.com/felylne2021/Cengli#readme",
   "dependencies": {
     "@fastify/cors": "^8.4.0",
+    "@fastify/static": "^6.11.2",
     "@prisma/client": "^5.4.2",
     "axios": "^1.5.1",
     "dotenv": "^16.3.1",
     "fastify": "^4.24.0",
+    "markdown-it": "^13.0.2",
     "nanoid": "^5.0.1",
     "node-cron": "^3.0.2"
   },
