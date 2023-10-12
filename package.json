@@ -9,7 +9,8 @@
     "prisma-generate": "prisma generate",
     "migrate": "prisma migrate dev --name init",
     "dev": "nodemon index.js",
-    "start": "npm run prisma-generate && node index.js"
+    "postinstall": "prisma generate",
+    "start": "node index.js"
   },
   "repository": {
     "type": "git",
