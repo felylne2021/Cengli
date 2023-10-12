@@ -7,6 +7,8 @@ import 'package:kinetix/kinetix.dart';
 
 import '../../bloc/membership/membership.dart';
 import '../../utils/utils.dart';
+import '../../values/values.dart';
+import '../reusable/appbar/custom_appbar.dart';
 import 'components/user_item_widget.dart';
 
 class CreateGroupMemberPage extends StatefulWidget {
@@ -26,11 +28,8 @@ class _CreateGroupMemberPageState extends State<CreateGroupMemberPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: KxAppBarCenterTitle(
-          elevationType: KxElevationAppBarEnum.ghost,
-          appBarTitle: "Group Member",
-          leadingCallback: () => Navigator.of(context).pop(),
-          leadingWidget: const Icon(CupertinoIcons.chevron_left_circle_fill),
+        appBar: CustomAppbarBackAndCenter(
+          appbarTitle: "Group Member",
           trailingWidgets: [
             InkWell(
               onTap: () {
@@ -45,7 +44,7 @@ class _CreateGroupMemberPageState extends State<CreateGroupMemberPage> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                 decoration: BoxDecoration(
-                    color: KxColors.auxiliary700,
+                    color: primaryGreen600,
                     borderRadius: BorderRadius.circular(20)),
                 child: Text(
                   "Next",
@@ -88,7 +87,7 @@ class _CreateGroupMemberPageState extends State<CreateGroupMemberPage> {
                             horizontal: 12, vertical: 10),
                         margin: const EdgeInsets.only(right: 6),
                         decoration: BoxDecoration(
-                            color: KxColors.auxiliary700,
+                            color: primaryGreen600,
                             borderRadius: BorderRadius.circular(12)),
                         child: Text("Check",
                             style: KxTypography(
@@ -154,7 +153,7 @@ class _CreateGroupMemberPageState extends State<CreateGroupMemberPage> {
                   },
                 )
               ],
-            ).padding(const EdgeInsets.symmetric(vertical: 24))));
+            ).padding(const EdgeInsets.only(bottom: 24))));
   }
 
   Widget imageAndSmallCloseButton(
@@ -174,8 +173,8 @@ class _CreateGroupMemberPageState extends State<CreateGroupMemberPage> {
               Container(
                 height: 56,
                 width: 56,
-                decoration: const BoxDecoration(
-                    shape: BoxShape.circle, color: KxColors.auxiliary700),
+                decoration: BoxDecoration(
+                    shape: BoxShape.circle, color: primaryGreen600),
               ),
               8.0.height,
               Text(

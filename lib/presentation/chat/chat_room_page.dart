@@ -1,17 +1,21 @@
 import 'package:cengli/presentation/chat/components/chat_bubble_widget.dart';
+import 'package:cengli/presentation/group/group_detail_page.dart';
 import 'package:cengli/provider/chat_room_provider.dart';
 import 'package:cengli/services/push_protocol/push_restapi_dart.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:kinetix/kinetix.dart';
 
+import '../../values/values.dart';
+import '../reusable/appbar/group_chat_appbar.dart';
+
 class ChatRoomArgument {
-  final String walletAddress;
   final Feeds room;
 
-  ChatRoomArgument(this.walletAddress, this.room);
+  ChatRoomArgument(this.room);
 }
 
 class ChatRoomPage extends ConsumerStatefulWidget {
@@ -41,26 +45,24 @@ class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
 
     return Scaffold(
       key: _scaffoldKey,
-      appBar: KxAppBarLeftTitle(
-        elevationType: KxElevationAppBarEnum.noShadow,
+      appBar: GroupChatAppbar(
         appBarTitle: widget.argument.room.groupInformation?.groupName ?? "",
-        subtitle:
+        appBarSubtitle:
             "${widget.argument.room.groupInformation?.members.length} Members",
-        leadingWidget: Container(
-          height: 64,
-          width: 64,
-          decoration: BoxDecoration(
-            border: Border.all(color: KxColors.auxiliary600),
-            shape: BoxShape.circle,
-            color: KxColors.auxiliary600,
-          ),
+        leadingCallBack: () => Navigator.of(context).pop(),
+        trailingWidget: CircleAvatar(
+          backgroundColor: primaryGreen600,
+          child: SvgPicture.asset(IC_CREATE_EXPENSES),
         ),
-        trailingWidgets: [
-          InkWell(
-            onTap: () {},
-            child: const Icon(CupertinoIcons.add),
-          )
-        ],
+        trailingCallBack: () => Navigator.of(context).pushNamed(
+            GroupDetailPage.routeName,
+            arguments: widget.argument.room.chatId),
+        leadingWidget: Container(
+          height: 48,
+          width: 48,
+          decoration: const BoxDecoration(
+              color: KxColors.neutral200, shape: BoxShape.circle),
+        ),
       ),
       body: GestureDetector(
         onTap: () {
@@ -95,7 +97,7 @@ class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
                                 KxTextButton(
                                     argument: KxTextButtonArgument(
                                         buttonText: "Add Expenses",
-                                        buttonColor: KxColors.auxiliary700,
+                                        buttonColor: primaryGreen600,
                                         textColor: KxColors.neutral700,
                                         onPressed: () {},
                                         buttonSize: KxButtonSizeEnum.small,
@@ -164,9 +166,9 @@ class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
                         },
                         child: Container(
                           padding: const EdgeInsets.all(10),
-                          decoration: const BoxDecoration(
+                          decoration: BoxDecoration(
                             shape: BoxShape.circle,
-                            color: KxColors.auxiliary700,
+                            color: primaryGreen600,
                           ),
                           child: roomVm.isSending
                               ? const CupertinoActivityIndicator()

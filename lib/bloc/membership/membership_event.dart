@@ -13,3 +13,37 @@ class SearchUserEvent extends MembershipEvent {
   @override
   List<Object?> get props => [isUsername, value];
 }
+
+class GetGroupEvent extends MembershipEvent {
+  final String id;
+
+  const GetGroupEvent(this.id);
+
+  @override
+  List<Object?> get props => [id];
+}
+
+class GetMembersEvent extends MembershipEvent {
+  final List<String> ids;
+
+  const GetMembersEvent(this.ids);
+
+  @override
+  List<Object?> get props => [ids];
+}
+
+class GetChatRequestEvent extends MembershipEvent {
+  const GetChatRequestEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+
+class ApproveEvent extends MembershipEvent {
+  final String senderAddress;
+
+  const ApproveEvent(this.senderAddress);
+
+  @override
+  List<Object?> get props => [senderAddress];
+}

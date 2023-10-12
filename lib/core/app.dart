@@ -1,7 +1,7 @@
 import 'package:cengli/bloc/auth/auth.dart';
 import 'package:cengli/bloc/membership/membership.dart';
 import 'package:cengli/bloc/transactional/transactional.dart';
-import 'package:cengli/presentation/home/home_page.dart';
+import 'package:cengli/presentation/home/home_tab_bar.dart';
 import 'package:cengli/presentation/launch_screen/launch_screen.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
@@ -77,7 +77,7 @@ class _AppState extends State<App> {
     if (path.contains('group')) {
       String? groupId = deepLink.queryParameters['id'];
       locator<NavigationService>()
-          .pushReplacementNamed(HomePage.routeName, arguments: groupId);
+          .pushReplacementNamed(HomeTabBarPage.routeName, arguments: groupId);
     }
   }
 

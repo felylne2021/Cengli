@@ -4,6 +4,8 @@ import 'package:cengli/presentation/reusable/shapes/drag_handle_widget.dart';
 import 'package:flutter/widgets.dart';
 import 'package:kinetix/kinetix.dart';
 
+import '../../../values/values.dart';
+
 class OnboardingBottomSheetWidget extends StatelessWidget {
   final List<OnboardingItem> items;
 
@@ -70,7 +72,7 @@ class OnboardingBottomSheetWidget extends StatelessWidget {
                               }
                             },
                             buttonText: value < 3 ? "Continue" : "Login",
-                            buttonColor: KxColors.auxiliary400,
+                            buttonColor: primaryGreen600,
                             buttonTextStyle: KxTypography(
                                 type: KxFontType.buttonMedium,
                                 color: KxColors.neutral700),

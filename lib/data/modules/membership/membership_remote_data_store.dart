@@ -1,5 +1,7 @@
 import 'package:cengli/data/modules/auth/model/user_profile.dart';
 import 'package:cengli/data/modules/membership/membership_remote_repository.dart';
+import 'package:cengli/data/modules/transactional/model/group.dart';
+import 'package:cengli/error/error_handler.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as firestore;
 
 import '../../utils/collection_util.dart';
@@ -10,13 +12,15 @@ class MembershipRemoteDataStore extends MembershipRemoteRepository {
   MembershipRemoteDataStore(this._firestoreDb);
 
   @override
-  Future<UserProfile?> searchUser(
-      String? username, String? address) async {
+  Future<UserProfile?> searchUser(String? username, String? address) async {
     if (username == null) {
       final docs = await _firestoreDb
           .collection(CollectionEnum.users.name)
           .where('walletAddress', isEqualTo: address)
-          .get();
+          .get()
+          .catchError((error) {
+        firebaseErrorHandler(error);
+      });
       if (docs.docs.isNotEmpty) {
         return UserProfile.fromJson(docs.docs.first.data());
       } else {
@@ -26,12 +30,49 @@ class MembershipRemoteDataStore extends MembershipRemoteRepository {
       final docs = await _firestoreDb
           .collection(CollectionEnum.users.name)
           .where('userName', isEqualTo: username)
-          .get();
+          .get()
+          .catchError((error) {
+        firebaseErrorHandler(error);
+      });
       if (docs.docs.isNotEmpty) {
         return UserProfile.fromJson(docs.docs.first.data());
       } else {
         return null;
       }
     }
+  }
+
+  @override
+  Future<Group?> getGroupFireStore(String id) async {
+    final doc = await _firestoreDb
+        .collection(CollectionEnum.groups.name)
+        .doc(id)
+        .get()
+        .catchError((error) {
+      firebaseErrorHandler(error);
+    });
+    if (doc.exists) {
+      return Group.fromJson(doc.data()!);
+    } else {
+      return null;
+    }
+  }
+
+  @override
+  Future<List<UserProfile>> getGroupMembersInfo(List<String> ids) async {
+    List<UserProfile> users = [];
+    for (String id in ids) {
+      final doc = await _firestoreDb
+          .collection(CollectionEnum.users.name)
+          .doc(id)
+          .get()
+          .catchError((error) {
+        firebaseErrorHandler(error);
+      });
+      if (doc.exists) {
+        users.add(UserProfile.fromJson(doc.data()!));
+      }
+    }
+    return users;
   }
 }

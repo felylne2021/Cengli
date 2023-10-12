@@ -24,7 +24,7 @@ class AuthRemoteDataStore extends AuthRemoteRepository {
   @override
   Future<void> createUser(UserProfile userProfile) async {
     await _db
-        .collection("users")
+        .collection(CollectionEnum.users.name)
         .doc(userProfile.id)
         .set(userProfile.toJson())
         .catchError((error) {
@@ -118,5 +118,22 @@ class AuthRemoteDataStore extends AuthRemoteRepository {
         .limit(1)
         .get();
     return query.docs.isNotEmpty;
+  }
+
+  @override
+  Future<UserProfile> getUserData(String username) async {
+    final query = await _db
+        .collection(CollectionEnum.users.name)
+        .where('userName', isEqualTo: username)
+        .limit(1)
+        .get();
+
+    final List<Map<String, dynamic>> userJson = query.docs.map((e) {
+      return e.data();
+    }).toList();
+    print(userJson[0]);
+    final userData = UserProfile.fromJson(userJson[0]);
+
+    return userData;
   }
 }

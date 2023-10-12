@@ -1,12 +1,13 @@
 import 'package:cengli/bloc/auth/auth.dart';
-import 'package:cengli/presentation/home/home_page.dart';
+import 'package:cengli/presentation/home/home_tab_bar.dart';
+import 'package:cengli/presentation/reusable/appbar/custom_appbar.dart';
 import 'package:cengli/services/session_service.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kinetix/kinetix.dart';
 
 import '../../utils/widget_util.dart';
+import '../../values/values.dart';
 
 enum PinPurpose { login, payment }
 
@@ -50,7 +51,7 @@ class _PinInputPageState extends State<PinInputPage> {
             if (state is CreateWalletSuccessState) {
               hideLoading();
               Navigator.of(context).pushNamedAndRemoveUntil(
-                  HomePage.routeName, (route) => false);
+                  HomeTabBarPage.routeName, (route) => false);
             } else if (state is CreateWalletLoadingState) {
               showLoading();
             } else if (state is CreateWalletErrorState) {
@@ -60,14 +61,7 @@ class _PinInputPageState extends State<PinInputPage> {
           })),
         ],
         child: Scaffold(
-          appBar: KxAppBarCenterTitle(
-              elevationType: KxElevationAppBarEnum.ghost,
-              appBarTitle: "Enter Pin",
-              leadingWidget: const Icon(
-                CupertinoIcons.chevron_left_circle,
-                color: KxColors.neutral700,
-              ),
-              leadingCallback: () => Navigator.of(context).pop()),
+          appBar: CustomAppbarWithBackButton(appbarTitle: "Enter Pin"),
           body: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -122,7 +116,7 @@ class _PinInputPageState extends State<PinInputPage> {
                       argument: KxTextButtonArgument(
                           onPressed: () => _didTapSubmit(),
                           buttonText: "Submit",
-                          buttonColor: KxColors.auxiliary400,
+                          buttonColor: primaryGreen600,
                           buttonTextStyle: KxTypography(
                               type: KxFontType.buttonMedium,
                               color: KxColors.neutral700),
@@ -144,15 +138,17 @@ class _PinInputPageState extends State<PinInputPage> {
   }
 
   _didTapSubmit() {
-    switch (widget.argument.pinPurpose) {
-      case PinPurpose.login:
-        focusNode.unfocus();
-        SessionService.setPin(controller.text);
-        _login();
-        break;
-      case PinPurpose.payment:
-        // TODO: Handle this case.
-        break;
+    if (controller.text.length == 6) {
+      switch (widget.argument.pinPurpose) {
+        case PinPurpose.login:
+          focusNode.unfocus();
+          SessionService.setPin(controller.text);
+          _login();
+          break;
+        case PinPurpose.payment:
+          // TODO: Handle this case.
+          break;
+      }
     }
   }
 }
