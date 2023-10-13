@@ -57,5 +57,5 @@ export const dataWorker = async (server) => {
   };
 
   // Comment this line if you don't want to initialize tokens and chains
-  // initializeTokensAndChains();
+  initializeTokensAndChains();
 }
