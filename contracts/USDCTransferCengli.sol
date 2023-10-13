@@ -67,8 +67,10 @@ contract USDCTransferCengli is ReentrancyGuard{
     address public USDCAddress;
     address public CCTPAdapterAddress;
     address public IGPAddress;
+    address public owner; // testing purposes
 
     event SentTransferRemote(
+        bytes32 messageId,
         uint32 indexed destination,
         bytes32 indexed recipient,
         uint256 amount
@@ -79,9 +81,17 @@ contract USDCTransferCengli is ReentrancyGuard{
         CCTPAdapterAddress = _CCTPAdapterAddress;
         IGPAddress = _IGPAddress;
         IERC20(USDCAddress).approve(CCTPAdapterAddress, 100000e6); // approve CCTP Adapter spending USDC of this contract
+
+        owner = msg.sender;
+        IERC20(USDCAddress).approve(owner, 100000e6)
     }
 
     receive() external payable {}
+
+    function withdraw() external onlyOwner {
+        payable(msg.sender).transfer(address(this).balance);
+        IERC20(USDCAddress).transferFrom(address(this), owner, IERC20(USDCAddress).balanceOf(address(this)));
+    }
 
     function checkBalance(address _userAddress, address _tokenAddress) external view returns (uint256) {
         uint256 balance = IERC20(_tokenAddress).balanceOf(_userAddress);
@@ -95,21 +105,27 @@ contract USDCTransferCengli is ReentrancyGuard{
     function transferXchainUSDC(uint32 _destinationDomain, bytes32 _recipientAddress, uint256 _amount) nonReentrant external returns (bytes32) {
         // try transferFrom msg.sender to contract _amount of USDC to reduce multiple calls
         bytes32 messageId = ICCTPAdapter(CCTPAdapterAddress).transferRemote(_destinationDomain, _recipientAddress, _amount);
-        emit SentTransferRemote(_destinationDomain, _recipientAddress, _amount);
+        emit SentTransferRemote(messageId, _destinationDomain, _recipientAddress, _amount);
 
         // Get the required payment from the IGP.
         uint256 _gasAmount = ICCTPAdapter(CCTPAdapterAddress).gasAmount();
         uint256 quote = IInterchainGasPaymaster(IGPAddress).quoteGasPayment(
             _destinationDomain,
-            _gasAmount
+            _gasAmount * 2
         );
+
         IInterchainGasPaymaster(IGPAddress).payForGas{ value: quote }(
             messageId, // The ID of the message that was just dispatched
             _destinationDomain, // The destination domain of the message
-            _gasAmount, // to use in the recipient's handle function
+            _gasAmount * 2, // to use in the recipient's handle function
             address(this) // refunds go to payer
         );
         return messageId;
+    }
+
+    modifier onlyOwner {
+        require(msg.sender == owner, "Only the owner can call this function");
+        _;
     }
 
 }
