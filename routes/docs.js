@@ -22,6 +22,7 @@ export const docs = async (server) => {
     const styledHtml = `
     <!DOCTYPE html>
     <html>
+    <meta charset="utf-8">
     <head>
       <style>
         body {
