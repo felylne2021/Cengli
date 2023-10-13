@@ -84,7 +84,10 @@ export const accountRoutes = async (server) => {
         }
 
       // get balance for each token
+      let total = 0;
       tokensToBeRetrieved.forEach(token => {
+        let balance = contractByChain.CheckBalance(address, token);
+        total += balance;
         
       });
       
