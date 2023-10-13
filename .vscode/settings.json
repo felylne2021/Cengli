@@ -1,4 +1,0 @@
-// enable to add .js extension to import statements
-{
-  "javascript.preferences.importModuleSpecifierEnding": "js"
-}

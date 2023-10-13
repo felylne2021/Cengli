@@ -1,2 +1,0 @@
--- AlterTable
-ALTER TABLE `Chain` ALTER COLUMN `logoURI` DROP DEFAULT;
