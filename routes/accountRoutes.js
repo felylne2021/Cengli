@@ -13,7 +13,7 @@ export const accountRoutes = async (server) => {
         }
       })
 
-      if (!availableChainId.includes(parseInt(chainId))) {
+      if (!availableChainId.map(chain => chain.chainId).includes(parseInt(chainId))) {
         return reply.code(400).send({ message: `Invalid chainId, the available chainIds are: ${availableChainId.map(chain => chain.chainId)}` });
       }
 
