@@ -1,4 +1,5 @@
 import { prismaClient } from "../utils/prisma.js";
+import { validateAvailableChainId } from "./validator.js";
 
 export const transferRoutes = async (server) => {
   server.post('/send', async (request, reply) => {
@@ -9,7 +10,8 @@ export const transferRoutes = async (server) => {
         fromAddress,
         destinationAddress,
         tokenAddress,
-        chainId,
+        fromChainId,
+        destinationChainId,
         amount,
         note,
         signer
@@ -20,12 +22,14 @@ export const transferRoutes = async (server) => {
       }
 
       // Validate the required body parameters
-      const fields = ['fromUserId', 'destinationUserId', 'fromAddress', 'destinationAddress', 'tokenAddress', 'chainId', 'amount', 'signer'];
+      const fields = ['fromUserId', 'destinationUserId', 'fromAddress', 'destinationAddress', 'tokenAddress', 'fromChainId', 'destinationChainId', 'amount', 'signer'];
       const missingParams = fields.reduce((acc, field) => !eval(field) ? [...acc, field] : acc, []);
 
       if (missingParams.length) {
         return reply.code(400).send({ message: 'Missing parameters', missingParams });
       }
+
+      await validateAvailableChainId([fromChainId, destinationChainId], reply);
 
       const transaction = await prismaClient.transaction.create({
         data: {
@@ -34,7 +38,8 @@ export const transferRoutes = async (server) => {
           fromAddress: fromAddress,
           destinationAddress: destinationAddress,
           tokenAddress: tokenAddress,
-          chainId: chainId,
+          fromChainId: fromChainId,
+          destinationChainId: destinationChainId,
           amount: amount,
           note: note,
         }

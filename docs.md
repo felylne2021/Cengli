@@ -53,7 +53,8 @@ GET {{baseUrl}}/account/assets?address=0x278...04ECf&chainId=5
 | fromAddress         | Sender's Ethereum address |
 | destinationAddress  | Receiver's Ethereum address |
 | tokenAddress        | Token contract address |
-| chainId             | Blockchain network ID |
+| fromChainId         | From Blockchain network ID |
+| destinationChainId  | Destination Blockchain network ID |
 | amount              | Amount to send |
 | note                | Optional note |
 | signer              | Sender's signature |
@@ -66,7 +67,8 @@ GET {{baseUrl}}/account/assets?address=0x278...04ECf&chainId=5
   "fromAddress": "dummyFromAddress",
   "destinationAddress": "dummyDestinationAddress",
   "tokenAddress": "0x999...f97",
-  "chainId": 80001,
+  "fromChainId": 80001,
+  "destinationChainId": 420,
   "amount": 100,
   "note": "dummyNote",
   "signer": "dummySigner"
@@ -81,7 +83,8 @@ GET {{baseUrl}}/account/assets?address=0x278...04ECf&chainId=5
   "destinationUserId": "dummyDestinationUserId",
   "fromAddress": "dummyFromAddress",
   "destinationAddress": "dummyDestinationAddress",
-  "chainId": 80001,
+  "fromChainId": 80001,
+  "destinationChainId": 420,
   "tokenAddress": "0x078...a37f",
   "amount": 100,
   "note": "dummyNote",

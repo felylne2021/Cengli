@@ -51,13 +51,15 @@ model Transaction {
   fromAddress        String
   destinationAddress String
 
-  chainId      Int
+  fromChainId        Int 
+  destinationChainId Int 
+
   tokenAddress String
   amount       Float
 
   note String?
 
-  token Token @relation(fields: [tokenAddress, chainId], references: [address, chainId])
+  token Token @relation(fields: [tokenAddress, fromChainId], references: [address, chainId])
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

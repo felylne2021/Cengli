@@ -1,20 +1,13 @@
 import { prismaClient } from "../utils/prisma.js";
 import { getContractByChain } from "../utils/web3/assetContracts.js";
+import { validateAvailableChainId } from "./validator.js";
 
 export const accountRoutes = async (server) => {
   server.get('/assets', async (request, reply) => {
     try {
       const { address, chainId } = request.query;
 
-      const availableChainId = await prismaClient.chain.findMany({
-        select: {
-          chainId: true
-        }
-      })
-
-      if (!availableChainId.map(chain => chain.chainId).includes(parseInt(chainId))) {
-        return reply.code(400).send({ message: `Invalid chainId, the available chainIds are: ${availableChainId.map(chain => chain.chainId)}` });
-      }
+      await validateAvailableChainId([chainId], reply);
 
       if (!address || !chainId) {
         return reply.code(400).send({ message: 'Missing address or chainId' });
