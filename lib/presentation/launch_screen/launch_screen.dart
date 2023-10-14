@@ -3,6 +3,7 @@ import 'package:cengli/presentation/launch_screen/onboarding_screen.dart';
 import 'package:cengli/presentation/membership/login_page.dart';
 import 'package:cengli/services/session_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 
 import '../../values/values.dart';
 
@@ -25,7 +26,12 @@ class _LaunchScreenPageState extends State<LaunchScreenPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: primaryGreen600,
-      body: const Center(child: Text("Launch Screen")),
+      body: Center(
+          child: SvgPicture.asset(
+        IC_CENGLI_LOGO,
+        width: 148,
+        height: 148,
+      )),
     );
   }
 

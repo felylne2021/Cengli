@@ -23,7 +23,7 @@ import '../reusable/modal/modal_page.dart';
 import '../reusable/segmented_control/segmented_control.dart';
 import 'component/actions_widget.dart';
 import 'component/card_widget.dart';
-import 'component/request/request_page.dart';
+import '../p2p/p2p_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -168,11 +168,11 @@ class _HomePageState extends State<HomePage> {
                               const UserProfile(),
                               0))),
                   ActionWidget(
-                      title: 'Request',
+                      title: 'P2P',
                       bgColor: softPurple,
-                      iconPath: IC_REQUEST,
-                      onTap: () => Navigator.of(context)
-                          .pushNamed(RequestPage.routeName)),
+                      iconPath: IC_P2P,
+                      onTap: () =>
+                          Navigator.of(context).pushNamed(P2pPage.routeName)),
                   ActionWidget(
                       title: 'Bills',
                       bgColor: softBlue,

@@ -11,16 +11,24 @@ class Group extends Equatable {
   @JsonKey(name: 'name')
   final String? name;
 
-   @JsonKey(name: 'groupDescription')
+  @JsonKey(name: 'groupDescription')
   final String? groupDescription;
 
   @JsonKey(name: 'members')
   final List<String>? members;
 
-  const Group({this.id, this.name, this.groupDescription, this.members});
+  @JsonKey(name: 'groupType')
+  final String? groupType;
+
+  const Group(
+      {this.id,
+      this.name,
+      this.groupDescription,
+      this.members,
+      this.groupType});
 
   @override
-  List<Object?> get props => [id, name, groupDescription, members];
+  List<Object?> get props => [id, name, groupDescription, members, groupType];
 
   Map<String, dynamic> toJson() => _$GroupToJson(this);
 

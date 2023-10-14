@@ -62,6 +62,10 @@ class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
           width: 48,
           decoration: const BoxDecoration(
               color: KxColors.neutral200, shape: BoxShape.circle),
+          child: const Icon(
+            CupertinoIcons.person_2_fill,
+            color: KxColors.neutral400,
+          ),
         ),
       ),
       body: GestureDetector(
@@ -94,18 +98,6 @@ class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
                                       type: KxFontType.fieldText3,
                                       color: KxColors.neutral500),
                                 ),
-                                32.0.height,
-                                KxTextButton(
-                                    argument: KxTextButtonArgument(
-                                        buttonText: "Add Expenses",
-                                        buttonColor: primaryGreen600,
-                                        textColor: KxColors.neutral700,
-                                        onPressed: () {},
-                                        buttonSize: KxButtonSizeEnum.small,
-                                        buttonType: KxButtonTypeEnum.primary,
-                                        buttonShape: KxButtonShapeEnum.square,
-                                        buttonContent:
-                                            KxButtonContentEnum.text)),
                               ],
                             ).padding(
                               const EdgeInsets.symmetric(horizontal: 68))

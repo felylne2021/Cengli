@@ -12,6 +12,6 @@ void injectTransferModule() {
       TransferApiClient(locator<Dio>(instanceName: "cengli")));
   locator.registerSingleton(TransferApi(locator.get()));
   locator.registerSingleton<TransferRemoteRepository>(
-      TransferRemoteDataStore(locator.get()));
-  locator.registerSingleton(TransferBloc(locator.get()));
+      TransferRemoteDataStore(locator.get(), locator.get()));
+  locator.registerSingleton(TransferBloc(locator.get(), locator.get()));
 }

@@ -1,9 +1,9 @@
 import 'package:cengli/utils/utils.dart';
 import 'package:cengli/utils/wallet_util.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:kinetix/kinetix.dart';
 
-import '../../../values/colors.dart';
 
 class ChatBubbleWidget extends StatelessWidget {
   final String name;
@@ -24,10 +24,13 @@ class ChatBubbleWidget extends StatelessWidget {
         Container(
           height: 36,
           width: 36,
-          decoration: BoxDecoration(
-            border: Border.all(color: primaryGreen600),
+          decoration: const BoxDecoration(
             shape: BoxShape.circle,
-            color: primaryGreen600,
+            color: KxColors.neutral200,
+          ),
+          child: const Icon(
+            CupertinoIcons.person_fill,
+            color: KxColors.neutral400,
           ),
         ),
         12.0.width,

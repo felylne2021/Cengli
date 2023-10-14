@@ -1,5 +1,7 @@
 import 'dart:typed_data';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:kinetix/kinetix.dart';
 
 import '../../../values/values.dart';
 
@@ -21,7 +23,7 @@ class ProfileProfileImageWidget extends StatelessWidget {
         ),
         child: const Icon(
           Icons.person,
-          color: Colors.purple,
+          color: KxColors.neutral200,
         ),
       );
     }
@@ -65,10 +67,13 @@ class ProfileProfileImageWidget extends StatelessWidget {
       return Container(
         height: 64,
         width: 64,
-        decoration: BoxDecoration(
-          border: Border.all(color: primaryGreen600),
+        decoration: const BoxDecoration(
           shape: BoxShape.circle,
-          color: primaryGreen600,
+          color: KxColors.neutral200,
+        ),
+        child: const Icon(
+          CupertinoIcons.person_2_fill,
+          color: KxColors.neutral400,
         ),
       );
     }

@@ -9,13 +9,14 @@ import 'package:cengli/presentation/group/group_detail_page.dart';
 import 'package:cengli/presentation/home/home_page.dart';
 import 'package:cengli/presentation/launch_screen/onboarding_screen.dart';
 import 'package:cengli/presentation/membership/pin_input_page.dart';
+import 'package:cengli/presentation/p2p/p2p_request_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../presentation/home/component/bills/bills_page.dart';
 import '../presentation/home/component/bills/detail/bills_detail_page.dart';
-import '../presentation/home/component/request/request_page.dart';
+import '../presentation/p2p/p2p_page.dart';
 import '../presentation/home/home_tab_bar.dart';
 import '../presentation/membership/login_page.dart';
 import '../presentation/profile/profile_page.dart';
@@ -76,9 +77,9 @@ class AppRouter {
       case CreateGroupMemberPage.routeName:
         return CupertinoPageRoute(
             builder: (_) => const CreateGroupMemberPage(), settings: settings);
-      case RequestPage.routeName:
+      case P2pPage.routeName:
         return CupertinoPageRoute(
-            builder: (_) => const RequestPage(), settings: settings);
+            builder: (_) => const P2pPage(), settings: settings);
       case BillsPage.routeName:
         return CupertinoPageRoute(
             builder: (_) => const BillsPage(), settings: settings);
@@ -121,6 +122,9 @@ class AppRouter {
       case QrScanPage.routeName:
         return CupertinoPageRoute(
             builder: (_) => const QrScanPage(), settings: settings);
+      case P2pRequestPage.routeName:
+        return CupertinoPageRoute(
+            builder: (_) => const P2pRequestPage(), settings: settings);
     }
   }
 }

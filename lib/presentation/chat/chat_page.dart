@@ -116,10 +116,33 @@ class _ChatePageState extends ConsumerState<ChatPage> {
           builder: (context, ref, child) {
             final vm = ref.watch(conversationsProvider);
             final spaces = vm.conversations;
-            if (vm.isBusy && spaces.isEmpty) {
+            if (vm.isBusy) {
               return const Center(
                 child: CupertinoActivityIndicator(),
               );
+            } else if (spaces.isEmpty) {
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  60.0.height,
+                  Image.asset(IMG_EMPTY_CHAT),
+                  Text(
+                    "No Conversation Found",
+                    style: KxTypography(
+                        type: KxFontType.buttonMedium,
+                        color: KxColors.neutral700),
+                  ),
+                  8.0.height,
+                  Text(
+                    "Start a new conversation and connect with friends, family, or colleagues!",
+                    style: KxTypography(
+                        type: KxFontType.buttonMedium,
+                        color: KxColors.neutral500),
+                    textAlign: TextAlign.center,
+                  )
+                ],
+              ).padding(const EdgeInsets.symmetric(horizontal: 60));
             }
 
             return Column(
