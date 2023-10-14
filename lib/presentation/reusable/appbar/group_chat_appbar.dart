@@ -26,7 +26,7 @@ class GroupChatAppbar extends StatelessWidget implements PreferredSizeWidget {
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
-          18.0.height,
+          30.0.height,
           Row(
             mainAxisAlignment: MainAxisAlignment.start,
             crossAxisAlignment: CrossAxisAlignment.center,
