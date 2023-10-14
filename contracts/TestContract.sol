@@ -7,15 +7,12 @@ contract TestContract is ERC2771Context {
     address public flagCapturer;
 
     function captureFlag() public payable {
-        require(msg.value == 0.01 ether, "Must pay 0.01 ether");
-
-        flagCapturer = msg.sender;
+        flagCapturer = _msgSender();
     }
 
     function withdraw() public {
-        require(msg.sender == flagCapturer, "Only flag capturer can withdraw");
-
-        payable(msg.sender).transfer(address(this).balance);
+        require(_msgSender() == flagCapturer, "Only flag capturer can withdraw");
+        payable(_msgSender()).transfer(address(this).balance);
     }
 
     constructor(address trustedForwarder) ERC2771Context(trustedForwarder) {}

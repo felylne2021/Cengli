@@ -19,66 +19,34 @@ exports.metaTxTest = async function () {
   const runnerPrivateKey = process.env.PRIVATE_KEY;
   const runnerWallet = new ethers.Wallet(runnerPrivateKey, provider);
 
-  console.log("wallet address", wallet.address)
+  console.log({
+    address: wallet.address,
+    runnerAddress: runnerWallet.address
+  })
 
   // Call captureFlag on TestContract
-  const iface = new ethers.Interface(TestContractABI);
   const contract = new ethers.Contract(TEST_CONTRACT_ADDRESS, TestContractABI, wallet);
-
-  // encode the call to captureFlag
-  const data = iface.encodeFunctionData("captureFlag");
 
   const gasEstimate = await contract.getFunction("captureFlag").estimateGas({
     value: ethers.parseEther("0.01")
   })
+
+  const fee = await wallet.provider?.getFeeData()
+
   console.log("gasEstimate", gasEstimate.toString());
-
-  // get block timestamp + 1 day
-  const deadline = (await provider.getBlock()).timestamp + 86400;
-
-  // create metaTx payload
-  const metaTxRequest = {
+  const captureFlagTransaction = await contract.captureFlag.populateTransaction({
     from: wallet.address,
-    to: TEST_CONTRACT_ADDRESS,
-    value: ethers.parseEther("0.01").toString(),
-    gas: gasEstimate.toString(),
-    data: data,
+    value: ethers.parseEther("0.01"),
     nonce: await wallet.provider?.getTransactionCount(wallet.address),
-    deadline: deadline
-  }
+    gasLimit: gasEstimate,
+    gasPrice: fee?.gasPrice,
+    chainId: 5
+  })
+  console.log("captureFlagTransaction", captureFlagTransaction);
 
-  // Get Forwarder Contract
-  const forwarderContract = new ethers.Contract(FORWARDER_ADDRESS, ForwarderContractABI, runnerWallet);
+  const signedTx = await wallet.signTransaction(captureFlagTransaction);
+  console.log("signedTx", signedTx);
   
-  // get nonce form forwarder contract
-  const nonce = await forwarderContract.nonces(wallet.address);
-  metaTxRequest.nonce = parseInt(nonce);
-
-  // get eip712domain
-  const typedData = getMetaTxTypedData(metaTxRequest);
-  console.log("typedData", typedData)
-
-  const signature = await wallet.signTypedData(typedData.domain, typedData.types, typedData.message)
-
-  metaTxRequest.signature = signature;
-  console.log("metaTxRequest", JSON.stringify(metaTxRequest))
-
-  // verify metaTxRequest
-  const verifyRes = await forwarderContract.verify(metaTxRequest);
-  console.log("verifyRes", verifyRes);
-
-  // send metaTx
-  const res = await forwarderContract.execute(
-    metaTxRequest.from,
-    metaTxRequest.to,
-    metaTxRequest.value,
-    metaTxRequest.gas,
-    metaTxRequest.deadline,
-    metaTxRequest.data,
-    metaTxRequest.signature,
-    {
-      value: metaTxRequest.value,
-    }
-  )
-  console.log("res", res);
+  const tx = await runnerWallet.provider?.broadcastTransaction(signedTx);
+  console.log("tx", tx);
 };

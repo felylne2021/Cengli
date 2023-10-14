@@ -5,12 +5,12 @@ async function delay(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
-module.exports = async function (deployer){
-  // Deploy CengliForwarder
-  await deployer.deploy(CengliForwarder);
-  const cengliForwarder = await CengliForwarder.deployed();
-  console.log("CengliForwarder deployed to:", cengliForwarder.address);
-};
+// module.exports = async function (deployer){
+//   // Deploy CengliForwarder
+//   await deployer.deploy(CengliForwarder);
+//   const cengliForwarder = await CengliForwarder.deployed();
+//   console.log("CengliForwarder deployed to:", cengliForwarder.address);
+// };
 
 // TestContract Deploy
 module.exports = async function (deployer){
