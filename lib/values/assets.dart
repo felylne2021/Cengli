@@ -8,6 +8,13 @@ const String IMG_POLYGON = _IMAGE_PATH + 'img-polygon.png';
 const String IMG_ETHEREUM = _IMAGE_PATH + 'img-ethereum.png';
 const String IMG_ARBITRUM = _IMAGE_PATH + 'img-arbitrum.png';
 const String IMG_CARD_BG = _IMAGE_PATH + 'img-card-background.svg';
+const String IMG_ONBOARD1 = _IMAGE_PATH + 'img-onboard1.png';
+const String IMG_ONBOARD2 = _IMAGE_PATH + 'img-onboard2.png';
+const String IMG_ONBOARD3 = _IMAGE_PATH + 'img-onboard3.png';
+const String IMG_ONBOARD4 = _IMAGE_PATH + 'img-onboard4.png';
+const String IMG_TOPUP = _IMAGE_PATH + 'img-topup.png';
+const String IMG_EMPTY_CHAT = _IMAGE_PATH + 'img-empty-chat.png';
+
 //* ICONS
 const String IC_WALLET = _ICON_PATH + 'ic-wallet.svg';
 const String IC_CHAT = _ICON_PATH + 'ic-chat.svg';
@@ -31,3 +38,5 @@ const String IC_XMARK = _ICON_PATH + 'ic-xmark.svg';
 const String IC_ASSET_USDC = _ICON_PATH + 'ic-asset-usdc.svg';
 const String IC_ASSET_USDT = _ICON_PATH + 'ic-asset-usdt.svg';
 const String IC_SUCCESS = _ICON_PATH + 'ic-success.svg';
+const String IC_P2P = _ICON_PATH + 'ic-p2p.svg';
+const String IC_CENGLI_LOGO = _ICON_PATH + 'ic-cengli-logo.svg';

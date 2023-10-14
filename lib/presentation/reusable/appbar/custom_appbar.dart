@@ -93,7 +93,9 @@ class CustomAppbarWithBackButton extends StatelessWidget
               color: KxColors.neutral700,
             ),
           ),
-          leadingCallback: () => Navigator.of(context).pop(),
+          leadingCallback: () => Navigator.of(context).canPop()
+              ? Navigator.of(context).pop()
+              : null,
           trailingWidgets: trailingWidgets,
         )
       ],

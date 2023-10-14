@@ -1,4 +1,7 @@
+import 'package:cengli/data/modules/transfer/model/response/order_response.dart';
 import 'package:velix/velix.dart';
+
+import '../../data/modules/transactional/model/group.dart';
 
 abstract class TransferEvent extends BaseEvent {
   const TransferEvent();
@@ -36,4 +39,41 @@ class GetTransferEvent extends TransferEvent {
 
   @override
   List<Object?> get props => [chainId];
+}
+
+class CreateGroupP2pEvent extends TransferEvent {
+  final Group group;
+
+  const CreateGroupP2pEvent(this.group);
+
+  @override
+  List<Object?> get props => [group];
+}
+
+class CreateOrderEvent extends TransferEvent {
+  final OrderResponse order;
+
+  const CreateOrderEvent(this.order);
+
+  @override
+  List<Object?> get props => [order];
+}
+
+class GetOrderEvent extends TransferEvent {
+  final String groupId;
+
+  const GetOrderEvent(this.groupId);
+
+  @override
+  List<Object?> get props => [groupId];
+}
+
+class UpdateOrderStatusEvent extends TransferEvent {
+  final String orderId;
+  final String status;
+
+  const UpdateOrderStatusEvent(this.orderId, this.status);
+
+  @override
+  List<Object?> get props => [orderId, status];
 }

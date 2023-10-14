@@ -4,6 +4,7 @@ import 'package:cengli/data/modules/membership/membership_remote_repository.dart
 import 'package:cengli/services/push_protocol/push_restapi_dart.dart';
 import 'package:cengli/services/services.dart';
 import 'package:cengli/utils/signer.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:velix/velix.dart';
 import 'package:ethers/signers/wallet.dart' as ethers;
@@ -18,6 +19,7 @@ class MembershipBloc extends Bloc<MembershipEvent, MembershipState> {
     on<GetMembersEvent>(_onGetMembers, transformer: sequential());
     on<GetChatRequestEvent>(_onGetChatRequest, transformer: sequential());
     on<ApproveEvent>(_onApproveChat, transformer: sequential());
+    on<FetchP2pEvent>(_onFetchP2p, transformer: sequential());
   }
 
   Future<void> _onSearchUser(
@@ -127,6 +129,20 @@ class MembershipBloc extends Bloc<MembershipEvent, MembershipState> {
       emit(ApproveChatErrorState(error.message));
     } catch (error) {
       emit(ApproveChatErrorState(error.toString()));
+    }
+  }
+
+  Future<void> _onFetchP2p(
+      FetchP2pEvent event, Emitter<MembershipState> emit) async {
+    emit(const FetchP2pLoadingState());
+    try {
+      final partners = await _membershipRemoteRepository.fetchPartners();
+      debugPrint(partners.toString());
+      emit(FetchP2pSuccessState(partners));
+    } on AppException catch (error) {
+      emit(FetchP2pErrorState(error.message));
+    } catch (error) {
+      emit(FetchP2pErrorState(error.toString()));
     }
   }
 }

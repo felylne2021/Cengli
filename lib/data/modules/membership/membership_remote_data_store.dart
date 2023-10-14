@@ -75,4 +75,17 @@ class MembershipRemoteDataStore extends MembershipRemoteRepository {
     }
     return users;
   }
+
+  @override
+  Future<List<UserProfile>> fetchPartners() async {
+    final doc = await _firestoreDb
+        .collection(CollectionEnum.users.name)
+        .where("userRole", isEqualTo: UserRoleEnum.partner.name)
+        .get()
+        .catchError((error) {
+      firebaseErrorHandler(error);
+    });
+
+    return doc.docs.map((value) => UserProfile.fromJson(value.data())).toList();
+  }
 }

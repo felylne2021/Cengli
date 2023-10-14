@@ -31,6 +31,16 @@ class _OnboardingPageState extends State<OnboardingPage> {
         "Experience seamless transactions without the usual gas costs. Dive into a hassle-free crypto experience"),
   ];
 
+  final List<String> imageItems = [
+    IMG_ONBOARD1,
+    IMG_ONBOARD2,
+    IMG_ONBOARD3,
+    IMG_ONBOARD4,
+  ];
+
+  ValueNotifier<int> currentIndex = ValueNotifier(0);
+  final PageController controller = PageController();
+
   @override
   void initState() {
     super.initState();
@@ -40,9 +50,40 @@ class _OnboardingPageState extends State<OnboardingPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: primaryGreen600,
-      body: const Center(),
-    );
+        backgroundColor: primaryGreen600,
+        body: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            54.0.height,
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ValueListenableBuilder(
+                  valueListenable: currentIndex,
+                  builder: (context, value, child) {
+                    return KxPageControl(
+                      length: items.length,
+                      value: value,
+                      activeDotColor: KxColors.neutral700,
+                      inActiveDotColor: Colors.white,
+                    );
+                  },
+                ),
+              ],
+            ),
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.5,
+              child: PageView(
+                controller: controller,
+                onPageChanged: ((value) {
+                  currentIndex.value = value;
+                }),
+                children: List.generate(imageItems.length,
+                    (index) => Image.asset(imageItems[index])),
+              ),
+            ),
+          ],
+        ).padding());
   }
 
   _showModal() {
@@ -58,7 +99,17 @@ class _OnboardingPageState extends State<OnboardingPage> {
         barrierColor: Colors.transparent,
         enableDrag: false,
         builder: (context) {
-          return OnboardingBottomSheetWidget(items: items);
+          return OnboardingBottomSheetWidget(
+            items: items,
+            callback: (value) {
+              currentIndex.value = value;
+              controller.animateToPage(
+                value,
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+              );
+            },
+          );
         },
       );
     });

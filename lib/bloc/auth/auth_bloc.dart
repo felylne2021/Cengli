@@ -9,6 +9,7 @@ import 'package:cengli/data/modules/auth/auth_remote_repository.dart';
 import 'package:cengli/data/modules/auth/model/device_data.dart';
 import 'package:cengli/data/modules/auth/model/request/create_wallet_request.dart';
 import 'package:cengli/data/modules/auth/model/request/predict_signer_address_request.dart';
+import 'package:cengli/data/utils/collection_util.dart';
 import 'package:cengli/utils/signer.dart';
 import 'package:cengli/services/session_service.dart';
 import 'package:cengli/utils/utils.dart';
@@ -211,7 +212,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           userName: event.userName,
           name: event.userName,
           email: "",
-          walletAddress: walletAddress.walletAddress));
+          walletAddress: walletAddress.walletAddress,
+          userRole: UserRoleEnum.user.name));
 
       SessionService.setLogin(true);
       SessionService.setEncryptedPrivateKey(user?.encryptedPrivateKey ?? "");

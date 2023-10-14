@@ -1,15 +1,14 @@
 import 'package:cengli/presentation/launch_screen/onboarding_screen.dart';
 import 'package:cengli/presentation/membership/login_page.dart';
-import 'package:cengli/presentation/reusable/shapes/drag_handle_widget.dart';
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:kinetix/kinetix.dart';
-
-import '../../../values/values.dart';
 
 class OnboardingBottomSheetWidget extends StatelessWidget {
   final List<OnboardingItem> items;
+  final Function(int) callback;
 
-  const OnboardingBottomSheetWidget({super.key, required this.items});
+  const OnboardingBottomSheetWidget(
+      {super.key, required this.items, required this.callback});
 
   @override
   Widget build(BuildContext context) {
@@ -18,20 +17,24 @@ class OnboardingBottomSheetWidget extends StatelessWidget {
 
     return Container(
         padding: const EdgeInsets.only(top: 12, bottom: 60),
-        height: 0.5 * MediaQuery.of(context).size.height,
+        height: 0.4 * MediaQuery.of(context).size.height,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const DragHandleWidget(),
+            40.0.height,
             Expanded(
               child: PageView(
                 controller: controller,
-                onPageChanged: ((value) => activeIndex.value = value),
+                onPageChanged: ((value) {
+                  activeIndex.value = value;
+                  callback(value);
+                }),
                 children: List.generate(
                   items.length,
                   (index) => Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.start,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.max,
                     children: [
                       Text(
@@ -39,15 +42,15 @@ class OnboardingBottomSheetWidget extends StatelessWidget {
                         style: KxTypography(
                             type: KxFontType.subtitle1,
                             color: KxColors.neutral700),
-                        textAlign: TextAlign.center,
-                      ).padding(const EdgeInsets.symmetric(horizontal: 44)),
+                        textAlign: TextAlign.start,
+                      ).padding(const EdgeInsets.symmetric(horizontal: 16)),
                       const SizedBox(height: 19),
                       Text(
                         items[index].caption,
                         style: KxTypography(
                             type: KxFontType.body2, color: KxColors.neutral500),
-                        textAlign: TextAlign.center,
-                      ).padding(const EdgeInsets.symmetric(horizontal: 44))
+                        textAlign: TextAlign.start,
+                      ).padding(const EdgeInsets.symmetric(horizontal: 16))
                     ],
                   ),
                 ),
@@ -71,11 +74,11 @@ class OnboardingBottomSheetWidget extends StatelessWidget {
                                     .pushNamed(LoginPage.routeName);
                               }
                             },
-                            buttonText: value < 3 ? "Continue" : "Login",
-                            buttonColor: primaryGreen600,
+                            buttonText: value < 3 ? "Next" : "Login",
+                            buttonColor: KxColors.neutral700,
                             buttonTextStyle: KxTypography(
                                 type: KxFontType.buttonMedium,
-                                color: KxColors.neutral700),
+                                color: Colors.white),
                             buttonSize: KxButtonSizeEnum.medium,
                             buttonType: KxButtonTypeEnum.primary,
                             buttonShape: KxButtonShapeEnum.square,

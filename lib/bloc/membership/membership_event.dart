@@ -47,3 +47,10 @@ class ApproveEvent extends MembershipEvent {
   @override
   List<Object?> get props => [senderAddress];
 }
+
+class FetchP2pEvent extends MembershipEvent {
+  const FetchP2pEvent();
+
+  @override
+  List<Object?> get props => [];
+}

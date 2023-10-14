@@ -2,6 +2,7 @@ import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:cengli/data/modules/transactional/model/group.dart';
 import 'package:cengli/data/modules/transactional/transactional_local_repository.dart';
 import 'package:cengli/data/modules/transactional/transactional_remote_repository.dart';
+import 'package:cengli/data/utils/collection_util.dart';
 import 'package:cengli/utils/signer.dart';
 import 'package:cengli/services/push_protocol/push_restapi_dart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -56,7 +57,8 @@ class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
           id: group?.chatId ?? "",
           groupDescription: event.group.groupDescription,
           name: event.group.name,
-          members: event.group.members ?? []);
+          members: event.group.members ?? [],
+          groupType: GroupTypeEnum.general.name);
 
       await _transactionRepository.createGroup(storeGroup);
 
