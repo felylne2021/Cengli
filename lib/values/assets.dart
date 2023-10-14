@@ -30,4 +30,3 @@ const String IC_CHECK = _ICON_PATH + 'ic-check.svg';
 const String IC_XMARK = _ICON_PATH + 'ic-xmark.svg';
 const String IC_ASSET_USDC = _ICON_PATH + 'ic-asset-usdc.svg';
 const String IC_ASSET_USDT = _ICON_PATH + 'ic-asset-usdt.svg';
-const String IC_SUCCESS = _ICON_PATH + 'ic-success.svg';

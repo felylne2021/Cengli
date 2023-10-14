@@ -2,7 +2,6 @@ import 'package:cengli/data/network/header_interceptor.dart';
 import 'package:cengli/di/modules/auth_module.dart';
 import 'package:cengli/di/modules/membership_module.dart';
 import 'package:cengli/di/modules/transaction_module.dart';
-import 'package:cengli/di/modules/transfer_module.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,9 +17,7 @@ void injectModules() async {
   BaseOptions options = BaseOptions(
       connectTimeout: 6000, receiveTimeout: 60000, followRedirects: false);
   Dio dioCommeth = Dio(options);
-  Dio dioCengli = Dio(options);
   dioCommeth.options.baseUrl = "https://api.connect.cometh.io/";
-  dioCengli.options.baseUrl = FlavorConfig.baseUrl;
 
   Logger logger = Logger(printer: PrettyPrinter(colors: true));
   FirebaseFirestore db = FirebaseFirestore.instance;
@@ -30,10 +27,8 @@ void injectModules() async {
   NavigationService navigationService = NavigationService();
 
   dioCommeth.interceptors.add(HeaderInterceptor(logger));
-  dioCengli.interceptors.add(HeaderInterceptor(logger));
 
   locator.registerLazySingleton(() => dioCommeth, instanceName: 'commeth');
-  locator.registerLazySingleton(() => dioCengli, instanceName: 'cengli');
   locator.registerLazySingleton(() => database);
   locator.registerLazySingleton(() => dynamicLinkService);
   locator.registerLazySingleton(() => navigationService);
@@ -44,5 +39,4 @@ void injectModules() async {
   injectAuthModule();
   injectTransactionModule();
   injectMembershipModule();
-  injectTransferModule();
 }

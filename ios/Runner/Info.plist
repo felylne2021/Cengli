@@ -58,7 +58,5 @@
 	<string>This app needs access to your photos to set your profile picture with ease.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>This feature is used to allow you to attach photos directly to chats</string>
-  <key>NSCameraUsageDescription</key>
-  <string>This app needs camera access to scan QR codes</string>
 </dict>
 </plist>
