@@ -1,6 +1,7 @@
 import 'package:cengli/bloc/auth/auth.dart';
 import 'package:cengli/bloc/membership/membership.dart';
 import 'package:cengli/bloc/transactional/transactional.dart';
+import 'package:cengli/bloc/transfer/transfer.dart';
 import 'package:cengli/presentation/home/home_tab_bar.dart';
 import 'package:cengli/presentation/launch_screen/launch_screen.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
@@ -24,6 +25,7 @@ class _AppState extends State<App> {
   final TransactionalBloc _transactionalBloc = locator.get();
   final AuthBloc _authBloc = locator.get();
   final MembershipBloc _membershipBloc = locator.get();
+  final TransferBloc _transferBloc = locator.get();
 
   final _navigatorKey = locator<NavigationService>().navigatorKey;
   final _dynamicLink = locator<DynamicLinkService>();
@@ -88,6 +90,7 @@ class _AppState extends State<App> {
           BlocProvider(create: (context) => _authBloc),
           BlocProvider(create: (context) => _transactionalBloc),
           BlocProvider(create: (context) => _membershipBloc),
+          BlocProvider(create: (context) => _transferBloc)
         ],
         child: MaterialApp(
           supportedLocales: const [Locale('en')],

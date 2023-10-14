@@ -19,6 +19,11 @@ import '../presentation/home/component/request/request_page.dart';
 import '../presentation/home/home_tab_bar.dart';
 import '../presentation/membership/login_page.dart';
 import '../presentation/profile/profile_page.dart';
+import '../presentation/reusable/page/qr_scan_page.dart';
+import '../presentation/reusable/page/status_page.dart';
+import '../presentation/transfer/send_detail_page.dart';
+import '../presentation/transfer/send_page.dart';
+import '../presentation/transfer/send_summary_page.dart';
 
 class AppRouter {
   static Route? onGenerateRoute(RouteSettings settings) {
@@ -71,15 +76,12 @@ class AppRouter {
       case CreateGroupMemberPage.routeName:
         return CupertinoPageRoute(
             builder: (_) => const CreateGroupMemberPage(), settings: settings);
-
       case RequestPage.routeName:
         return CupertinoPageRoute(
             builder: (_) => const RequestPage(), settings: settings);
-
       case BillsPage.routeName:
         return CupertinoPageRoute(
             builder: (_) => const BillsPage(), settings: settings);
-
       case BillsDetailPage.routeName:
         return CupertinoPageRoute(
             builder: (_) => BillsDetailPage(
@@ -96,6 +98,29 @@ class AppRouter {
             builder: (_) =>
                 GroupDetailPage(chatId: settings.arguments as String),
             settings: settings);
+      case SendPage.routeName:
+        return CupertinoPageRoute(
+            builder: (_) =>
+                SendPage(argument: settings.arguments as SendArgument),
+            settings: settings);
+      case SendDetailPage.routeName:
+        return CupertinoPageRoute(
+            builder: (_) =>
+                SendDetailPage(argument: settings.arguments as SendArgument),
+            settings: settings);
+      case SendSummaryPage.routeName:
+        return CupertinoPageRoute(
+            builder: (_) =>
+                SendSummaryPage(argument: settings.arguments as SendArgument),
+            settings: settings);
+      case StatusPage.routeName:
+        return CupertinoPageRoute(
+            builder: (_) =>
+                StatusPage(argument: settings.arguments as StatusArgument),
+            settings: settings);
+      case QrScanPage.routeName:
+        return CupertinoPageRoute(
+            builder: (_) => const QrScanPage(), settings: settings);
     }
   }
 }

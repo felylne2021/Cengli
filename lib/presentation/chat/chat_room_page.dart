@@ -69,6 +69,7 @@ class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
           FocusScope.of(context).unfocus();
         },
         child: SafeArea(
+          bottom: false,
           child: Column(
             children: [
               Expanded(
@@ -128,7 +129,7 @@ class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
                               },
                             )),
               Container(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 60),
                 decoration:
                     KxShadowDecoration(style: KxShadowStyleEnum.elevationTwo),
                 child: Row(
