@@ -20,16 +20,6 @@ export const accountRoutes = async (server) => {
         return reply.code(400).send({ message: 'Missing address or chainId' });
       }
 
-      const availableChainId = await prismaClient.chain.findMany({
-        select: {
-          chainId: true
-        }
-      })
-
-      if (!availableChainId.map(chain => chain.chainId).includes(parseInt(chainId))) {
-        return reply.code(400).send({ message: `Invalid chainId, the available chainIds are: ${availableChainId.map(chain => chain.chainId)}` });
-      }
-
       const tokensToBeRetrieved = await prismaClient.token.findMany({
         orderBy: { address: 'asc' },
         where: { chainId: parseInt(chainId) }

@@ -84,7 +84,7 @@ export const CHAINS_CONFIGS = [
         decimals: 6,
         logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/3408.png",
         priceUsd: 1
-      }
-    ]
-  }
+      }
+    ]
+  }
 ]
