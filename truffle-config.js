@@ -8,13 +8,13 @@ module.exports = {
   networks: {
     goerli: {
       provider: () =>
-        new HDWalletProvider(privateKey, `wss://goerli.infura.io/ws/v3/${infuraProjectId}`),
+        new HDWalletProvider(privateKey, `wss://goerli.infura.io/ws/v3/0be86a45a4c3431398571a7c81165708`),
       network_id: 5,
       confirmations: 2,
-      timeoutBlocks: 3000,
-      networkCheckTimeout: 60000,
+      timeoutBlocks: 200,
+      networkCheckTimeout: 10000,
       skipDryRun: true,
-      gas: 4465030,
+      gas: 20000000,
     },
     mumbai: {
       provider: () =>
@@ -24,6 +24,7 @@ module.exports = {
       timeoutBlocks: 3000,
       networkCheckTimeout: 20000,
       skipDryRun: true,
+      gas: 20000000,
     }
   },
 
@@ -34,7 +35,7 @@ module.exports = {
   // Configure your compilers
   compilers: {
     solc: {
-      version: "0.8.19",
+      version: "0.8.20",
       settings: {
         optimizer: {
           enabled: true,
