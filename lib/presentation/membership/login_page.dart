@@ -1,4 +1,3 @@
-import 'package:cengli/presentation/membership/pin_input_page.dart';
 import 'package:cengli/presentation/reusable/appbar/custom_appbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -9,6 +8,7 @@ import '../../bloc/auth/auth.dart';
 import '../../services/services.dart';
 import '../../utils/widget_util.dart';
 import '../../values/values.dart';
+import '../home/home_tab_bar.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -35,7 +35,6 @@ class _LoginPageState extends State<LoginPage> {
                     state is CheckUsernameErrorState;
               }, listener: ((context, state) {
                 if (state is CheckUsernameSuccessState) {
-                  SessionService.setUsername(controller.text);
                   hideLoading();
                   if (state.isExist) {
                     errorMessage.value = "This username is taken";
@@ -47,6 +46,23 @@ class _LoginPageState extends State<LoginPage> {
                 } else if (state is CheckUsernameLoadingState) {
                   showLoading();
                 } else if (state is CheckUsernameErrorState) {
+                  showToast(state.message);
+                  hideLoading();
+                }
+              })),
+              BlocListener<AuthBloc, AuthState>(listenWhen: (previous, state) {
+                return state is CreateWalletSuccessState ||
+                    state is CreateWalletLoadingState ||
+                    state is CreateWalletErrorState;
+              }, listener: ((context, state) {
+                if (state is CreateWalletSuccessState) {
+                  hideLoading();
+                  SessionService.setUsername(controller.text);
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                      HomeTabBarPage.routeName, (route) => false);
+                } else if (state is CreateWalletLoadingState) {
+                  showLoading();
+                } else if (state is CreateWalletErrorState) {
                   showToast(state.message);
                   hideLoading();
                 }
@@ -91,12 +107,8 @@ class _LoginPageState extends State<LoginPage> {
                         return KxTextButton(
                                 isDisabled: !value,
                                 argument: KxTextButtonArgument(
-                                    onPressed: () => Navigator.of(context)
-                                        .pushNamed(PinInputPage.routeName,
-                                            arguments: PinInputArgument(
-                                                PinPurpose.login,
-                                                controller.text)),
-                                    buttonText: "Continue",
+                                    onPressed: () => _login(),
+                                    buttonText: "Submit",
                                     buttonColor: primaryGreen600,
                                     buttonTextStyle: KxTypography(
                                         type: KxFontType.buttonMedium,
@@ -110,7 +122,8 @@ class _LoginPageState extends State<LoginPage> {
                             .padding(
                                 const EdgeInsets.symmetric(horizontal: 16));
                       },
-                    )
+                    ),
+                    20.0.height,
                   ],
                 ),
               ),
@@ -119,5 +132,9 @@ class _LoginPageState extends State<LoginPage> {
 
   _checkUsername() {
     context.read<AuthBloc>().add(CheckUsernameEvent(controller.text));
+  }
+
+  _login() async {
+    context.read<AuthBloc>().add(CreateWalletEvent(controller.text));
   }
 }
