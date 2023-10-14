@@ -6,10 +6,10 @@
     "test": "test"
   },
   "scripts": {
-    "deploy-goerli": "truffle compile && truffle migrate --network goerli && truffle run verify CengliForwarder CengliRelayer --network goerli",
-    "deploy-mumbai": "truffle compile && truffle migrate --network mumbai && truffle run verify CengliForwarder CengliRelayer --network mumbai",
-    "verify-goerli": "truffle run verify CengliForwarder CengliRelayer --network goerli",
-    "verify-mumbai": "truffle run verify CengliForwarder CengliRelayer --network mumbai",
+    "deploy-goerli": "truffle compile && truffle migrate --network goerli && truffle run verify CengliForwarder --network goerli",
+    "deploy-mumbai": "truffle compile && truffle migrate --network mumbai && truffle run verify CengliForwarder --network mumbai",
+    "verify-goerli": "truffle run verify CengliForwarder --network goerli",
+    "verify-mumbai": "truffle run verify CengliForwarder --network mumbai",
     "deploy-test-goerli": "truffle compile && truffle migrate --network goerli && truffle run verify TestContract --network goerli",
     "start": "node index.js",
     "dev": "nodemon index.js"
