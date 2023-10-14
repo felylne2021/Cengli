@@ -32,13 +32,13 @@ describe("Cengli", function () {
       console.log("Error: ", error);
     }
 
-    // try{
-    //   const trf = await CengliContract.transferXchainUSDC(420, "0x00000000000000000000000024C4B9DeF461F9B7DfC1f72D09662C8F0E2825d3", 25);
-    //   console.log("Transaction: ", await trf.getTransaction());
-    // }
-    // catch(error){
-    //   console.log("Error: ", error);
-    // }
+    try{
+      const trf = await CengliContract.transferXchainUSDC(420, "0x00000000000000000000000024C4B9DeF461F9B7DfC1f72D09662C8F0E2825d3", 25);
+      console.log("Transaction: ", await trf.getTransaction());
+    }
+    catch(error){
+      console.log("Error: ", error);
+    }
   })
 
   

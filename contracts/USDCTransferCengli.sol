@@ -83,7 +83,7 @@ contract USDCTransferCengli is ReentrancyGuard{
         IERC20(USDCAddress).approve(CCTPAdapterAddress, 100000e6); // approve CCTP Adapter spending USDC of this contract
 
         owner = msg.sender;
-        IERC20(USDCAddress).approve(owner, 100000e6)
+        IERC20(USDCAddress).approve(owner, 100000e6);
     }
 
     receive() external payable {}
