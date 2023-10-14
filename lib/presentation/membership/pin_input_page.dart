@@ -125,7 +125,7 @@ class _PinInputPageState extends State<PinInputPage> {
                           buttonShape: KxButtonShapeEnum.square,
                           buttonContent: KxButtonContentEnum.text))
                   .padding(const EdgeInsets.symmetric(horizontal: 16)),
-              36.0.height,
+              16.0.height,
             ],
           ),
         ));

@@ -1,4 +1,3 @@
-import 'package:cengli/presentation/reusable/modal/qr_modal_page.dart';
 import 'package:cengli/utils/utils.dart';
 import 'package:cengli/utils/wallet_util.dart';
 import 'package:flutter/material.dart';
@@ -13,18 +12,14 @@ class CardWidget extends StatelessWidget {
       {super.key,
       required this.walletAddress,
       required this.tokenCount,
-      required this.balance,
-      required this.chainName,
-      required this.username});
+      required this.balance});
 
   final String walletAddress;
   final int tokenCount;
-  final String balance;
-  final String chainName;
-  final String username;
-
+  final double balance;
   @override
   Widget build(BuildContext context) {
+    //TODO: REFACTOR CARD CHANGE BASED ON WALLET SELECTED
     return Container(
       decoration: KxShadowDecoration(
           style: KxShadowStyleEnum.elevationOne,
@@ -74,7 +69,7 @@ class CardWidget extends StatelessWidget {
                   ),
                   40.0.height,
                   Text(
-                    balance,
+                    '\$$balance',
                     style: KxTypography(
                         type: KxFontType.headline4, color: KxColors.neutral700),
                   ),
@@ -88,17 +83,7 @@ class CardWidget extends StatelessWidget {
                             type: KxFontType.caption2,
                             color: KxColors.neutral700),
                       ),
-                      InkWell(
-                          onTap: () {
-                            KxModalUtil().showGeneralModal(
-                                context,
-                                QrModalPage(
-                                  address: walletAddress,
-                                  chainName: chainName,
-                                  username: username,
-                                ));
-                          },
-                          child: SvgPicture.asset(IC_QR_CODE))
+                      SvgPicture.asset(IC_QR_CODE)
                     ],
                   )
                 ],

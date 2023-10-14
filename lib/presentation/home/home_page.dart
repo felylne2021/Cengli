@@ -1,23 +1,19 @@
 import 'package:cengli/bloc/transactional/transactional.dart';
-import 'package:cengli/bloc/transfer/transfer.dart';
-import 'package:cengli/data/modules/auth/model/user_profile.dart';
+import 'package:cengli/data/dummy_data/asset/asset_dummy_data.dart';
+import 'package:cengli/data/dummy_data/network/network_dummy_data.dart';
+import 'package:cengli/data/dummy_data/transaction/transaction_dummy_data.dart';
 import 'package:cengli/data/modules/transactional/model/expense.dart';
-import 'package:cengli/data/modules/transfer/model/response/balance_response.dart';
-import 'package:cengli/data/modules/transfer/model/response/chain_response.dart';
+import 'package:cengli/presentation/chat/chat_page.dart';
 import 'package:cengli/presentation/home/component/bills/bills_page.dart';
 import 'package:cengli/presentation/reusable/notifier/double_notifier.dart';
-import 'package:cengli/presentation/transfer/send_detail_page.dart';
-import 'package:cengli/presentation/transfer/send_page.dart';
 import 'package:cengli/services/services.dart';
-import 'package:flutter/cupertino.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:kinetix/kinetix.dart';
-import 'package:intl/intl.dart';
 
-import '../../data/modules/transfer/model/response/transaction_response.dart';
-import '../../utils/utils.dart';
+import '../../bloc/auth/auth.dart';
 import '../../values/values.dart';
 import '../reusable/modal/modal_page.dart';
 import '../reusable/segmented_control/segmented_control.dart';
@@ -37,27 +33,26 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    _insertData();
     _getWalletAddress();
-    _getChains();
     //TODO: unhide once transaction is confirmed from API
     // _getExpenses();
   }
 
-  ValueNotifier<ChainResponse> selectedChain =
-      ValueNotifier(const ChainResponse());
+  ValueNotifier<KxSelectedListItem> selectedAssetItem = ValueNotifier(
+      KxSelectedListItem(chains[0].title, false, imagePath: IC_POLYGON));
   List<String> segmentedTitles = ['Assets', 'Transactions'];
-  List<ChainResponse> chains = [];
+  List<KxSelectedListItem> assetItems = [];
   ValueNotifier<int> currentIndex = ValueNotifier(0);
   ValueNotifier<String> walletAddress = ValueNotifier('');
   ValueNotifier<List<Expense>> expenseResponse = ValueNotifier([]);
-  ValueNotifier<List<TransactionResponse>> transactions = ValueNotifier([]);
-  ValueNotifier<List<BalanceResponse>> assets = ValueNotifier([]);
 
-  String username = "";
+  _checkWallet() async {
+    context.read<AuthBloc>().add(const CheckWalletEvent());
+  }
 
   _getWalletAddress() async {
     walletAddress.value = await SessionService.getWalletAddress();
-    username = await SessionService.getUsername();
   }
 
   _getExpenses() async {
@@ -66,203 +61,127 @@ class _HomePageState extends State<HomePage> {
         const FetchExpensesStoreEvent("983abe5e-078d-4a82-8f14-cd88997992e1"));
   }
 
+  _insertData() {
+    for (var c in chains) {
+      KxSelectedListItem item =
+          KxSelectedListItem(c.title, false, imagePath: c.image);
+      assetItems.add(item);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         backgroundColor: KxColors.neutral50,
         appBar: homePageAppBar(context),
-        body: MultiBlocListener(listeners: [
-          BlocListener<TransferBloc, TransferState>(
-              listenWhen: (previous, state) {
-            return state is GetChainsErrorState ||
-                state is GetChainsSuccessState;
-          }, listener: ((context, state) {
-            if (state is GetChainsSuccessState) {
-              _getAssets(state.chains.first.chainId ?? 0);
-              selectedChain.value = state.chains.first;
-              chains = state.chains;
-              _getUserId();
-            } else if (state is GetChainsErrorState) {
-              showToast(state.message);
-            }
-          })),
-          BlocListener<TransferBloc, TransferState>(
-              listenWhen: (previous, state) {
-            return state is GetAssetsErrorState ||
-                state is GetAssetsSuccessState;
-          }, listener: ((context, state) {
-            if (state is GetAssetsErrorState) {
-              showToast(state.message);
-            } else if (state is GetAssetsSuccessState) {
-              assets.value = state.assets.tokens ?? [];
-            }
-          })),
-          BlocListener<TransferBloc, TransferState>(
-              listenWhen: (previous, state) {
-            return state is GetTransactionsErrorState;
-          }, listener: ((context, state) {
-            if (state is GetTransactionsErrorState) {
-              showToast(state.message);
-            } else if (state is GetTransactionsSuccessState) {
-              transactions.value = state.transactions;
-            }
-          })),
-        ], child: _body()));
-  }
-
-  Widget _body() {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            DoubleValueListenableBuilder(
-                first: walletAddress,
-                second: selectedChain,
-                builder: (context, address, chain, child) {
-                  return BlocBuilder<TransferBloc, TransferState>(
-                    buildWhen: (previous, state) {
-                      return state is GetAssetsSuccessState ||
-                          state is GetAssetsLoadingState;
-                    },
-                    builder: (context, state) {
-                      if (state is GetAssetsSuccessState) {
-                        return CardWidget(
-                          walletAddress: address,
-                          balance: NumberFormat.currency(
-                                  locale: 'en_US', symbol: '\$')
-                              .format(state.assets.totalBalanceUsd),
-                          tokenCount: state.assets.tokens?.length ?? 1,
-                          chainName: (chain.chainName ?? "").split(" ").first,
-                          username: username,
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Column(
+              children: [
+                ValueListenableBuilder(
+                    valueListenable: walletAddress,
+                    builder: (context, address, child) {
+                      return CardWidget(
+                        walletAddress: address,
+                        balance: 1245,
+                        tokenCount: 3,
+                      );
+                    }),
+                24.0.height,
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 31),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      //TODO: FILL ONTAP ACTION
+                      ActionWidget(
+                          title: 'Send',
+                          bgColor: softGreen,
+                          iconPath: IC_SEND,
+                          onTap: () {}),
+                      ActionWidget(
+                          title: 'Request',
+                          bgColor: softPurple,
+                          iconPath: IC_REQUEST,
+                          onTap: () => Navigator.of(context)
+                              .pushNamed(RequestPage.routeName)),
+                      ActionWidget(
+                          title: 'Bills',
+                          bgColor: softBlue,
+                          iconPath: IC_BILLS,
+                          onTap: () => Navigator.of(context)
+                              .pushNamed(BillsPage.routeName)),
+                    ],
+                  ),
+                ),
+                30.0.height,
+                SegmentedControl(
+                  activeColor: primaryGreen600,
+                  onSelected: (index) {
+                    currentIndex.value = index;
+                  },
+                  title: segmentedTitles,
+                  initialIndex: currentIndex.value,
+                  segmentType: SegmentedControlEnum.ghost,
+                  padding: 50,
+                ),
+                14.0.height,
+                //TODO: refactor once transaction is confirmed in API
+                DoubleValueListenableBuilder(
+                  first: currentIndex,
+                  second: expenseResponse,
+                  builder: (context, currIndex, expense, child) {
+                    return Column(
+                        children: List.generate(
+                            currIndex == 1 ? expenses.length : assets.length,
+                            (index) {
+                      if (currIndex == 1) {
+                        final exp = expenses[index];
+                        return Column(
+                          children: [
+                            HomeItemsWidget(
+                                title: exp.title ?? "Default Expense Title",
+                                subtitle: exp.date ?? "9 Oct 2023, 17:45PM",
+                                value: exp.amount ?? "0.0 Rp"),
+                            const Divider(
+                              thickness: 1,
+                              color: KxColors.neutral200,
+                            )
+                          ],
                         );
                       } else {
-                        return CardWidget(
-                            walletAddress: address,
-                            tokenCount: 1,
-                            balance: "\$0",
-                            chainName: "",
-                            username: username);
-                      }
-                    },
-                  );
-                }),
-            24.0.height,
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 31),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  //TODO: FILL ONTAP ACTION
-                  ActionWidget(
-                      title: 'Send',
-                      bgColor: softGreen,
-                      iconPath: IC_SEND,
-                      onTap: () => Navigator.of(context).pushNamed(
-                          SendPage.routeName,
-                          arguments: SendArgument(
-                              selectedChain.value,
-                              const BalanceResponse(),
-                              assets.value,
-                              chains,
-                              const UserProfile(),
-                              0))),
-                  ActionWidget(
-                      title: 'Request',
-                      bgColor: softPurple,
-                      iconPath: IC_REQUEST,
-                      onTap: () => Navigator.of(context)
-                          .pushNamed(RequestPage.routeName)),
-                  ActionWidget(
-                      title: 'Bills',
-                      bgColor: softBlue,
-                      iconPath: IC_BILLS,
-                      onTap: () =>
-                          Navigator.of(context).pushNamed(BillsPage.routeName)),
-                ],
-              ),
-            ),
-            30.0.height,
-            SegmentedControl(
-              activeColor: primaryGreen600,
-              onSelected: (index) {
-                currentIndex.value = index;
-              },
-              title: segmentedTitles,
-              initialIndex: currentIndex.value,
-              segmentType: SegmentedControlEnum.ghost,
-              padding: 50,
-            ),
-            14.0.height,
-            DoubleValueListenableBuilder(
-              first: currentIndex,
-              second: expenseResponse,
-              builder: (context, currIndex, expense, child) {
-                switch (currIndex) {
-                  case 1:
-                    return ValueListenableBuilder(
-                      valueListenable: transactions,
-                      builder: (context, value, child) {
                         return Column(
-                            children: List.generate(value.length, (index) {
-                          return Column(
-                            children: [
-                              HomeItemsWidget(
-                                title: value[index].note ?? "",
-                                subtitle: DateFormat('d MMM y, h:mma').format(
-                                    DateTime.parse(
-                                        value[index].createdAt ?? "")),
-                                value: NumberFormat.currency(
-                                        locale: 'en_US', symbol: '\$')
-                                    .format(value[index].amount),
-                              ),
-                              const Divider(
-                                thickness: 1,
-                                color: KxColors.neutral200,
-                              )
-                            ],
-                          );
-                        }));
-                      },
-                    );
-                  default:
-                    return ValueListenableBuilder(
-                      valueListenable: assets,
-                      builder: (context, value, child) {
-                        return Column(
-                            children: List.generate(value.length, (index) {
-                          return Column(
-                            children: [
-                              HomeItemsWidget(
-                                title: value[index].token?.name ?? "",
+                          children: [
+                            HomeItemsWidget(
+                                title:
+                                    assets[index].assetType ?? "Default Type",
                                 subtitle:
-                                    "${value[index].balance} ${value[index].token?.symbol}",
-                                networkImage: value[index].token?.logoURI,
-                                value: NumberFormat.currency(
-                                        locale: 'en_US', symbol: '\$')
-                                    .format(value[index].balanceUSd),
-                              ),
-                              const Divider(
-                                thickness: 1,
-                                color: KxColors.neutral200,
-                              )
-                            ],
-                          );
-                        }));
-                      },
-                    );
-                }
-              },
+                                    "${assets[index].count} ${assets[index].unit}",
+
+                                //TODO: unhide once svg ready
+                                // imagePath:
+                                //     assets[index].imagePath ?? IC_ETHEREUM,
+                                value: "\$${assets[index].value}"),
+                            const Divider(
+                              thickness: 1,
+                              color: KxColors.neutral200,
+                            )
+                          ],
+                        );
+                      }
+                    }));
+                  },
+                ),
+              ],
             ),
-          ],
-        ),
-      ),
-    );
+          ),
+        ));
   }
 
   PreferredSize homePageAppBar(BuildContext context) {
     return PreferredSize(
-      preferredSize: const Size.fromHeight(105),
+      preferredSize: const Size.fromHeight(84),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
@@ -281,21 +200,16 @@ class _HomePageState extends State<HomePage> {
                           KxGeneralListModalArgument argument =
                               KxGeneralListModalArgument(
                             modalTitle: 'Select Network',
-                            items: [],
-                            selectedItem: KxSelectedListItem("", false),
+                            items: assetItems,
+                            selectedItem: selectedAssetItem.value,
                             modalListType: KxModalListType.general,
                           );
                           KxModalUtil()
                               .showGeneralModal(
-                                  context,
-                                  ModalListPage(
-                                      argument: argument,
-                                      isNetworkImage: true,
-                                      chains: chains))
+                                  context, ModalListPage(argument: argument))
                               .then((value) {
                             if (value != null) {
-                              selectedChain.value = value;
-                              _getAssets(selectedChain.value.chainId ?? 0);
+                              selectedAssetItem.value = value;
                             }
                           });
                         },
@@ -305,25 +219,20 @@ class _HomePageState extends State<HomePage> {
                               color: KxColors.neutral200,
                               borderRadius: BorderRadius.circular(20)),
                           child: ValueListenableBuilder(
-                              valueListenable: selectedChain,
+                              valueListenable: selectedAssetItem,
                               builder: (context, item, child) {
                                 return Row(
                                   mainAxisAlignment:
                                       MainAxisAlignment.spaceEvenly,
                                   children: [
-                                    if (item.logoURI != null)
-                                      Image.network(
-                                        item.logoURI ?? "",
-                                        height: 24,
-                                        width: 24,
-                                      )
-                                    else
-                                      const CupertinoActivityIndicator(),
+                                    SvgPicture.asset(
+                                      item.imagePath,
+                                      height: 24,
+                                      width: 24,
+                                    ),
                                     8.0.width,
                                     Text(
-                                      (item.chainName ?? "Polygon")
-                                          .split(" ")
-                                          .first,
+                                      item.title,
                                       style: KxTypography(
                                           type: KxFontType.fieldText2,
                                           color: KxColors.neutral700),
@@ -339,27 +248,19 @@ class _HomePageState extends State<HomePage> {
                         ),
                       )
                     ],
-                  ).padding(const EdgeInsets.fromLTRB(16, 50, 16, 12)))),
+                  ).padding(const EdgeInsets.fromLTRB(16, 30, 16, 12)))),
         ],
       ),
     );
   }
 
-  _getAssets(int chainId) {
-    context.read<TransferBloc>().add(GetAssetsEvent(chainId));
-  }
-
-  _getUserId() async {
-    final userId = await SessionService.getWalletAddress();
-    _getTransactions(userId);
-  }
-
-  _getTransactions(String userId) {
-    context.read<TransferBloc>().add(GetTransactionsEvent(userId));
-  }
-
-  _getChains() {
-    context.read<TransferBloc>().add(const GetChainsEvent());
+  _navigateToConversation() async {
+    // final vm = ref.watch(accountProvider);
+    // final walletAddress = await SessionService.getWalletAddress();
+    // final pgpPrivateKey = await SessionService.getPgpPrivateKey();
+    // vm.creatSocketConnection(walletAddress, pgpPrivateKey);
+    if (!mounted) return;
+    Navigator.of(context).pushNamed(ChatPage.routeName);
   }
 }
 
@@ -369,11 +270,11 @@ class HomeItemsWidget extends StatelessWidget {
       required this.title,
       required this.subtitle,
       required this.value,
-      this.networkImage});
+      this.imagePath = IC_ETHEREUM});
   final String title;
   final String subtitle;
   final String value;
-  final String? networkImage;
+  final String imagePath;
 
   @override
   Widget build(BuildContext context) {
@@ -383,19 +284,11 @@ class HomeItemsWidget extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.start,
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          if (networkImage != null)
-            Image.network(
-              networkImage ?? "",
-              height: 40,
-              width: 40,
-            )
-          else
-            Container(
-              height: 40,
-              width: 40,
-              decoration: const BoxDecoration(
-                  color: KxColors.neutral200, shape: BoxShape.circle),
-            ),
+          SvgPicture.asset(
+            imagePath,
+            height: 40,
+            width: 40,
+          ),
           16.0.width,
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
