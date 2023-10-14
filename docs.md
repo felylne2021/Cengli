@@ -1,36 +1,24 @@
 Endpoint: https://cengli.engowl.studio
 
-# API Documentation for Token Management
-
-## Overview
-
-This API documentation provides details on how to interact with the backend services for managing user assets and transactions. It covers three main endpoints:
-
-1. **Get User Assets**: To fetch the assets owned by a user.
-2. **Send Token**: To initiate a token transfer between users.
-3. **Get User Transactions**: To fetch the transaction history of a user.
+# Token Management API Documentation
 
 ---
 
-## 1. Get User Assets
-
-### Endpoint
+## 1. **Fetch User Assets**
 
 **GET** `{{baseUrl}}/account/assets`
 
-### Query Parameters
+| Parameter | Description |
+|-----------|-------------|
+| address   | User's Ethereum address |
+| chainId   | Blockchain network ID |
 
-- `address`: The Ethereum address of the user.
-- `chainId`: The ID of the blockchain network.
-
-### Example Request
-
+**Example Request:**
 ```http
-GET {{baseUrl}}/account/assets?address=0x278A2d5B5C8696882d1D2002cE107efc74704ECf&chainId=5
+GET {{baseUrl}}/account/assets?address=0x278...04ECf&chainId=5
 ```
 
-### Example Response
-
+**Example Response:**
 ```json
 {
   "totalBalanceUsd": 100,
@@ -39,7 +27,7 @@ GET {{baseUrl}}/account/assets?address=0x278A2d5B5C8696882d1D2002cE107efc74704EC
       "balance": 123,
       "balanceUSd": 123,
       "token": {
-        "address": "0xe05606174bac4A6364B31bd0eCA4bf4dD368f8C6",
+        "address": "0xe05...8C6",
         "chainId": 420,
         "name": "USD Coin",
         "symbol": "USDC",
@@ -54,42 +42,38 @@ GET {{baseUrl}}/account/assets?address=0x278A2d5B5C8696882d1D2002cE107efc74704EC
 
 ---
 
-## 2. Send Token
-
-### Endpoint
+## 2. **Initiate Token Transfer**
 
 **POST** `{{baseUrl}}/transfer/send`
 
-### Request Body
+| Parameter           | Description |
+|---------------------|-------------|
+| fromUserId          | Sender's user ID |
+| destinationUserId   | Receiver's user ID |
+| fromAddress         | Sender's Ethereum address |
+| destinationAddress  | Receiver's Ethereum address |
+| tokenAddress        | Token contract address |
+| chainId             | Blockchain network ID |
+| amount              | Amount to send |
+| note                | Optional note |
+| signer              | Sender's signature |
 
-- `fromUserId`: Sender's user ID.
-- `destinationUserId`: Receiver's user ID.
-- `fromAddress`: Sender's Ethereum address.
-- `destinationAddress`: Receiver's Ethereum address.
-- `tokenAddress`: Token contract address.
-- `chainId`: Blockchain network ID.
-- `amount`: Amount to send.
-- `note`: Optional note.
-- `signer`: Signature of the sender.
-
-### Example Request
-
+**Example Request:**
 ```json
 {
   "fromUserId": "dummyFromUserId",
   "destinationUserId": "dummyDestinationUserId",
   "fromAddress": "dummyFromAddress",
   "destinationAddress": "dummyDestinationAddress",
-  "tokenAddress": "0x07865c6e87b9f70255377e024ace6630c1eaa37f",
-  "chainId": 5,
+  "tokenAddress": "0x999...f97",
+  "chainId": 80001,
   "amount": 100,
   "note": "dummyNote",
   "signer": "dummySigner"
 }
 ```
 
-### Example Response
-
+**Example Response:**
 ```json
 {
   "id": "334b475c-9864-4998-bf23-d5929577e1e0",
@@ -97,8 +81,8 @@ GET {{baseUrl}}/account/assets?address=0x278A2d5B5C8696882d1D2002cE107efc74704EC
   "destinationUserId": "dummyDestinationUserId",
   "fromAddress": "dummyFromAddress",
   "destinationAddress": "dummyDestinationAddress",
-  "chainId": 5,
-  "tokenAddress": "0x07865c6e87b9f70255377e024ace6630c1eaa37f",
+  "chainId": 80001,
+  "tokenAddress": "0x078...a37f",
   "amount": 100,
   "note": "dummyNote",
   "createdAt": "2023-10-12T17:18:55.747Z",
@@ -108,24 +92,20 @@ GET {{baseUrl}}/account/assets?address=0x278A2d5B5C8696882d1D2002cE107efc74704EC
 
 ---
 
-## 3. Get User Transactions
-
-### Endpoint
+## 3. **Fetch User Transactions**
 
 **GET** `{{baseUrl}}/account/transactions`
 
-### Query Parameters
+| Parameter | Description |
+|-----------|-------------|
+| userId    | User ID |
 
-- `userId`: The user ID for whom the transactions are to be fetched.
-
-### Example Request
-
+**Example Request:**
 ```http
 GET {{baseUrl}}/account/transactions?userId=dummyFromUserId
 ```
 
-### Example Response
-
+**Example Response:**
 ```json
 [
   {
@@ -134,13 +114,52 @@ GET {{baseUrl}}/account/transactions?userId=dummyFromUserId
     "destinationUserId": "dummyDestinationUserId",
     "fromAddress": "dummyFromAddress",
     "destinationAddress": "dummyDestinationAddress",
-    "chainId": 5,
-    "tokenAddress": "0x07865c6e87b9f70255377e024ace6630c1eaa37f",
+    "chainId": 80001,
+    "tokenAddress": "0x078...a37f",
     "amount": 100,
     "note": "dummyNote",
     "createdAt": "2023-10-12T17:18:55.747Z",
     "updatedAt": "2023-10-12T17:18:55.747Z"
   }
-  // More transactions
+]
+```
+
+---
+
+## 4. **Fetch Blockchain Info**
+
+**GET** `{{baseUrl}}/info/chains`
+
+**Example Response:**
+```json
+[
+  {
+    "chainId": 80001,
+    "chainName": "Polygon Mumbai Testnet",
+    "rpcUrl": "https://polygon-mumbai-bor.publicnode.com",
+    "nativeCurrency": {
+      "name": "Matic",
+      "symbol": "MATIC",
+      "decimals": 18
+    },
+    "blockExplorer": "https://mumbai.polygonscan.com",
+    "logoURI": "https://s2.coinmarketcap.com/static/img/coins/64x64/3408.png",
+    "createdAt": "2023-10-13T11:46:21.915Z",
+    "updatedAt": "2023-10-13T11:49:00.566Z"
+  },
+  {
+    "chainId": 43113,
+    "chainName": "Avalanche Fuji Testnet",
+    "rpcUrl": "https://avalanche-fuji-c-chain.publicnode.com",
+    "nativeCurrency": {
+      "name": "Avalanche",
+      "symbol": "AVAX",
+      "decimals": 18
+    },
+    "blockExplorer": "https://testnet.snowtrace.io",
+    "logoURI": "https://s2.coinmarketcap.com/static/img/coins/64x64/5805.png",
+    "createdAt": "2023-10-13T11:46:22.251Z",
+    "updatedAt": "2023-10-13T11:49:00.899Z"
+  }
 ]
 ```

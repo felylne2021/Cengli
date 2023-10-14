@@ -5,6 +5,7 @@ export const dataWorker = async (server) => {
   const initializeTokensAndChains = async () => {
     try {
       for (const chainConfig of CHAINS_CONFIGS) {
+        console.log('Initializing chain: ', chainConfig.logoURI)
         await prismaClient.chain.upsert({
           where: { chainId: chainConfig.chainId },
           update: {
@@ -12,6 +13,7 @@ export const dataWorker = async (server) => {
             rpcUrl: chainConfig.rpcUrl,
             nativeCurrency: chainConfig.nativeCurrency,
             blockExplorer: chainConfig.blockExplorerUrls,
+            logoURI: chainConfig.logoURI
           },
           create: {
             chainId: chainConfig.chainId,
@@ -19,6 +21,7 @@ export const dataWorker = async (server) => {
             rpcUrl: chainConfig.rpcUrl,
             nativeCurrency: chainConfig.nativeCurrency,
             blockExplorer: chainConfig.blockExplorerUrls,
+            logoURI: chainConfig.logoURI
           },
         });
 

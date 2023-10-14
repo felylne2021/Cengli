@@ -6,6 +6,16 @@ export const accountRoutes = async (server) => {
     try {
       const { address, chainId } = request.query;
 
+      const availableChainId = await prismaClient.chain.findMany({
+        select: {
+          chainId: true
+        }
+      })
+
+      if (!availableChainId.map(chain => chain.chainId).includes(parseInt(chainId))) {
+        return reply.code(400).send({ message: `Invalid chainId, the available chainIds are: ${availableChainId.map(chain => chain.chainId)}` });
+      }
+
       if (!address || !chainId) {
         return reply.code(400).send({ message: 'Missing address or chainId' });
       }

@@ -16,6 +16,7 @@ model Chain {
   rpcUrl         String
   nativeCurrency Json
   blockExplorer  String
+  logoURI        String
 
   tokens Token[]
 
@@ -33,7 +34,7 @@ model Token {
   logoURI  String
   priceUsd Float
 
-  chain        Chain         @relation(fields: [chainId], references: [chainId])
+  chain        Chain         @relation(fields: [chainId], references: [chainId], onDelete: Cascade)
   transactions Transaction[]
 
   createdAt DateTime @default(now())

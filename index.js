@@ -12,6 +12,7 @@ import { dataWorker } from './workers/dataWorker.js';
 
 import { accountRoutes } from './routes/accountRoutes.js';
 import { transferRoutes } from './routes/transferRoutes.js';
+import { infoRoutes } from './routes/infoRoutes.js';
 import { docs } from './routes/docs.js';
 
 const fastify = Fastify({ logger: false });
@@ -44,6 +45,10 @@ fastify.register(accountRoutes, {
 
 fastify.register(transferRoutes, {
   prefix: '/transfer'
+});
+
+fastify.register(infoRoutes, {
+  prefix: '/info'
 });
 
 // Docs
