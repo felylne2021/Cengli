@@ -5,6 +5,7 @@ export const CHAINS_CONFIGS = [
     chainId: 5,
     chainName: 'Goerli',
     rpcUrl: 'https://goerli.infura.io/v3',
+    logoURI: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png',
     nativeCurrency: {
       name: 'Goerli Ether',
       symbol: 'GTH',
@@ -26,6 +27,7 @@ export const CHAINS_CONFIGS = [
     chainId: 420,
     chainName: 'Optimism Goerli',
     rpcUrl: 'https://endpoints.omniatech.io/v1/op/goerli/public',
+    logoURI: 'https://s2.coinmarketcap.com/static/img/coins/64x64/11840.png',
     nativeCurrency: {
       name: 'Goerli Ether',
       symbol: 'GTH',
