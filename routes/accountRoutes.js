@@ -15,10 +15,12 @@ export const accountRoutes = async (server) => {
 
       const tokensToBeRetrieved = await prismaClient.token.findMany({
         orderBy: { address: 'asc' },
-        where: { chainId: parseInt(chainId) }
+        // where: { chainId: parseInt(chainId) }
+        where: { chainId: 5 }
       });
 
-      const contractByChain = getContractByChain(parseInt(chainId));
+      // const contractByChain = getContractByChain(parseInt(chainId));
+      const contractByChain = getContractByChain(5);
 
       const result = await retrieveBalances(tokensToBeRetrieved, address, contractByChain);
       const { totalBalanceUsd, tokens } = result;
@@ -75,6 +77,7 @@ const retrieveBalances = async (tokensToBeRetrieved, address, contractByChain) =
 
   for (const token of tokensToBeRetrieved) {
     let balance = Number(await contractByChain.checkBalance(address, token.address));
+    console.log('Balance:', balance);
     totalBalanceUsd += balance;
 
     tokens.push({
