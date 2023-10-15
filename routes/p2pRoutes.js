@@ -2,6 +2,50 @@ import { prismaClient } from "../utils/prisma.js";
 import { validateAvailableChainId, validateRequiredFields } from "../utils/validator.js";
 
 export const p2pRoutes = async (server) => {
+  // Add a new partner
+  server.post('/add-partner', async (request, reply) => {
+    try {
+      const { userId, userAddress } = request.body;
+      await validateRequiredFields(request.body, ['userId', 'userAddress'], reply);
+
+      // check if partner already exists
+      const partnerExists = await prismaClient.p2PPartner.findFirst({
+        where: {
+          userId: userId,
+          address: userAddress
+        },
+        include: {
+          balances: {
+            where: {
+              token: {
+                symbol: 'USDC'
+              }
+            },
+            include: {
+              token: true
+            }
+          }
+        }
+      })
+
+      if (partnerExists) {
+        return reply.code(400).send(partnerExists);
+      }
+
+      const partner = await prismaClient.p2PPartner.create({
+        data: {
+          userId: userId,
+          address: userAddress
+        }
+      })
+      return reply.send(partner);
+    } catch (error) {
+      console.log('Error adding partner: ', error);
+      return reply.code(500).send({ message: error });
+    }
+  })
+
+
   // Fetch all active listings
   // TODO: Implement listing retrieval from the database
   server.get('/listings', async (request, reply) => {
@@ -149,7 +193,7 @@ export const p2pRoutes = async (server) => {
   // TODO: Implement new order creation, change listing status to WFPA
   server.post('/orders', async (request, reply) => {
     try {
-      const { listingId, buyerUserId, buyerAddress, amount, chatId, destinationChainId } = request.body;
+      const { listingId, buyerUserId, buyerAddress, amount, chatId, destinationChainId, orderId } = request.body;
 
       await validateRequiredFields(request.body, ['listingId', 'buyerUserId', 'buyerAddress', 'amount', 'chatId', 'destinationChainId'], reply);
       await validateAvailableChainId([parseInt(destinationChainId)], reply);
@@ -159,11 +203,23 @@ export const p2pRoutes = async (server) => {
         where: {
           id: listingId,
           isActive: true,
-
         }
       }).catch(error => {
         return reply.code(400).send({ message: 'Invalid listing, make sure the listing is active or exists' });
       })
+
+      // if order id is provided, validate it's unique
+      if (orderId) {
+        const orderExists = await prismaClient.p2POrder.findFirst({
+          where: {
+            id: orderId
+          }
+        })
+
+        if (orderExists) {
+          return reply.code(400).send({ message: 'Invalid order id, make sure the order id is unique' });
+        }
+      }
 
       // TODO: validate buyer has enough balance
 
@@ -173,6 +229,7 @@ export const p2pRoutes = async (server) => {
 
       const order = await prismaClient.p2POrder.create({
         data: {
+          id: orderId ? orderId : undefined,
           listingId: listingId,
           buyerUserId: buyerUserId,
           buyerAddress: buyerAddress,
@@ -192,6 +249,7 @@ export const p2pRoutes = async (server) => {
 
       return reply.send(order);
     } catch (error) {
+      console.log('Error creating order: ', error);
       return reply.code(500).send({ message: error });
     }
   });
