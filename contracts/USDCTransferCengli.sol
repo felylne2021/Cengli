@@ -103,23 +103,17 @@ contract USDCTransferCengli is ReentrancyGuard{
     }
     
     function transferXchainUSDC(uint32 _destinationDomain, bytes32 _recipientAddress, uint256 _amount) nonReentrant external returns (bytes32) {
-        // try transferFrom msg.sender to contract _amount of USDC to reduce multiple calls
-        bytes32 messageId = ICCTPAdapter(CCTPAdapterAddress).transferRemote(_destinationDomain, _recipientAddress, _amount);
-        emit SentTransferRemote(messageId, _destinationDomain, _recipientAddress, _amount);
-
-        // Get the required payment from the IGP.
-        uint256 _gasAmount = ICCTPAdapter(CCTPAdapterAddress).gasAmount();
+         // Get the required payment from the IGP.
+        uint256 _gasLimit = ICCTPAdapter(CCTPAdapterAddress).gasAmount();
         uint256 quote = IInterchainGasPaymaster(IGPAddress).quoteGasPayment(
             _destinationDomain,
-            _gasAmount * 2
+            _gasLimit
         );
+        
+        // try transferFrom msg.sender to contract _amount of USDC to reduce multiple calls
+        bytes32 messageId = ICCTPAdapter(CCTPAdapterAddress).transferRemote{value:quote}(_destinationDomain, _recipientAddress, _amount);
+        emit SentTransferRemote(messageId, _destinationDomain, _recipientAddress, _amount);
 
-        IInterchainGasPaymaster(IGPAddress).payForGas{ value: quote }(
-            messageId, // The ID of the message that was just dispatched
-            _destinationDomain, // The destination domain of the message
-            _gasAmount * 2, // to use in the recipient's handle function
-            address(this) // refunds go to payer
-        );
         return messageId;
     }
 
