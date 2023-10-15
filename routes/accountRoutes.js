@@ -19,7 +19,7 @@ export const accountRoutes = async (server) => {
       });
 
       const contractByChain = getContractByChain(parseInt(chainId));
-
+      
       const result = await retrieveBalances(tokensToBeRetrieved, address, contractByChain);
       const { totalBalanceUsd, tokens } = result;
 

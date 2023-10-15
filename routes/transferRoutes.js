@@ -31,6 +31,14 @@ export const transferRoutes = async (server) => {
 
       await validateAvailableChainId([fromChainId, destinationChainId], reply);
 
+      // process txn
+      if (fromChainId == destinationChainId){
+        // process same chain
+      }
+      else{
+        // process cross chain
+      }
+
       const transaction = await prismaClient.transaction.create({
         data: {
           fromUserId: fromUserId,
