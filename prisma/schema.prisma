@@ -36,6 +36,7 @@ model Token {
 
   chain        Chain         @relation(fields: [chainId], references: [chainId], onDelete: Cascade)
   transactions Transaction[]
+  p2pListings  P2PListing[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -51,8 +52,8 @@ model Transaction {
   fromAddress        String
   destinationAddress String
 
-  fromChainId        Int 
-  destinationChainId Int 
+  fromChainId        Int
+  destinationChainId Int
 
   tokenAddress String
   amount       Float
@@ -63,4 +64,67 @@ model Transaction {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model P2PListing {
+  id String @id @default(uuid())
+
+  userId      String
+  userAddress String
+
+  tokenAddress String
+  tokenChainId Int
+  token        Token  @relation(fields: [tokenAddress, tokenChainId], references: [address, chainId])
+
+  amount          Float
+  availableAmount Float
+
+  isDeposited Boolean @default(false)
+  isActive    Boolean @default(false)
+
+  orders   P2POrder[]
+  deposits ListingDeposit?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model ListingDeposit {
+  listingId String @id
+  txHash    String
+
+  listing P2PListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model P2POrder {
+  id String @id @default(uuid())
+
+  listingId String
+  listing   P2PListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  buyerUserId  String
+  buyerAddress String
+
+  destinationChainId Int
+
+  amount Float
+  status String @default("WFSAC") // WFSAC = waiting for seller to accept, WFBP = Waiting for buyer payment, WFSA = Waiting for seller approval, C = Completed, CB = Cancelled by buyer, CS = Cancelled by seller
+
+  isActive Boolean    @default(true)
+  chat     OrderChat?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model OrderChat {
+  orderId String @id
+  chatId  String
+
+  isActive Boolean @default(true)
+
+  order P2POrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }

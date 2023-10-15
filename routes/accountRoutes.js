@@ -1,6 +1,6 @@
 import { prismaClient } from "../utils/prisma.js";
 import { getContractByChain } from "../utils/web3/assetContracts.js";
-import { validateAvailableChainId } from "./validator.js";
+import { validateAvailableChainId } from "../utils/validator.js";
 
 export const accountRoutes = async (server) => {
   server.get('/assets', async (request, reply) => {

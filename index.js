@@ -14,6 +14,7 @@ import { accountRoutes } from './routes/accountRoutes.js';
 import { transferRoutes } from './routes/transferRoutes.js';
 import { infoRoutes } from './routes/infoRoutes.js';
 import { docs } from './routes/docs.js';
+import { p2pRoutes } from './routes/p2pRoutes.js';
 
 const fastify = Fastify({ logger: false });
 
@@ -50,6 +51,10 @@ fastify.register(transferRoutes, {
 fastify.register(infoRoutes, {
   prefix: '/info'
 });
+
+fastify.register(p2pRoutes, {
+  prefix: '/p2p'
+})
 
 // Docs
 fastify.register(docs, {
