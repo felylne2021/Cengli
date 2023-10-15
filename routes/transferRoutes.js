@@ -1,4 +1,5 @@
 import { prismaClient } from "../utils/prisma.js";
+import { getContractByChain } from "../utils/web3/assetContracts.js";
 import { validateAvailableChainId } from "./validator.js";
 
 export const transferRoutes = async (server) => {
@@ -30,13 +31,20 @@ export const transferRoutes = async (server) => {
       }
 
       await validateAvailableChainId([fromChainId, destinationChainId], reply);
-
+      const contractByChain = getContractByChain(parseInt(fromChainId));
+      console.log(contractByChain);
+      let msgID;
       // process txn
       if (fromChainId == destinationChainId){
         // process same chain
+        await contractByChain.transferSameChainUSDC(destinationAddress, amount);
+        console.log("Transaction in the same chain.");
       }
       else{
+        const byte32Address = "0x000000000000000000000000" + destinationAddress.substring(2);
         // process cross chain
+        msgID = await contractByChain.transferXchainUSDC(destinationChainId, byte32Address, amount);
+        console.log("Transaction cross chain message ID.");
       }
 
       const transaction = await prismaClient.transaction.create({
