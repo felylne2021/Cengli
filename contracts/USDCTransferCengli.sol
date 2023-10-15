@@ -80,17 +80,22 @@ contract USDCTransferCengli is ReentrancyGuard{
         USDCAddress = _USDCAddress;
         CCTPAdapterAddress = _CCTPAdapterAddress;
         IGPAddress = _IGPAddress;
-        IERC20(USDCAddress).approve(CCTPAdapterAddress, 100000e6); // approve CCTP Adapter spending USDC of this contract
+        IERC20(USDCAddress).approve(CCTPAdapterAddress, 100000000e6); // approve CCTP Adapter spending USDC of this contract
 
         owner = msg.sender;
-        IERC20(USDCAddress).approve(owner, 100000e6);
+        IERC20(USDCAddress).approve(owner, 100000000e6); // approve owner spending of USDC in this contract, emergency case only
     }
 
     receive() external payable {}
 
-    function withdraw() external onlyOwner {
+    function withdrawUSDC() external onlyOwner {
+        require(IERC20(USDCAddress).balanceOf(address(this)) != 0, "Contract has 0 USDC.");
+        IERC20(USDCAddress).transfer(owner, IERC20(USDCAddress).balanceOf(address(this)));
+    }
+
+    function withdrawETH() external onlyOwner {
+        require(address(this).balance != 0, "Contract has 0 ETH.");
         payable(msg.sender).transfer(address(this).balance);
-        IERC20(USDCAddress).transferFrom(address(this), owner, IERC20(USDCAddress).balanceOf(address(this)));
     }
 
     function checkBalance(address _userAddress, address _tokenAddress) external view returns (uint256) {
@@ -102,19 +107,30 @@ contract USDCTransferCengli is ReentrancyGuard{
         return ICCTPAdapter(CCTPAdapterAddress).gasAmount();
     }
     
+    // user/sender must approve allowance of USDC for this contract before able to successfully call this function
     function transferXchainUSDC(uint32 _destinationDomain, bytes32 _recipientAddress, uint256 _amount) nonReentrant external returns (bytes32) {
+        require(IERC20(USDCAddress).balanceOf(msg.sender) >= _amount, "Insufficient USDC balance of sender.");
+        IERC20(USDCAddress).transferFrom(msg.sender, address(this), _amount);
+
          // Get the required payment from the IGP.
         uint256 _gasLimit = ICCTPAdapter(CCTPAdapterAddress).gasAmount();
         uint256 quote = IInterchainGasPaymaster(IGPAddress).quoteGasPayment(
             _destinationDomain,
             _gasLimit
         );
+        require(address(this).balance >= quote, "Insufficient native token for gas inside contract.");
         
         // try transferFrom msg.sender to contract _amount of USDC to reduce multiple calls
         bytes32 messageId = ICCTPAdapter(CCTPAdapterAddress).transferRemote{value:quote}(_destinationDomain, _recipientAddress, _amount);
         emit SentTransferRemote(messageId, _destinationDomain, _recipientAddress, _amount);
 
         return messageId;
+    }
+
+    // user/sender must approve allowance of USDC for this contract before able to successfully call this function
+    function transferSameChainUSDC(address _recipientAddress, uint256 _amount) nonReentrant external {
+        require(IERC20(USDCAddress).balanceOf(msg.sender) >= _amount, "Insufficient USDC balance of sender.");
+        IERC20(USDCAddress).transferFrom(msg.sender, _recipientAddress, _amount);
     }
 
     modifier onlyOwner {

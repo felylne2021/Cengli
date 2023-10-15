@@ -36,13 +36,17 @@ const config: HardhatUserConfig = {
       accounts: [PRIVATE_KEY],
     },
     avax: {
-      url: AVAX_API_KEY,
+      url: "https://api.avax-test.network/ext/bc/C/rpc",
       accounts: [PRIVATE_KEY],
     },
     arbitrum: {
       url: ARBITRUM_API_KEY,
       accounts: [PRIVATE_KEY],
-    }
+    },
+    polygon: {
+      url: MUMBAI_API_KEY,
+      accounts: [PRIVATE_KEY],
+    },
   },
   gasReporter: {
     enabled: false,
@@ -52,7 +56,7 @@ const config: HardhatUserConfig = {
     coinmarketcap: CMC_API_KEY,
   },
   etherscan: {
-    apiKey: ETHERSCAN_API_KEY,
+    apiKey: OPSCAN_API_KEY
   },
 };
 

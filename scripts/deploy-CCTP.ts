@@ -2,10 +2,11 @@ import {ethers} from "hardhat";
 
 async function main() {
     var factory = await ethers.getContractFactory("USDCTransferCengli");
+    console.log("F");
     var USDCTransferCengli = await factory.deploy(
-      "0x07865c6e87b9f70255377e024ace6630c1eaa37f", 
-      "0x001C83d5364C3360a27D0a72833C70203a864893", 
-      "0xF90cB82a76492614D07B82a7658917f3aC811Ac1");
+        "0xe05606174bac4A6364B31bd0eCA4bf4dD368f8C6", 
+        "0x8F2Ec21F10dDD8d581f8957aB1F1D484F4875977", 
+        "0xF90cB82a76492614D07B82a7658917f3aC811Ac1");
 
     console.log("Contract Address:", await USDCTransferCengli.getAddress());
 }
