@@ -1,6 +1,6 @@
 Endpoint: https://cengli.engowl.studio
 
-# Token Management API Documentation
+# Transfer & Information
 
 ---
 
@@ -166,3 +166,172 @@ GET {{baseUrl}}/account/transactions?userId=dummyFromUserId
   }
 ]
 ```
+
+---
+
+# P2P Marketplace
+
+## 1. **Fetch Listings**
+
+**GET** `{{baseUrl}}/listings`
+
+**Query Parameters:**
+- `isActive`: (Optional) Filter by active status, `true` for active listings, `false` for inactive listings.
+- `userId`: (Optional) Filter by user ID to retrieve listings for a specific user.
+
+**Example Request:**
+```http
+GET {{baseUrl}}/listings?isActive=true&userId=dummyUserId
+```
+
+---
+
+## 2. **Create a New Listing**
+
+**POST** `{{baseUrl}}/listings`
+
+**Request Body:**
+- `userId`: The user ID of the listing creator.
+- `userAddress`: Ethereum address of the listing creator.
+- `tokenAddress`: Address of the token contract.
+- `tokenChainId`: Chain ID of the blockchain network the token resides on.
+- `amount`: Amount of tokens listed.
+
+**Example Request:**
+```json
+{
+  "userId": "dummyUserId",
+  "userAddress": "dummyUserAddress",
+  "tokenAddress": "0x9999f7fea5938fd3b1e26a12c3f2fb024e194f97",
+  "tokenChainId": 80001,
+  "amount": 1000
+}
+```
+
+---
+
+## 3. **Fetch Orders**
+
+**GET** `{{baseUrl}}/orders`
+
+**Query Parameters:**
+- `listingId`: ID of the listing to retrieve orders for.
+- `statuses`: (Optional) Comma-separated list of order statuses to filter by.
+- `orderId`: (Optional) Order ID to filter by a specific order.
+
+**Example Request:**
+```http
+GET {{baseUrl}}/orders?listingId=dummyListingId&statuses=WFSAC,WFBP
+```
+
+---
+
+## 4. **Fetch Order Details**
+
+**GET** `{{baseUrl}}/orders/:id`
+
+**Path Parameters:**
+- `id`: ID of the order to retrieve.
+
+**Example Request:**
+```http
+GET {{baseUrl}}/orders/dummyOrderId
+```
+
+---
+
+## 5. **Create a New Order**
+
+**POST** `{{baseUrl}}/orders`
+
+**Request Body:**
+- `listingId`: ID of the listing to create an order for.
+- `buyerUserId`: User ID of the buyer.
+- `buyerAddress`: Ethereum address of the buyer.
+- `amount`: Amount of tokens to buy.
+- `chatId`: ID of the chat associated with the order.
+- `destinationChainId`: Chain ID of the blockchain network the tokens are to be transferred to.
+
+**Example Request:**
+```json
+{
+  "listingId": "dummyListingId",
+  "buyerUserId": "dummyBuyerUserId",
+  "buyerAddress": "dummyBuyerAddress",
+  "amount": 100,
+  "chatId": "dummyChatId",
+  "destinationChainId": 80001
+}
+```
+
+---
+
+## 6. **Accept an Order**
+
+**PUT** `{{baseUrl}}/orders/:id/accept`
+
+**Path Parameters:**
+- `id`: ID of the order to accept.
+
+**Query Parameters:**
+- `callerUserId`: User ID of the caller.
+
+**Example Request:**
+```http
+PUT {{baseUrl}}/orders/dummyOrderId/accept?callerUserId=dummyUserId
+```
+
+---
+
+## 7. **Cancel an Order**
+
+**PUT** `{{baseUrl}}/orders/:id/cancel`
+
+**Path Parameters:**
+- `id`: ID of the order to cancel.
+
+**Query Parameters:**
+- `callerUserId`: User ID of the caller.
+
+**Example Request:**
+```http
+PUT {{baseUrl}}/orders/dummyOrderId/cancel?callerUserId=dummyUserId
+```
+
+---
+
+## 8. **Mark Payment as Done**
+
+**PUT** `{{baseUrl}}/orders/:id/done-payment`
+
+**Path Parameters:**
+- `id`: ID of the order to mark payment as done for.
+
+**Query Parameters:**
+- `callerUserId`: User ID of the caller.
+
+**Example Request:**
+```http
+PUT {{baseUrl}}/orders/dummyOrderId/done-payment?callerUserId=dummyUserId
+```
+
+---
+
+## 9. **Release Funds to Buyer**
+
+**PUT** `{{baseUrl}}/orders/:id/release-fund`
+
+**Path Parameters:**
+- `id`: ID of the order to release funds for.
+
+**Query Parameters:**
+- `callerUserId`: User ID of the caller.
+
+**Example Request:**
+```http
+PUT {{baseUrl}}/orders/dummyOrderId/release-fund?callerUserId=dummyUserId
+```
+
+---
+
+This documentation structure maintains consistency with the previous sections while clearly explaining the purpose, HTTP methods, and parameters for each endpoint. Each section also provides example requests to help users understand how to interact with these endpoints.
