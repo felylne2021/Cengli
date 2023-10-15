@@ -74,7 +74,6 @@ export const p2pRoutes = async (server) => {
   })
 
   // Fetch all orders (for admin)
-  // TODO: Implement orders retrieval from the database
   server.get('/orders', async (request, reply) => {
     try {
       const { partnerId, statuses } = request.query;
@@ -145,7 +144,6 @@ export const p2pRoutes = async (server) => {
   // checkBalance('0xEd5f3482A1500321c90521604922E9822211C542', '0x2e6a3E97f7FeB5564eE0C11e56FE9970945384e5')
 
   // Create a new order
-  // TODO: Implement new order creation, change listing status to WFPA
   server.post('/orders', async (request, reply) => {
     try {
       const { partnerId, buyerUserId, buyerAddress, amount, chatId, destinationChainId, tokenAddress, orderId } = request.body;
@@ -235,7 +233,6 @@ export const p2pRoutes = async (server) => {
   });
 
   // Accept an order by partner
-  // TODO: Change order status to WFBP, initiate chat
   server.put('/orders/:id/accept', async (request, reply) => {
     try {
       const { id } = request.params;
@@ -294,7 +291,6 @@ export const p2pRoutes = async (server) => {
   });
 
   // Cancel an order by partner or buyer
-  // TODO: Change order status to CNCL
   server.put('/orders/:id/cancel', async (request, reply) => {
     try {
       const { id } = request.params;
@@ -394,7 +390,6 @@ export const p2pRoutes = async (server) => {
   });
 
   // Mark payment as done by the buyer
-  // TODO: Change order status, notify partner
   server.put('/orders/:id/done-payment', async (request, reply) => {
     try {
       const { id } = request.params;
@@ -436,7 +431,6 @@ export const p2pRoutes = async (server) => {
   });
 
   // Release funds to buyer
-  // TODO: Trigger smart contract to transfer USDC from CengliP2PReserve to buyer
   server.put('/orders/:id/release-fund', async (request, reply) => {
     try {
       const { id } = request.params;
