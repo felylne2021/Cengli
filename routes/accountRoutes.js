@@ -15,12 +15,11 @@ export const accountRoutes = async (server) => {
 
       const tokensToBeRetrieved = await prismaClient.token.findMany({
         orderBy: { address: 'asc' },
-        // where: { chainId: parseInt(chainId) }
-        where: { chainId: 5 }
+        where: { chainId: parseInt(chainId) }
       });
 
       const contractByChain = getContractByChain(parseInt(chainId));
-      
+
       const result = await retrieveBalances(tokensToBeRetrieved, address, contractByChain);
       const { totalBalanceUsd, tokens } = result;
 
@@ -75,23 +74,29 @@ const retrieveBalances = async (tokensToBeRetrieved, address, contractByChain) =
   const tokens = [];
 
   for (const token of tokensToBeRetrieved) {
-    let balance = Number(await contractByChain.checkBalance(address, token.address));
-    console.log('Balance:', balance);
-    totalBalanceUsd += balance;
+    try {
+      let balance = Number(await contractByChain.checkBalance(address, token.address));
+      balance = balance / Math.pow(10, token.decimals);
 
-    tokens.push({
-      balance,
-      balanceUSd: balance * token.priceUsd,
-      token: {
-        address: token.address,
-        chainId: token.chainId,
-        name: token.name,
-        symbol: token.symbol,
-        decimals: token.decimals,
-        logoURI: token.logoURI,
-        priceUsd: token.priceUsd,
-      },
-    });
+      // console.log('Balance:', balance);
+      totalBalanceUsd += balance;
+
+      tokens.push({
+        balance,
+        balanceUSd: balance * token.priceUsd,
+        token: {
+          address: token.address,
+          chainId: token.chainId,
+          name: token.name,
+          symbol: token.symbol,
+          decimals: token.decimals,
+          logoURI: token.logoURI,
+          priceUsd: token.priceUsd,
+        },
+      });
+    } catch (error) {
+      console.log('Error retrieving balance: ', error);
+    }
   }
 
   return { totalBalanceUsd, tokens };

@@ -1,8 +1,6 @@
 import { ethers } from "ethers";
 import { readFileSync } from "fs";
 
-const USDCTransferCengliABI = JSON.parse(readFileSync("utils/web3/abi/USDCTransferCengli.json", "utf8"));
-
 const GOERLI_API_KEY = process.env.GOERLI_API_KEY ?? "";
 const MUMBAI_API_KEY = process.env.MUMBAI_API_KEY ?? "";
 const OPTIMISM_API_KEY = process.env.OPTIMISM_API_KEY ?? "";
