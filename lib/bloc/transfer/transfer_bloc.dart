@@ -26,6 +26,7 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
     on<CreateOrderEvent>(_onCreateOrder, transformer: sequential());
     on<GetOrderEvent>(_onGetOrder, transformer: sequential());
     on<UpdateOrderStatusEvent>(_onUpdateOrder, transformer: sequential());
+    on<PostTransferEvent>(_onPostTransfer, transformer: sequential());
   }
 
   Future<void> _onGetAssets(
@@ -78,22 +79,27 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
       final walletAddress = await SessionService.getWalletAddress();
       final privateKey = await SessionService.getSignerAddress(walletAddress);
 
+      // Create group on push
       final group = await createGroup(
           groupName: event.group.name ?? "",
           signer: EthersSigner(
               ethersWallet: ethers.Wallet.fromPrivateKey(privateKey),
               address: walletAddress),
-          groupDescription: event.group.groupDescription ?? "",
+          groupDescription: "P2P Order",
           members: event.group.members ?? [],
           admins: [],
           isPublic: false);
 
+      // Create group on firestore
       final storeGroup = Group(
           id: group?.chatId ?? "",
-          groupDescription: event.group.groupDescription,
+          groupDescription: "P2P Order",
           name: event.group.name,
           members: event.group.members ?? [],
-          groupType: GroupTypeEnum.p2p.name);
+          groupType: GroupTypeEnum.p2p.name,
+          p2pOrderId: "");
+
+      //*TODO: Create order
 
       await _transactionalRemoteRepository.createGroup(storeGroup);
 
@@ -141,6 +147,22 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
       emit(UpdateOrderStatusErrorState(error.message));
     } catch (error) {
       emit(UpdateOrderStatusErrorState(error.toString()));
+    }
+  }
+
+  Future<void> _onPostTransfer(
+      PostTransferEvent event, Emitter<TransferState> emit) async {
+    emit(const PostTransferLoadingState());
+    try {
+      final response =
+          await _transferRemoteRepository.postTransfer(event.param);
+      emit(PostTransferSuccessState(response));
+    } on AppException catch (error) {
+      emit(PostTransferErrorState(error.message));
+    } on ApiException catch (error) {
+      emit(PostTransferErrorState(error.message));
+    } catch (error) {
+      emit(PostTransferErrorState(error.toString()));
     }
   }
 }

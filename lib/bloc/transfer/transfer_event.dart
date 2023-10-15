@@ -1,3 +1,4 @@
+import 'package:cengli/data/modules/transfer/model/request/transfer_request.dart';
 import 'package:cengli/data/modules/transfer/model/response/order_response.dart';
 import 'package:velix/velix.dart';
 
@@ -76,4 +77,13 @@ class UpdateOrderStatusEvent extends TransferEvent {
 
   @override
   List<Object?> get props => [orderId, status];
+}
+
+class PostTransferEvent extends TransferEvent {
+  final TransferRequest param;
+
+  const PostTransferEvent(this.param);
+
+  @override
+  List<Object?> get props => [param];
 }

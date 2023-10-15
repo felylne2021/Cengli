@@ -9,3 +9,4 @@ export 'state/create_group_p2p_state.dart';
 export 'state/create_order_state.dart';
 export 'state/get_order_state.dart';
 export 'state/update_order_state.dart';
+export 'state/transfer_state.dart';

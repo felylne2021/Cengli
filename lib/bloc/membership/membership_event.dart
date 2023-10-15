@@ -54,3 +54,12 @@ class FetchP2pEvent extends MembershipEvent {
   @override
   List<Object?> get props => [];
 }
+
+class GetGroupOrderEvent extends MembershipEvent {
+  final String groupId;
+
+  const GetGroupOrderEvent(this.groupId);
+
+  @override
+  List<Object?> get props => [groupId];
+}

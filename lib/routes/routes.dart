@@ -9,6 +9,7 @@ import 'package:cengli/presentation/group/group_detail_page.dart';
 import 'package:cengli/presentation/home/home_page.dart';
 import 'package:cengli/presentation/launch_screen/onboarding_screen.dart';
 import 'package:cengli/presentation/membership/pin_input_page.dart';
+import 'package:cengli/presentation/p2p/order_detail_page.dart';
 import 'package:cengli/presentation/p2p/p2p_request_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -79,7 +80,7 @@ class AppRouter {
             builder: (_) => const CreateGroupMemberPage(), settings: settings);
       case P2pPage.routeName:
         return CupertinoPageRoute(
-            builder: (_) => const P2pPage(), settings: settings);
+            builder: (_) => P2pPage(user: settings.arguments as UserProfile), settings: settings);
       case BillsPage.routeName:
         return CupertinoPageRoute(
             builder: (_) => const BillsPage(), settings: settings);
@@ -125,6 +126,9 @@ class AppRouter {
       case P2pRequestPage.routeName:
         return CupertinoPageRoute(
             builder: (_) => const P2pRequestPage(), settings: settings);
+      case OrderDetailPage.routeName:
+        return CupertinoPageRoute(
+            builder: (_) => const OrderDetailPage(), settings: settings);
     }
   }
 }

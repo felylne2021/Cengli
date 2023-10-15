@@ -1,3 +1,5 @@
+import 'package:cengli/bloc/auth/auth.dart';
+import 'package:cengli/bloc/auth/state/get_user_state.dart';
 import 'package:cengli/bloc/transactional/transactional.dart';
 import 'package:cengli/bloc/transfer/transfer.dart';
 import 'package:cengli/data/modules/auth/model/user_profile.dart';
@@ -58,6 +60,7 @@ class _HomePageState extends State<HomePage> {
   _getWalletAddress() async {
     walletAddress.value = await SessionService.getWalletAddress();
     username = await SessionService.getUsername();
+    _getUserData(username);
   }
 
   _getExpenses() async {
@@ -167,12 +170,30 @@ class _HomePageState extends State<HomePage> {
                               chains,
                               const UserProfile(),
                               0))),
-                  ActionWidget(
-                      title: 'P2P',
-                      bgColor: softPurple,
-                      iconPath: IC_P2P,
-                      onTap: () =>
-                          Navigator.of(context).pushNamed(P2pPage.routeName)),
+                  BlocBuilder<AuthBloc, AuthState>(
+                    buildWhen: (previous, state) {
+                      return state is GetUserDataErrorState ||
+                          state is GetUserDataLoadingState ||
+                          state is GetUserDataSuccessState;
+                    },
+                    builder: (context, state) {
+                      if (state is GetUserDataSuccessState) {
+                        return ActionWidget(
+                            title: 'P2P',
+                            bgColor: softPurple,
+                            iconPath: IC_P2P,
+                            onTap: () => Navigator.of(context).pushNamed(
+                                P2pPage.routeName,
+                                arguments: state.user));
+                      } else {
+                        return ActionWidget(
+                            title: 'P2P',
+                            bgColor: softPurple,
+                            iconPath: IC_P2P,
+                            onTap: () {});
+                      }
+                    },
+                  ),
                   ActionWidget(
                       title: 'Bills',
                       bgColor: softBlue,
@@ -360,6 +381,10 @@ class _HomePageState extends State<HomePage> {
 
   _getChains() {
     context.read<TransferBloc>().add(const GetChainsEvent());
+  }
+
+  _getUserData(String username) {
+    context.read<AuthBloc>().add(GetUserDataEvent(username));
   }
 }
 

@@ -1,6 +1,8 @@
+import 'package:cengli/data/modules/transfer/model/request/transfer_request.dart';
 import 'package:cengli/data/modules/transfer/model/response/assets_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/chain_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/transaction_response.dart';
+import 'package:cengli/data/modules/transfer/model/response/transfer_response.dart';
 import 'package:dio/dio.dart';
 import 'package:retrofit/http.dart';
 
@@ -20,4 +22,7 @@ abstract class TransferApiClient {
   @GET('account/transactions')
   Future<List<TransactionResponse>> getTransactions(
       @Query("userId") String userId);
+
+  @POST('transfer/send')
+  Future<TransferResponse> postTransfer(@Body() TransferRequest param);
 }
