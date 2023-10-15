@@ -247,6 +247,7 @@ GET {{baseUrl}}/orders/dummyOrderId
 **POST** `{{baseUrl}}/orders`
 
 **Request Body:**
+- `orderId`: ID of the order to create (optional), if not provided, a new ID will be generated.
 - `listingId`: ID of the listing to create an order for.
 - `buyerUserId`: User ID of the buyer.
 - `buyerAddress`: Ethereum address of the buyer.
