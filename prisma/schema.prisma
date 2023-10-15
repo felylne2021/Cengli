@@ -37,6 +37,7 @@ model Token {
   chain           Chain            @relation(fields: [chainId], references: [chainId], onDelete: Cascade)
   transactions    Transaction[]
   partnerBalances PartnerBalance[]
+  orders          P2POrder[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -102,15 +103,30 @@ model P2POrder {
   buyerAddress String
 
   destinationChainId Int
+  tokenAddress       String
+
+  token Token @relation(fields: [destinationChainId, tokenAddress], references: [chainId, address])
 
   amount Float
   status String @default("WFSAC") // WFSAC = waiting for seller to accept, WFBP = Waiting for buyer payment, WFSA = Waiting for seller approval, C = Completed, CB = Cancelled by buyer, CS = Cancelled by seller
 
   isActive Boolean    @default(true)
   chat     OrderChat?
+  deposit  P2POrderDeposit?
 
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model P2POrderDeposit {
+  orderId         String @id
+  contractOrderId String
+
+  txHash String
+  from   String
+  to     String
+
+  order P2POrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
 model OrderChat {

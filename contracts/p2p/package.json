@@ -8,7 +8,9 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "deploy-goerli": "truffle compile && truffle migrate --network goerli && truffle run verify CengliP2PEscrow --network goerli"
+    "deploy-goerli": "truffle compile && truffle migrate --network goerli && truffle run verify CengliP2PEscrow --network goerli",
+    "deploy-mock-goerli": "truffle compile && truffle migrate --network goerli && truffle run verify MockERC20 --network goerli",
+    "verify-mock-goerli": "truffle run verify MockERC20 --network goerli"
   },
   "author": "",
   "license": "ISC",

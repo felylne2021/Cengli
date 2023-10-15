@@ -284,6 +284,7 @@ GET {{baseUrl}}/orders?partnerId=ef0407e5-3088-4bf2-a5ec-4a8dcdc24657
 - `amount` (number): The amount for the order.
 - `chatId` (string): The ID of the chat associated with the order.
 - `destinationChainId` (number): The ID of the destination chain.
+- `tokenAddress` (string): The address of the token.
 - `orderId` (string, optional): The ID of the order (if provided).
 
 ---

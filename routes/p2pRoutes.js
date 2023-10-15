@@ -1,5 +1,6 @@
 import { prismaClient } from "../utils/prisma.js";
 import { validateAvailableChainId, validateRequiredFields } from "../utils/validator.js";
+import { EscrowContractAddress, cancelOrder, checkAllowance, checkBalance, depositToEscrow, releaseFunds } from "../utils/web3/p2pController.js";
 
 export const p2pRoutes = async (server) => {
   // Fetch all active partners
@@ -125,7 +126,8 @@ export const p2pRoutes = async (server) => {
           id: id
         },
         include: {
-          chat: true
+          chat: true,
+          token: true
         }
       })
 
@@ -139,13 +141,16 @@ export const p2pRoutes = async (server) => {
     }
   });
 
+  // checkAllowance('0xEd5f3482A1500321c90521604922E9822211C542', '0x2e6a3E97f7FeB5564eE0C11e56FE9970945384e5', '0x3999032F30A9be2Fd2732B4cFe3e61ADe9531509')
+  // checkBalance('0xEd5f3482A1500321c90521604922E9822211C542', '0x2e6a3E97f7FeB5564eE0C11e56FE9970945384e5')
+
   // Create a new order
   // TODO: Implement new order creation, change listing status to WFPA
   server.post('/orders', async (request, reply) => {
     try {
-      const { partnerId, buyerUserId, buyerAddress, amount, chatId, destinationChainId, orderId } = request.body;
+      const { partnerId, buyerUserId, buyerAddress, amount, chatId, destinationChainId, tokenAddress, orderId } = request.body;
 
-      await validateRequiredFields(request.body, ['partnerId', 'buyerUserId', 'buyerAddress', 'amount', 'chatId', 'destinationChainId'], reply);
+      await validateRequiredFields(request.body, ['partnerId', 'buyerUserId', 'buyerAddress', 'amount', 'chatId', 'destinationChainId', 'tokenAddress'], reply);
       await validateAvailableChainId([parseInt(destinationChainId)], reply);
 
       console.log('partnerId: ', partnerId);
@@ -173,11 +178,23 @@ export const p2pRoutes = async (server) => {
         }
       }
 
-      // TODO: validate buyer has enough balance
+      // get avax token
+      const token = await prismaClient.token.findFirst({
+        where: {
+          chainId: destinationChainId,
+          address: tokenAddress.toLowerCase()
+        }
+      })
 
-      // TODO: validate buyer has enough allowance
+      if (!token) {
+        return reply.code(400).send({ message: 'Invalid token, make sure it is the correct address and chain id' });
+      }
 
-      // TODO: validate buyer has enough balance in CengliP2PReserve contract
+      // validate partner has enough balance
+      const sellerBalance = await checkBalance(token.address, partner.address)
+      if (sellerBalance < amount) {
+        return reply.code(400).send({ message: 'Invalid amount, make sure the partner has enough balance' });
+      }
 
       const order = await prismaClient.p2POrder.create({
         data: {
@@ -186,6 +203,7 @@ export const p2pRoutes = async (server) => {
           buyerUserId: buyerUserId,
           buyerAddress: buyerAddress,
           destinationChainId: parseInt(destinationChainId),
+          tokenAddress: token.address,
           amount: amount,
           status: 'WFSAC',
           chat: {
@@ -196,6 +214,7 @@ export const p2pRoutes = async (server) => {
         },
         include: {
           chat: true,
+          token: true,
           partner: {
             include: {
               balances: {
@@ -224,8 +243,6 @@ export const p2pRoutes = async (server) => {
 
       await validateRequiredFields(request.params, ['id'], reply);
 
-      // TODO: Make the listing creator the only one who can accept the order
-
       // check if order exists
       const order = await prismaClient.p2POrder.findFirst({
         where: {
@@ -235,18 +252,26 @@ export const p2pRoutes = async (server) => {
         },
         include: {
           partner: true,
+          token: true
         }
       })
       if (!order) {
         return reply.code(400).send({ message: 'Invalid order, make sure the order exists and is in WFSAC status' });
       }
 
-      // TODO: validate partner has enough allowance to CengliP2PReserve contract
-
       // Make the partner the only one who can accept the order
       if (callerUserId !== order.partner.userId) {
         return reply.code(400).send({ message: 'Invalid caller, make sure the caller is the partner' });
       }
+
+      // validate partner has enough allowance to CengliP2PReserve contract
+      const partnerAllowance = await checkAllowance(order.token.address, order.partner.address, EscrowContractAddress)
+      if (partnerAllowance < order.amount) {
+        return reply.code(400).send({ message: 'The partner does not have enough allowance to CengliP2PReserve contract' });
+      }
+
+      // transfer tokens from partner to CengliP2PReserve contract
+      await depositToEscrow(order.buyerAddress, order.partner.address, order.token.address, order.amount * Math.pow(10, order.token.decimals), order.id)
 
       // update order status
       const updatedOrder = await prismaClient.p2POrder.update({
@@ -255,6 +280,9 @@ export const p2pRoutes = async (server) => {
         },
         data: {
           status: 'WFBP'
+        },
+        include: {
+          deposit: true
         }
       })
 
@@ -272,8 +300,6 @@ export const p2pRoutes = async (server) => {
       const { id } = request.params;
       const { callerUserId } = request.query
 
-      // TODO: Make the listing participant the only one who can cancel the order
-
       await validateRequiredFields(request.params, ['id'], reply);
 
       const order = await prismaClient.p2POrder.findFirst({
@@ -286,10 +312,38 @@ export const p2pRoutes = async (server) => {
         },
         include: {
           partner: true,
+          deposit: true,
         }
       })
       if (!order) {
         return reply.code(400).send({ message: 'Invalid order, make sure the order exists and is active and in WFSAC or WFBP status' });
+      }
+
+      if (order.deposit?.contractOrderId === null || order.deposit?.contractOrderId === undefined) {
+        // just update order status
+        let status = ''
+        if (callerUserId === order.buyerUserId) {
+          status = 'CB'
+        } else if (callerUserId === order.partner.userId) {
+          status = 'CS'
+        }
+
+        const updatedOrder = await prismaClient.p2POrder.update({
+          where: {
+            id: id
+          },
+          data: {
+            status: status,
+            isActive: false,
+            chat: {
+              update: {
+                isActive: false
+              }
+            }
+          }
+        })
+
+        return reply.send(updatedOrder);
       }
 
       // If cancelled when in WFSAC status
@@ -307,6 +361,9 @@ export const p2pRoutes = async (server) => {
           return reply.code(400).send({ message: 'Invalid caller, make sure the caller is the partner' });
         }
       }
+
+      // Refund the deposit to the partner
+      await cancelOrder(parseInt(order.deposit.contractOrderId))
 
       let status = ''
       if (callerUserId === order.buyerUserId) {
@@ -394,7 +451,8 @@ export const p2pRoutes = async (server) => {
           isActive: true
         },
         include: {
-          partner: true
+          partner: true,
+          deposit: true,
         }
       })
 
@@ -407,7 +465,8 @@ export const p2pRoutes = async (server) => {
         return reply.code(400).send({ message: 'Invalid caller, make sure the caller is the partner' });
       }
 
-      // TODO: transfer USDC from CengliP2PReserve to buyer
+      // Transfer fund from Escrow contract to buyer
+      await releaseFunds(parseInt(order.deposit?.contractOrderId))
 
       // update order status
       const updatedOrder = await prismaClient.p2POrder.update({
@@ -427,6 +486,7 @@ export const p2pRoutes = async (server) => {
 
       return reply.send(updatedOrder);
     } catch (error) {
+      console.log('Error releasing funds: ', error);
       return reply.code(500).send({ message: error });
     }
   });

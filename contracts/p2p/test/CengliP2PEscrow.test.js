@@ -8,13 +8,17 @@ contract("CengliP2PEscrow", (accounts) => {
   const [owner, buyer, partner] = accounts;
 
   beforeEach(async () => {
-    console.log("Deploying escrow contract");
+    try {
+      console.log("Deploying escrow contract");
 
-    escrow = await CengliP2PEscrow.new(owner, { from: owner });
+      escrow = await CengliP2PEscrow.new(owner, { from: owner });
 
-    token = await MockERC20.new({ from: owner });
-    console.log("Approving tokens");
-    await token.approve(escrow.address, 100, { from: partner });
+      token = await MockERC20.new({ from: owner });
+      console.log("Approving tokens");
+      await token.approve(escrow.address, 100, { from: partner });
+    } catch (error) {
+      console.error("Failed to deploy contracts", error);
+    }
   });
 
 

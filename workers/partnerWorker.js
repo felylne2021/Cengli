@@ -2,13 +2,14 @@ import cron from 'node-cron';
 
 import { prismaClient } from "../utils/prisma.js"
 import { getContractByChain } from "../utils/web3/assetContracts.js"
+import { checkBalance } from '../utils/web3/p2pController.js';
 
 export const partnerWorker = async (server) => {
   // run very 1 minute
-  cron.schedule('*/1 * * * *', () => {
+  cron.schedule('*/30 * * * * *', () => {
     fetchUSDCTokenBalance()
   });
-
+  fetchUSDCTokenBalance()
 }
 
 // fetch partner's USDC balance on AVAX
@@ -28,10 +29,9 @@ export const fetchUSDCTokenBalance = async () => {
     }
   })
 
-  const contractByChain = getContractByChain(5);
-
   for (const partner of partners) {
-    const balance = Number(await contractByChain.checkBalance(partner.address, usdcToken.address));
+    // const balance = Number(await contractByChain.checkBalance(partner.address, usdcToken.address));
+    const balance = await checkBalance(usdcToken?.address, partner.address)
 
     // upsert partner's USDC balance on AVAX
     await prismaClient.partnerBalance.upsert({

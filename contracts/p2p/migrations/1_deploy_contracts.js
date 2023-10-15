@@ -2,11 +2,16 @@
 /* eslint-disable */
 
 const CengliP2PEscrow = artifacts.require("CengliP2PEscrow");
+const MockERC20 = artifacts.require("MockERC20");
 
-// TestContract Deploy
+// module.exports = async function (deployer){
+//   // Deploy CengliForwarder
+//   await deployer.deploy(CengliP2PEscrow, "0xF709205c39199a4D26636a02ea15E344352377AE");
+//   const escrowContract = await CengliP2PEscrow.deployed();
+//   console.log("TestContract deployed to:", escrowContract.address);
+// };
+
+
 module.exports = async function (deployer){
-  // Deploy CengliForwarder
-  await deployer.deploy(CengliP2PEscrow, "0x278A2d5B5C8696882d1D2002cE107efc74704ECf");
-  const escrowContract = await CengliP2PEscrow.deployed();
-  console.log("TestContract deployed to:", escrowContract.address);
-};
+  await deployer.deploy(MockERC20);
+}

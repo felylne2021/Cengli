@@ -25,7 +25,7 @@ module.exports = {
       networkCheckTimeout: 20000,
       skipDryRun: true,
       gas: 20000000,
-    }
+    },
   },
 
   mocha: {
@@ -35,13 +35,13 @@ module.exports = {
   // Configure your compilers
   compilers: {
     solc: {
-      version: "0.8.20",
-      settings: {
-        optimizer: {
-          enabled: true,
-          runs: 1000
-        }
-      }
+      version: "0.8.21",
+      // settings: {
+      //   optimizer: {
+      //     enabled: true,
+      //     runs: 1000
+      //   }
+      // }
     }
   },
   plugins: [
@@ -50,5 +50,5 @@ module.exports = {
   api_keys: {
     etherscan: process.env.ETHERSCAN_API_KEY,
     polygonscan: process.env.POLYGONSCAN_API_KEY
-  }
+  },
 };
