@@ -182,197 +182,157 @@ GET {{baseUrl}}/account/transactions?userId=dummyFromUserId
 
 # P2P Marketplace
 
-## 1. **Fetch Listings**
+## 1. **Fetch Partners**
 
-**GET** `{{baseUrl}}/listings`
+**GET** `{{baseUrl}}/partners`
 
 **Query Parameters:**
-
-- `isActive`: (Optional) Filter by active status, `true` for active listings, `false` for inactive listings.
-- `userId`: (Optional) Filter by user ID to retrieve listings for a specific user.
+- `userId`: Ethereum address of the user.
+- `userAddress`: Ethereum address of the user. *(Same as `userId`)*
 
 **Example Request:**
-
 ```http
-GET {{baseUrl}}/listings?isActive=true&userId=dummyUserId
+GET {{baseUrl}}/partners?userId=0x278A2d5B5C8696882d1D2002cE107efc74704ECf&userAddress=0x278A2d5B5C8696882d1D2002cE107efc74704ECf
+```
+
+**Example Response:**
+```json
+[
+    {
+        "id": "ef0407e5-3088-4bf2-a5ec-4a8dcdc24657",
+        "userId": "0x278A2d5B5C8696882d1D2002cE107efc74704ECf",
+        "address": "0x278A2d5B5C8696882d1D2002cE107efc74704ECf",
+        "createdAt": "2023-10-15T15:09:31.492Z",
+        "updatedAt": "2023-10-15T15:09:31.492Z",
+        "balances": [
+            {
+                "partnerId": "ef0407e5-3088-4bf2-a5ec-4a8dcdc24657",
+                "tokenAddress": "0x07865c6e87b9f70255377e024ace6630c1eaa37f",
+                "tokenChainId": 5,
+                "amount": 249904453258388,
+                "token": {
+                    "address": "0x07865c6e87b9f70255377e024ace6630c1eaa37f",
+                    "chainId": 5,
+                    "name": "USD Coin",
+                    "symbol": "USDC",
+                    "decimals": 6,
+                    "logoURI": "https://s2.coinmarketcap.com/static/img/coins/64x64/3408.png",
+                    "priceUsd": 1,
+                    "createdAt": "2023-10-14T22:02:47.985Z",
+                    "updatedAt": "2023-10-15T17:31:27.592Z"
+                }
+            }
+        ]
+    }
+]
 ```
 
 ---
 
-## 2. **Create a New Listing**
+## 2. **Add a New Partner**
 
-**POST** `{{baseUrl}}/listings`
+**POST** `{{baseUrl}}/partners`
 
 **Request Body:**
-
-- `userId`: The user ID of the listing creator.
-- `userAddress`: Ethereum address of the listing creator.
-- `tokenAddress`: Address of the token contract.
-- `tokenChainId`: Chain ID of the blockchain network the token resides on.
-- `amount`: Amount of tokens listed.
+- `userId`: Ethereum address of the user.
+- `userAddress`: Ethereum address of the user. *(Same as `userId`)*
 
 **Example Request:**
+```http
+POST {{baseUrl}}/partners
+Content-Type: application/json
 
-```json
 {
-  "userId": "dummyUserId",
-  "userAddress": "dummyUserAddress",
-  "tokenAddress": "0x9999f7fea5938fd3b1e26a12c3f2fb024e194f97",
-  "tokenChainId": 80001,
-  "amount": 1000
+    "userId": "0x278A2d5B5C8696882d1D2002cE107efc74704ECf",
+    "userAddress": "0x278A2d5B5C8696882d1D2002cE107efc74704ECf"
 }
 ```
 
 ---
 
-## 3. **Fetch Orders**
+## 3. **Fetch All Orders**
 
 **GET** `{{baseUrl}}/orders`
 
 **Query Parameters:**
-
-- `listingId`: ID of the listing to retrieve orders for.
-- `statuses`: (Optional) Comma-separated list of order statuses to filter by.
+- `partnerId`: The ID of the partner.
+- `statuses`: Comma-separated list of order statuses.
 
 **Example Request:**
-
 ```http
-GET {{baseUrl}}/orders?listingId=dummyListingId&statuses=WFSAC,WFBP
+GET {{baseUrl}}/orders?partnerId=ef0407e5-3088-4bf2-a5ec-4a8dcdc24657
 ```
 
 ---
+## 4. **Fetch Order by ID**
 
-## 4. **Fetch Order Details**
-
-**GET** `{{baseUrl}}/orders/:id`
+**Endpoint:** `GET /orders/:id`
 
 **Path Parameters:**
-
-- `id`: ID of the order to retrieve.
-
-**Example Request:**
-
-```http
-GET {{baseUrl}}/orders/dummyOrderId
-```
+- `id` (string): The ID of the order.
 
 ---
 
 ## 5. **Create a New Order**
 
-**POST** `{{baseUrl}}/orders`
+**Endpoint:** `POST /orders`
 
 **Request Body:**
-
-- `orderId`: ID of the order to create (optional), if not provided, a new ID will be generated.
-- `listingId`: ID of the listing to create an order for.
-- `buyerUserId`: User ID of the buyer.
-- `buyerAddress`: Ethereum address of the buyer.
-- `amount`: Amount of tokens to buy.
-- `chatId`: ID of the chat associated with the order.
-- `destinationChainId`: Chain ID of the blockchain network the tokens are to be transferred to.
-
-**Example Request:**
-
-```json
-{
-  "id": "custom-order-id-yoo",
-  "listingId": "288256a7-bbe1-4818-bb3f-527df5e0cf91",
-  "buyerUserId": "dummyUserId",
-  "buyerAddress": "0x278A2d5B5C8696882d1D2002cE107efc74704ECf",
-  "destinationChainId": 5,
-  "amount": 50000,
-  "status": "WFSAC",
-  "isActive": true,
-  "createdAt": "2023-10-15T14:57:54.427Z",
-  "updatedAt": "2023-10-15T14:57:54.427Z",
-  "chat": {
-    "orderId": "custom-order-id-yoo",
-    "chatId": "ini-chat-id",
-    "isActive": true
-  }
-}
-```
+- `partnerId` (string): The ID of the partner.
+- `buyerUserId` (string): The ID of the buyer user.
+- `buyerAddress` (string): The address of the buyer.
+- `amount` (number): The amount for the order.
+- `chatId` (string): The ID of the chat associated with the order.
+- `destinationChainId` (number): The ID of the destination chain.
+- `orderId` (string, optional): The ID of the order (if provided).
 
 ---
 
-## 6. **Accept an Order**
+## 6. **Accept an Order by Partner**
 
-**PUT** `{{baseUrl}}/orders/:id/accept`
+**Endpoint:** `PUT /orders/:id/accept`
 
 **Path Parameters:**
-
-- `id`: ID of the order to accept.
+- `id` (string): The ID of the order.
 
 **Query Parameters:**
-
-- `callerUserId`: User ID of the caller.
-
-**Example Request:**
-
-```http
-PUT {{baseUrl}}/orders/dummyOrderId/accept?callerUserId=dummyUserId
-```
+- `callerUserId` (string): The ID of the user making the call.
 
 ---
 
-## 7. **Cancel an Order**
+## 7. **Cancel an Order by Partner or Buyer**
 
-**PUT** `{{baseUrl}}/orders/:id/cancel`
+**Endpoint:** `PUT /orders/:id/cancel`
 
 **Path Parameters:**
-
-- `id`: ID of the order to cancel.
+- `id` (string): The ID of the order.
 
 **Query Parameters:**
-
-- `callerUserId`: User ID of the caller.
-
-**Example Request:**
-
-```http
-PUT {{baseUrl}}/orders/dummyOrderId/cancel?callerUserId=dummyUserId
-```
+- `callerUserId` (string): The ID of the user making the call.
 
 ---
 
-## 8. **Mark Payment as Done**
+## 8. **Mark Payment as Done by the Buyer**
 
-**PUT** `{{baseUrl}}/orders/:id/done-payment`
+**Endpoint:** `PUT /orders/:id/done-payment`
 
 **Path Parameters:**
-
-- `id`: ID of the order to mark payment as done for.
+- `id` (string): The ID of the order.
 
 **Query Parameters:**
-
-- `callerUserId`: User ID of the caller.
-
-**Example Request:**
-
-```http
-PUT {{baseUrl}}/orders/dummyOrderId/done-payment?callerUserId=dummyUserId
-```
+- `callerUserId` (string): The ID of the user making the call.
 
 ---
 
 ## 9. **Release Funds to Buyer**
 
-**PUT** `{{baseUrl}}/orders/:id/release-fund`
+**Endpoint:** `PUT /orders/:id/release-fund`
 
 **Path Parameters:**
-
-- `id`: ID of the order to release funds for.
+- `id` (string): The ID of the order.
 
 **Query Parameters:**
-
-- `callerUserId`: User ID of the caller.
-
-**Example Request:**
-
-```http
-PUT {{baseUrl}}/orders/dummyOrderId/release-fund?callerUserId=dummyUserId
-```
+- `callerUserId` (string): The ID of the user making the call.
 
 ---
 
