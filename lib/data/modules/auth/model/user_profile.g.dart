@@ -13,7 +13,6 @@ UserProfile _$UserProfileFromJson(Map<String, dynamic> json) => UserProfile(
       email: json['email'] as String?,
       walletAddress: json['walletAddress'] as String?,
       userRole: json['userRole'] as String?,
-      p2pMethod: json['p2pMethod'] as String?,
     );
 
 Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
@@ -24,5 +23,4 @@ Map<String, dynamic> _$UserProfileToJson(UserProfile instance) =>
       'email': instance.email,
       'walletAddress': instance.walletAddress,
       'userRole': instance.userRole,
-      'p2pMethod': instance.p2pMethod,
     };

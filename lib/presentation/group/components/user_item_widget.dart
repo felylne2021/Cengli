@@ -3,8 +3,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:kinetix/kinetix.dart';
 
-import '../../../values/values.dart';
-
 class UserItemWidget extends StatelessWidget {
   final String name;
   final String username;
@@ -28,8 +26,12 @@ class UserItemWidget extends StatelessWidget {
             Container(
               height: 40,
               width: 40,
-              decoration:
-                  BoxDecoration(shape: BoxShape.circle, color: primaryGreen600),
+              decoration: const BoxDecoration(
+                  shape: BoxShape.circle, color: KxColors.neutral200),
+              child: const Icon(
+                CupertinoIcons.person_fill,
+                color: KxColors.neutral400,
+              ),
             ),
             16.0.width,
             Text(name,

@@ -13,6 +13,7 @@ Group _$GroupFromJson(Map<String, dynamic> json) => Group(
       members:
           (json['members'] as List<dynamic>?)?.map((e) => e as String).toList(),
       groupType: json['groupType'] as String?,
+      p2pOrderId: json['p2pOrderId'] as String?,
     );
 
 Map<String, dynamic> _$GroupToJson(Group instance) => <String, dynamic>{
@@ -21,4 +22,5 @@ Map<String, dynamic> _$GroupToJson(Group instance) => <String, dynamic>{
       'groupDescription': instance.groupDescription,
       'members': instance.members,
       'groupType': instance.groupType,
+      'p2pOrderId': instance.p2pOrderId,
     };

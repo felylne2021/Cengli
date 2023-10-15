@@ -79,7 +79,11 @@ class _ChatePageState extends ConsumerState<ChatPage> {
           },
           builder: (context, state) {
             if (state is GetChatRequestSuccessState) {
-              final spaces = state.feeds;
+              final spaces = state.feeds
+                  .where((item) =>
+                      item.groupInformation?.groupDescription != "P2P Order")
+                  .toList();
+
               return Column(
                 children: [
                   Column(
@@ -88,12 +92,16 @@ class _ChatePageState extends ConsumerState<ChatPage> {
                       final image = item.groupInformation?.groupImage ??
                           item.profilePicture ??
                           '';
+                      final groupDesc =
+                          item.groupInformation?.groupDescription ?? "";
+                      final lastMessage = item.msg?.messageContent ?? "";
                       return ChatItemWidget(
-                        imageIcon: ProfileProfileImageWidget(imageUrl: image),
+                        imageIcon: ProfileProfileImageWidget(
+                            imageUrl: image, isP2p: false),
                         title:
                             '${item.groupInformation?.groupName ?? item.intentSentBy}',
                         caption:
-                            item.msg?.messageContent ?? 'Send first message',
+                            lastMessage.isNotEmpty ? lastMessage : groupDesc,
                         isNeedApproval: true,
                         acceptCallback: () =>
                             _approve(item.groupInformation?.chatId ?? ""),
@@ -115,7 +123,10 @@ class _ChatePageState extends ConsumerState<ChatPage> {
         Consumer(
           builder: (context, ref, child) {
             final vm = ref.watch(conversationsProvider);
-            final spaces = vm.conversations;
+            final spaces = vm.conversations
+                .where((item) =>
+                    item.groupInformation?.groupDescription != "P2P Order")
+                .toList();
             if (vm.isBusy) {
               return const Center(
                 child: CupertinoActivityIndicator(),
@@ -151,6 +162,8 @@ class _ChatePageState extends ConsumerState<ChatPage> {
                 final image = item.groupInformation?.groupImage ??
                     item.profilePicture ??
                     '';
+                final groupDesc = item.groupInformation?.groupDescription ?? "";
+                final lastMessage = item.msg?.messageContent ?? "";
 
                 return InkWell(
                   onTap: () {
@@ -159,11 +172,13 @@ class _ChatePageState extends ConsumerState<ChatPage> {
                         arguments: ChatRoomArgument(item));
                   },
                   child: ChatItemWidget(
-                    imageIcon: ProfileProfileImageWidget(imageUrl: image),
+                    imageIcon: ProfileProfileImageWidget(
+                      imageUrl: image,
+                      isP2p: false,
+                    ),
                     title:
                         '${item.groupInformation?.groupName ?? item.intentSentBy}',
-                    caption: item.msg?.messageContent ??
-                        (item.groupInformation?.groupDescription ?? ""),
+                    caption: lastMessage.isNotEmpty ? lastMessage : groupDesc,
                     isNeedApproval: false,
                   ),
                 );

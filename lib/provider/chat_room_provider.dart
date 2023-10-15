@@ -54,11 +54,9 @@ class ChatRoomProvider extends ChangeNotifier {
     if (messages != null) {
       _messageList = messages;
       _localMessagesCache[currentChatId] = _messageList;
-      debugPrint("duarr dusubu");
       getOlderMessages();
     } else {
       _messageList = _localMessagesCache[currentChatId] ?? [];
-      debugPrint("duarr disini");
     }
     notifyListeners();
   }

@@ -1,8 +1,11 @@
+import 'package:cengli/bloc/transfer/transfer.dart';
+import 'package:cengli/data/modules/transfer/model/request/transfer_request.dart';
 import 'package:cengli/presentation/home/home_page.dart';
 import 'package:cengli/presentation/reusable/page/status_page.dart';
 import 'package:cengli/presentation/transfer/send_detail_page.dart';
-import 'package:flutter/cupertino.dart';
+import 'package:cengli/utils/utils.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kinetix/kinetix.dart';
 
 import '../../values/values.dart';
@@ -25,7 +28,26 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: CustomAppbarWithBackButton(appbarTitle: "Transfer Details"),
-        body: LayoutBuilder(
+        body: BlocListener<TransferBloc, TransferState>(
+            listenWhen: (previous, state) {
+          return state is PostTransferErrorState ||
+              state is PostTransferLoadingState ||
+              state is PostTransferSuccessState;
+        }, listener: (context, state) {
+          if (state is PostTransferSuccessState) {
+            hideLoading();
+            Navigator.of(context).pushNamedAndRemoveUntil(
+                StatusPage.routeName, (route) => false,
+                arguments: StatusArgument(() => Navigator.of(context)
+                    .pushNamedAndRemoveUntil(
+                        HomePage.routeName, (route) => false)));
+          } else if (state is PostTransferLoadingState) {
+            showLoading();
+          } else if (state is PostTransferErrorState) {
+            hideLoading();
+            showToast(state.message);
+          }
+        }, child: LayoutBuilder(
           builder: (context, constraints) {
             return SingleChildScrollView(
                 child: ConstrainedBox(
@@ -108,13 +130,9 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
                           16.0.height,
                           KxTextButton(
                                   argument: KxTextButtonArgument(
-                                      onPressed: () => Navigator.of(context)
-                                          .pushNamed(StatusPage.routeName,
-                                              arguments: StatusArgument(() =>
-                                                  Navigator.of(context)
-                                                      .pushNamedAndRemoveUntil(
-                                                          HomePage.routeName,
-                                                          (route) => false))),
+                                      onPressed: () {
+                                        //*TODO: Sign and Transfer
+                                      },
                                       buttonText: "Transfer",
                                       buttonColor: primaryGreen600,
                                       buttonTextStyle: KxTypography(
@@ -130,7 +148,7 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
                       ).padding(const EdgeInsets.symmetric(vertical: 36)),
                     )));
           },
-        ));
+        )));
   }
 
   Widget _item(String title, String value) {
@@ -149,5 +167,9 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
         ).flexible()
       ],
     );
+  }
+
+  _postTransfer(TransferRequest param) {
+    context.read<TransferBloc>().add(PostTransferEvent(param));
   }
 }

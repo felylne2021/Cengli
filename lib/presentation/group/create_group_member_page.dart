@@ -173,8 +173,12 @@ class _CreateGroupMemberPageState extends State<CreateGroupMemberPage> {
               Container(
                 height: 56,
                 width: 56,
-                decoration: BoxDecoration(
-                    shape: BoxShape.circle, color: primaryGreen600),
+                decoration: const BoxDecoration(
+                    shape: BoxShape.circle, color: KxColors.neutral200),
+                child: const Icon(
+                  CupertinoIcons.person_fill,
+                  color: KxColors.neutral400,
+                ),
               ),
               8.0.height,
               Text(

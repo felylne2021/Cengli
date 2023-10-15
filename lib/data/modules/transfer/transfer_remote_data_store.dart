@@ -1,6 +1,8 @@
+import 'package:cengli/data/modules/transfer/model/request/transfer_request.dart';
 import 'package:cengli/data/modules/transfer/model/response/assets_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/chain_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/order_response.dart';
+import 'package:cengli/data/modules/transfer/model/response/transfer_response.dart';
 import 'package:cengli/data/modules/transfer/remote/transfer_api.dart';
 import 'package:cengli/data/modules/transfer/transfer_remote_repository.dart';
 import 'package:cengli/data/utils/collection_util.dart';
@@ -68,5 +70,12 @@ class TransferRemoteDataStore extends TransferRemoteRepository {
       firebaseErrorHandler(error);
     });
     return OrderResponse.fromJson(documents.docs.first.data());
+  }
+
+  @override
+  Future<TransferResponse> postTransfer(TransferRequest param) async {
+    return await _api.postTransfer(param).catchError((error) {
+      errorHandler(error);
+    });
   }
 }
