@@ -2,8 +2,35 @@ import { prismaClient } from "../utils/prisma.js";
 import { validateAvailableChainId, validateRequiredFields } from "../utils/validator.js";
 
 export const p2pRoutes = async (server) => {
+  // Fetch all active partners
+  server.get('/partners', async (request, reply) => {
+    try {
+      const partners = await prismaClient.p2PPartner.findMany({
+        include: {
+          balances: {
+            where: {
+              token: {
+                symbol: 'USDC'
+              }
+            },
+            include: {
+              token: true
+            }
+          }
+        },
+        orderBy: {
+          createdAt: 'asc'
+        }
+      })
+
+      return reply.send(partners);
+    } catch (error) {
+      return reply.code(500).send({ message: error });
+    }
+  });
+
   // Add a new partner
-  server.post('/add-partner', async (request, reply) => {
+  server.post('/partners', async (request, reply) => {
     try {
       const { userId, userAddress } = request.body;
       await validateRequiredFields(request.body, ['userId', 'userAddress'], reply);
@@ -125,9 +152,9 @@ export const p2pRoutes = async (server) => {
   // TODO: Implement orders retrieval from the database
   server.get('/orders', async (request, reply) => {
     try {
-      const { listingId, statuses } = request.query;
+      const { partnerId, statuses } = request.query;
 
-      await validateRequiredFields(request.query, ['listingId'], reply);
+      await validateRequiredFields(request.query, ['partnerId'], reply);
 
       const statusesArr = statuses ? statuses.split(',') : undefined;
       if (statusesArr && statusesArr.length > 0) {
@@ -142,7 +169,7 @@ export const p2pRoutes = async (server) => {
 
       const orders = await prismaClient.p2POrder.findMany({
         where: {
-          listingId: listingId,
+          partnerId: partnerId,
           status: statusesArr ? {
             in: statusesArr
           } : undefined
@@ -174,8 +201,7 @@ export const p2pRoutes = async (server) => {
           id: id
         },
         include: {
-          chat: true,
-          listing: true
+          chat: true
         }
       })
 
@@ -193,20 +219,22 @@ export const p2pRoutes = async (server) => {
   // TODO: Implement new order creation, change listing status to WFPA
   server.post('/orders', async (request, reply) => {
     try {
-      const { listingId, buyerUserId, buyerAddress, amount, chatId, destinationChainId, orderId } = request.body;
+      const { partnerId, buyerUserId, buyerAddress, amount, chatId, destinationChainId, orderId } = request.body;
 
-      await validateRequiredFields(request.body, ['listingId', 'buyerUserId', 'buyerAddress', 'amount', 'chatId', 'destinationChainId'], reply);
+      await validateRequiredFields(request.body, ['partnerId', 'buyerUserId', 'buyerAddress', 'amount', 'chatId', 'destinationChainId'], reply);
       await validateAvailableChainId([parseInt(destinationChainId)], reply);
 
-      // validate listing exists
-      const listing = await prismaClient.p2PListing.findUniqueOrThrow({
+      console.log('partnerId: ', partnerId);
+      // validate if partner exists
+      const partner = await prismaClient.p2PPartner.findUnique({
         where: {
-          id: listingId,
-          isActive: true,
+          id: partnerId
         }
-      }).catch(error => {
-        return reply.code(400).send({ message: 'Invalid listing, make sure the listing is active or exists' });
       })
+
+      if (!partner) {
+        return reply.code(400).send({ message: 'Invalid partner id' });
+      }
 
       // if order id is provided, validate it's unique
       if (orderId) {
@@ -230,7 +258,7 @@ export const p2pRoutes = async (server) => {
       const order = await prismaClient.p2POrder.create({
         data: {
           id: orderId ? orderId : undefined,
-          listingId: listingId,
+          partnerId: partnerId,
           buyerUserId: buyerUserId,
           buyerAddress: buyerAddress,
           destinationChainId: parseInt(destinationChainId),
@@ -243,7 +271,16 @@ export const p2pRoutes = async (server) => {
           }
         },
         include: {
-          chat: true
+          chat: true,
+          partner: {
+            include: {
+              balances: {
+                include: {
+                  token: true
+                }
+              }
+            }
+          }
         }
       })
 
@@ -273,17 +310,17 @@ export const p2pRoutes = async (server) => {
           isActive: true
         },
         include: {
-          listing: true
+          partner: true,
         }
       })
       if (!order) {
         return reply.code(400).send({ message: 'Invalid order, make sure the order exists and is in WFSAC status' });
       }
 
-      // TODO: validate partner has enough availableAmount deposited in CengliP2PReserve contract
+      // TODO: validate partner has enough allowance to CengliP2PReserve contract
 
       // Make the partner the only one who can accept the order
-      if (callerUserId !== order.listing.userId) {
+      if (callerUserId !== order.partner.userId) {
         return reply.code(400).send({ message: 'Invalid caller, make sure the caller is the partner' });
       }
 
@@ -299,6 +336,7 @@ export const p2pRoutes = async (server) => {
 
       return reply.send(updatedOrder);
     } catch (error) {
+      console.log('Error accepting order: ', error);
       return reply.code(500).send({ message: error });
     }
   });
@@ -323,7 +361,7 @@ export const p2pRoutes = async (server) => {
           isActive: true
         },
         include: {
-          listing: true
+          partner: true,
         }
       })
       if (!order) {
@@ -333,7 +371,7 @@ export const p2pRoutes = async (server) => {
       // If cancelled when in WFSAC status
       if (order.status === 'WFSAC') {
         // validate it's from the buyer or partner
-        if (callerUserId !== order.buyerUserId && callerUserId !== order.listing.userId) {
+        if (callerUserId !== order.buyerUserId && callerUserId !== order.partner.userId) {
           return reply.code(400).send({ message: 'Invalid caller, make sure the caller is the buyer or partner' });
         }
       }
@@ -432,7 +470,7 @@ export const p2pRoutes = async (server) => {
           isActive: true
         },
         include: {
-          listing: true
+          partner: true
         }
       })
 
@@ -441,7 +479,7 @@ export const p2pRoutes = async (server) => {
       }
 
       // make the partner the only one who can release funds
-      if (callerUserId !== order.listing.userId) {
+      if (callerUserId !== order.partner.userId) {
         return reply.code(400).send({ message: 'Invalid caller, make sure the caller is the partner' });
       }
 

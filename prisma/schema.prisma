@@ -34,9 +34,8 @@ model Token {
   logoURI  String
   priceUsd Float
 
-  chain        Chain         @relation(fields: [chainId], references: [chainId], onDelete: Cascade)
-  transactions Transaction[]
-  p2pListings  P2PListing[]
+  chain           Chain            @relation(fields: [chainId], references: [chainId], onDelete: Cascade)
+  transactions    Transaction[]
   partnerBalances PartnerBalance[]
 
   createdAt DateTime @default(now())
@@ -67,69 +66,37 @@ model Transaction {
   updatedAt DateTime @updatedAt
 }
 
-model P2PListing {
-  id String @id @default(uuid())
-
-  userId      String
-  userAddress String
-
-  tokenAddress String
-  tokenChainId Int
-  token        Token  @relation(fields: [tokenAddress, tokenChainId], references: [address, chainId])
-
-  amount          Float
-  availableAmount Float
-
-  isDeposited Boolean @default(false)
-  isActive    Boolean @default(false)
-
-  orders   P2POrder[]
-  deposits ListingDeposit?
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model ListingDeposit {
-  listingId String @id
-  txHash    String
-
-  listing P2PListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
 model P2PPartner {
   id      String @id @default(uuid())
   userId  String @unique
   address String
 
   balances PartnerBalance[]
+  orders   P2POrder[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model PartnerBalance {
-  partnerId String 
+  partnerId String
 
   tokenAddress String
   tokenChainId Int
 
   amount Float
-  
-  partner P2PPartner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
-  token Token @relation(fields: [tokenAddress, tokenChainId], references: [address, chainId])
 
-  @@unique([tokenAddress, tokenChainId])
+  partner P2PPartner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  token   Token      @relation(fields: [tokenAddress, tokenChainId], references: [address, chainId])
+
+  @@unique([tokenAddress, tokenChainId, partnerId])
 }
 
 model P2POrder {
   id String @id @default(uuid())
 
-  listingId String
-  listing   P2PListing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+  partnerId String
+  partner   P2PPartner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
 
   buyerUserId  String
   buyerAddress String
@@ -142,8 +109,8 @@ model P2POrder {
   isActive Boolean    @default(true)
   chat     OrderChat?
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime    @default(now())
+  updatedAt    DateTime    @updatedAt
 }
 
 model OrderChat {
