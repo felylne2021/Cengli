@@ -1,6 +1,7 @@
 import { ethers } from "ethers";
 import { readFileSync } from "fs";
 import { prismaClient } from "../prisma.js";
+import { sleep } from '../miscUtils.js';
 
 const ERC20 = JSON.parse(readFileSync("utils/web3/abi/ERC20.json", "utf8"))
 const CengliP2PEscrow = JSON.parse(readFileSync("utils/web3/abi/CengliP2PEscrow.json", "utf8"))
@@ -37,42 +38,45 @@ export const checkAllowance = async (tokenAddress, ownerAddress, spender) => {
 
 export const depositToEscrow = async (buyerAddress, partnerAddress, tokenAddress, amount, orderId) => {
   const nextId = await EscrowContract.orderIdCounter()
-  console.log('nextId', nextId.toString())
   const depositRes = await EscrowContract.acceptOrder(buyerAddress, partnerAddress, tokenAddress, amount)
-  const receipt = await depositRes.wait(1)
+  // const receipt = await depositRes.wait(1)
+
+  await sleep(3000)
 
   await prismaClient.p2POrderDeposit.create({
     data: {
       orderId: orderId,
       contractOrderId: nextId.toString(),
-      txHash: receipt.hash,
-      from: receipt.from,
-      to: receipt.to,
+      txHash: depositRes.hash,
+      from: depositRes.from,
+      to: depositRes.to,
     }
   })
 
   console.log({
     depositRes,
-    receipt
+    // receipt
   })
 }
 
 export const cancelOrder = async (contractOrderId) => {
   const cancelRes = await EscrowContract.cancelOrder(contractOrderId)
-  const receipt = await cancelRes.wait(1)
+  // const receipt = await cancelRes.wait(1)
+
+  await sleep(3000)
 
   console.log({
     cancelRes,
-    receipt
+    // receipt
   })
 }
 
 export const releaseFunds = async (contractOrderId) => {
   const releaseRes = await EscrowContract.releaseFunds(contractOrderId)
-  const receipt = await releaseRes.wait(1)
+  // const receipt = await releaseRes.wait(1)
 
   console.log({
     releaseRes,
-    receipt
+    // receipt
   })
 }
