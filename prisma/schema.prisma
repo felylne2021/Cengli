@@ -34,8 +34,10 @@ model Token {
   logoURI  String
   priceUsd Float
 
-  chain        Chain         @relation(fields: [chainId], references: [chainId], onDelete: Cascade)
-  transactions Transaction[]
+  chain           Chain            @relation(fields: [chainId], references: [chainId], onDelete: Cascade)
+  transactions    Transaction[]
+  partnerBalances PartnerBalance[]
+  orders          P2POrder[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -51,8 +53,8 @@ model Transaction {
   fromAddress        String
   destinationAddress String
 
-  fromChainId        Int 
-  destinationChainId Int 
+  fromChainId        Int
+  destinationChainId Int
 
   tokenAddress String
   amount       Float
@@ -63,4 +65,75 @@ model Transaction {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model P2PPartner {
+  id      String @id @default(uuid())
+  userId  String @unique
+  address String
+
+  balances PartnerBalance[]
+  orders   P2POrder[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model PartnerBalance {
+  partnerId String
+
+  tokenAddress String
+  tokenChainId Int
+
+  amount Float
+
+  partner P2PPartner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+  token   Token      @relation(fields: [tokenAddress, tokenChainId], references: [address, chainId])
+
+  @@unique([tokenAddress, tokenChainId, partnerId])
+}
+
+model P2POrder {
+  id String @id @default(uuid())
+
+  partnerId String
+  partner   P2PPartner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
+
+  buyerUserId  String
+  buyerAddress String
+
+  destinationChainId Int
+  tokenAddress       String
+
+  token Token @relation(fields: [destinationChainId, tokenAddress], references: [chainId, address])
+
+  amount Float
+  status String @default("WFSAC") // WFSAC = waiting for seller to accept, WFBP = Waiting for buyer payment, WFSA = Waiting for seller approval, C = Completed, CB = Cancelled by buyer, CS = Cancelled by seller
+
+  isActive Boolean    @default(true)
+  chat     OrderChat?
+  deposit  P2POrderDeposit?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model P2POrderDeposit {
+  orderId         String @id
+  contractOrderId String
+
+  txHash String
+  from   String
+  to     String
+
+  order P2POrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model OrderChat {
+  orderId String @id
+  chatId  String
+
+  isActive Boolean @default(true)
+
+  order P2POrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }

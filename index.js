@@ -9,11 +9,14 @@ import fastifyCors from '@fastify/cors'
 import fastifyStatic from '@fastify/static'
 
 import { dataWorker } from './workers/dataWorker.js';
+import { partnerWorker } from './workers/partnerWorker.js';
 
 import { accountRoutes } from './routes/accountRoutes.js';
 import { transferRoutes } from './routes/transferRoutes.js';
 import { infoRoutes } from './routes/infoRoutes.js';
 import { docs } from './routes/docs.js';
+import { p2pRoutes } from './routes/p2pRoutes.js';
+
 
 const fastify = Fastify({ logger: false });
 
@@ -37,6 +40,7 @@ fastify.get('/check', async () => {
 
 // Workers
 fastify.register(dataWorker);
+fastify.register(partnerWorker)
 
 // Routes
 fastify.register(accountRoutes, {
@@ -50,6 +54,10 @@ fastify.register(transferRoutes, {
 fastify.register(infoRoutes, {
   prefix: '/info'
 });
+
+fastify.register(p2pRoutes, {
+  prefix: '/p2p'
+})
 
 // Docs
 fastify.register(docs, {

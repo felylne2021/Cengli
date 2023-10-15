@@ -1,6 +1,6 @@
 import { prismaClient } from "../utils/prisma.js";
 import { getContractByChain } from "../utils/web3/assetContracts.js";
-import { validateAvailableChainId } from "./validator.js";
+import { validateAvailableChainId, validateRequiredFields } from "../utils/validator.js";
 
 export const transferRoutes = async (server) => {
   server.post('/send', async (request, reply) => {
@@ -24,13 +24,9 @@ export const transferRoutes = async (server) => {
 
       // Validate the required body parameters
       const fields = ['fromUserId', 'destinationUserId', 'fromAddress', 'destinationAddress', 'tokenAddress', 'fromChainId', 'destinationChainId', 'amount', 'signer'];
-      const missingParams = fields.reduce((acc, field) => !eval(field) ? [...acc, field] : acc, []);
-
-      if (missingParams.length) {
-        return reply.code(400).send({ message: 'Missing parameters', missingParams });
-      }
-
+      await validateRequiredFields(request.body, fields, reply)
       await validateAvailableChainId([fromChainId, destinationChainId], reply);
+
       const contractByChain = getContractByChain(parseInt(fromChainId));
       console.log(contractByChain);
       let msgID;

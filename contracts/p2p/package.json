@@ -1,0 +1,21 @@
+{
+  "name": "p2p",
+  "version": "1.0.0",
+  "description": "",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy-goerli": "truffle compile && truffle migrate --network goerli && truffle run verify CengliP2PEscrow --network goerli",
+    "deploy-mock-goerli": "truffle compile && truffle migrate --network goerli && truffle run verify MockERC20 --network goerli",
+    "verify-mock-goerli": "truffle run verify MockERC20 --network goerli"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@openzeppelin/contracts": "^5.0.0",
+    "truffle-plugin-verify": "^0.6.5"
+  }
+}

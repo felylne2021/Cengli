@@ -1,6 +1,6 @@
 import { prismaClient } from "../utils/prisma.js";
 import { getContractByChain } from "../utils/web3/assetContracts.js";
-import { validateAvailableChainId } from "./validator.js";
+import { validateAvailableChainId } from "../utils/validator.js";
 
 export const accountRoutes = async (server) => {
   server.get('/assets', async (request, reply) => {
@@ -15,7 +15,8 @@ export const accountRoutes = async (server) => {
 
       const tokensToBeRetrieved = await prismaClient.token.findMany({
         orderBy: { address: 'asc' },
-        where: { chainId: parseInt(chainId) }
+        // where: { chainId: parseInt(chainId) }
+        where: { chainId: 5 }
       });
 
       const contractByChain = getContractByChain(parseInt(chainId));
@@ -75,6 +76,7 @@ const retrieveBalances = async (tokensToBeRetrieved, address, contractByChain) =
 
   for (const token of tokensToBeRetrieved) {
     let balance = Number(await contractByChain.checkBalance(address, token.address));
+    console.log('Balance:', balance);
     totalBalanceUsd += balance;
 
     tokens.push({

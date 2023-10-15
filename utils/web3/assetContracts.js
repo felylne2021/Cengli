@@ -1,4 +1,7 @@
 import { ethers } from "ethers";
+import { readFileSync } from "fs";
+
+const USDCTransferCengliABI = JSON.parse(readFileSync("utils/web3/abi/USDCTransferCengli.json", "utf8"));
 
 const GOERLI_API_KEY = process.env.GOERLI_API_KEY ?? "";
 const MUMBAI_API_KEY = process.env.MUMBAI_API_KEY ?? "";
@@ -18,7 +21,7 @@ const goerliContract = new ethers.Contract("0xa0d2cAa1699bC7193a0eAA485160981ECE
 
 // const polygonProvider = new ethers.JsonRpcApiProvider(MUMBAI_API_KEY);
 // const polygonSigner = new ethers.Wallet(PRIVATE_KEY, polygonProvider);
-// const polygonContract = new ethers.Contract("0xA1bD683B06b9B7F633cc7A96A9E5f0AE0662C6C4", abi, polygonSigner);
+// const polygonContract = new ethers.Contract("0xA1bD683B06b9B7F633cc7A96A9E5f0AE0662C6C4", USDCTransferCengliABI.abi, polygonSigner);
 
 const optimismProvider = new ethers.JsonRpcProvider(OPTIMISM_API_KEY);
 const optimismSigner = new ethers.Wallet(PRIVATE_KEY, optimismProvider);
