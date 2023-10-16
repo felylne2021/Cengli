@@ -34,7 +34,7 @@ export const p2pRoutes = async (server) => {
   server.post('/partners', async (request, reply) => {
     try {
       const { userId, userAddress, name } = request.body;
-      await validateRequiredFields(request.body, ['userId', 'userAddress'], reply);
+      await validateRequiredFields(request.body, ['userId', 'userAddress', 'name'], reply);
 
       // check if partner already exists
       const partnerExists = await prismaClient.p2PPartner.findFirst({
