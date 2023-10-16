@@ -71,6 +71,7 @@ model P2PPartner {
   id      String @id @default(uuid())
   userId  String @unique
   address String
+  name    String @default("Larry Gonzales")
 
   balances PartnerBalance[]
   orders   P2POrder[]
