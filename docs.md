@@ -236,6 +236,7 @@ GET {{baseUrl}}/partners?userId=0x278A2d5B5C8696882d1D2002cE107efc74704ECf&userA
 **Request Body:**
 - `userId`: Ethereum address of the user.
 - `userAddress`: Ethereum address of the user. *(Same as `userId`)*
+- `name`: Name of the partner.
 
 **Example Request:**
 ```http
@@ -244,7 +245,8 @@ Content-Type: application/json
 
 {
     "userId": "0x278A2d5B5C8696882d1D2002cE107efc74704ECf",
-    "userAddress": "0x278A2d5B5C8696882d1D2002cE107efc74704ECf"
+    "userAddress": "0x278A2d5B5C8696882d1D2002cE107efc74704ECf",
+    "name": "Partner 1"
 }
 ```
 
