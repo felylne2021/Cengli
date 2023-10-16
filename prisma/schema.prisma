@@ -25,6 +25,7 @@ model Chain {
 }
 
 model Token {
+  id      String @id @default(uuid())
   address String
   chainId Int
 
@@ -42,7 +43,7 @@ model Token {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@id([address, chainId])
+  @@unique([address, chainId])
 }
 
 model Transaction {
@@ -82,16 +83,14 @@ model P2PPartner {
 
 model PartnerBalance {
   partnerId String
-
-  tokenAddress String
-  tokenChainId Int
+  tokenId   String
 
   amount Float
 
   partner P2PPartner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
-  token   Token      @relation(fields: [tokenAddress, tokenChainId], references: [address, chainId])
+  token   Token      @relation(fields: [tokenId], references: [id])
 
-  @@unique([tokenAddress, tokenChainId, partnerId])
+  @@unique([tokenId, partnerId])
 }
 
 model P2POrder {
@@ -104,14 +103,14 @@ model P2POrder {
   buyerAddress String
 
   destinationChainId Int
-  tokenAddress       String
 
-  token Token @relation(fields: [destinationChainId, tokenAddress], references: [chainId, address])
+  tokenId String
+  token   Token  @relation(fields: [tokenId], references: [id])
 
   amount Float
   status String @default("WFSAC") // WFSAC = waiting for seller to accept, WFBP = Waiting for buyer payment, WFSA = Waiting for seller approval, C = Completed, CB = Cancelled by buyer, CS = Cancelled by seller
 
-  isActive Boolean    @default(true)
+  isActive Boolean          @default(true)
   chat     OrderChat?
   deposit  P2POrderDeposit?
 

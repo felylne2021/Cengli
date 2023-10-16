@@ -1,6 +1,7 @@
 import { prismaClient } from "../utils/prisma.js";
 import { validateAvailableChainId, validateRequiredFields } from "../utils/validator.js";
 import { EscrowContractAddress, cancelOrder, checkAllowance, checkBalance, depositToEscrow, releaseFunds } from "../utils/web3/p2pController.js";
+import { fetchUSDCTokenBalance } from "../workers/partnerWorker.js";
 
 export const p2pRoutes = async (server) => {
   // Fetch all active partners
@@ -50,7 +51,9 @@ export const p2pRoutes = async (server) => {
           name: name ? name : 'Name not set'
         }
       })
-      
+
+      await fetchUSDCTokenBalance(partner.id);
+
       return reply.send(partner);
     } catch (error) {
       console.log('Error adding partner: ', error);
@@ -186,7 +189,7 @@ export const p2pRoutes = async (server) => {
           buyerUserId: buyerUserId,
           buyerAddress: buyerAddress,
           destinationChainId: parseInt(destinationChainId),
-          tokenAddress: token.address,
+          tokenId: token.id,
           amount: amount,
           status: 'WFSAC',
           chat: {

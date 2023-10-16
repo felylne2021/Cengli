@@ -13,11 +13,15 @@ export const partnerWorker = async (server) => {
 }
 
 // fetch partner's USDC balance on AVAX
-export const fetchUSDCTokenBalance = async () => {
+export const fetchUSDCTokenBalance = async (partnerId) => {
   const partners = await prismaClient.p2PPartner.findMany({
     select: {
       address: true,
       id: true,
+      name: true,
+    },
+    where: {
+      id: partnerId ? partnerId : undefined,
     }
   })
 
@@ -31,22 +35,26 @@ export const fetchUSDCTokenBalance = async () => {
 
   for (const partner of partners) {
     // const balance = Number(await contractByChain.checkBalance(partner.address, usdcToken.address));
+    console.log({
+      partnerId: partner.id,
+      tokenAddress: usdcToken.address,
+      tokenChainId: usdcToken.chainId,
+      name: partner.name
+    })
     const balance = await checkBalance(usdcToken?.address, partner.address)
 
     // upsert partner's USDC balance on AVAX
     await prismaClient.partnerBalance.upsert({
       where: {
-        tokenAddress_tokenChainId_partnerId: {
+        tokenId_partnerId: {
+          tokenId: usdcToken.id,
           partnerId: partner.id,
-          tokenAddress: usdcToken.address,
-          tokenChainId: usdcToken.chainId,
         }
       },
       create: {
         partnerId: partner.id,
+        tokenId: usdcToken.id,
         amount: balance,
-        tokenAddress: usdcToken.address,
-        tokenChainId: usdcToken.chainId,
       },
       update: {
         amount: balance,
