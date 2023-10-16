@@ -36,37 +36,21 @@ export const p2pRoutes = async (server) => {
       const { userId, userAddress, name } = request.body;
       await validateRequiredFields(request.body, ['userId', 'userAddress', 'name'], reply);
 
-      // check if partner already exists
-      const partnerExists = await prismaClient.p2PPartner.findFirst({
+      const partner = await prismaClient.p2PPartner.upsert({
         where: {
+          userId: userId,
+          address: userAddress
+        },
+        create: {
           userId: userId,
           address: userAddress,
           name: name ? name : 'Name not set'
         },
-        include: {
-          balances: {
-            where: {
-              token: {
-                symbol: 'USDC'
-              }
-            },
-            include: {
-              token: true
-            }
-          }
+        update: {
+          name: name ? name : 'Name not set'
         }
       })
-
-      if (partnerExists) {
-        return reply.code(400).send(partnerExists);
-      }
-
-      const partner = await prismaClient.p2PPartner.create({
-        data: {
-          userId: userId,
-          address: userAddress
-        }
-      })
+      
       return reply.send(partner);
     } catch (error) {
       console.log('Error adding partner: ', error);
