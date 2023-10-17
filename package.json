@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/felylne2021/Cengli#readme",
   "dependencies": {
+    "@cometh/connect-sdk": "^1.1.1",
     "@fastify/cors": "^8.4.0",
     "@fastify/static": "^6.11.2",
     "@prisma/client": "^5.4.2",
