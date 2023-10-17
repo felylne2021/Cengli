@@ -1,9 +1,10 @@
 import 'package:cengli/bloc/membership/membership.dart';
-import 'package:cengli/data/modules/auth/model/user_profile.dart';
+import 'package:cengli/bloc/transfer/transfer.dart';
 import 'package:cengli/presentation/chat/components/chat_item_widget.dart';
 import 'package:cengli/presentation/chat/components/chat_profile_image_widget.dart';
 import 'package:cengli/presentation/p2p/components/p2p_item_widget.dart';
 import 'package:cengli/presentation/p2p/p2p_request_page.dart';
+import 'package:cengli/presentation/p2p/p2p_room_chat_paget.dart';
 import 'package:cengli/presentation/reusable/appbar/custom_appbar.dart';
 import 'package:cengli/utils/utils.dart';
 import 'package:cengli/values/values.dart';
@@ -12,15 +13,16 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:kinetix/kinetix.dart';
+import 'package:intl/intl.dart';
 
 import '../../provider/chat_room_provider.dart';
 import '../../provider/conversations_provider.dart';
-import '../chat/chat_room_page.dart';
 import '../reusable/segmented_control/segmented_control.dart';
 
 class P2pPage extends ConsumerStatefulWidget {
-  final UserProfile user;
-  const P2pPage({super.key, required this.user});
+  final P2pArgument argument;
+
+  const P2pPage({super.key, required this.argument});
   static const String routeName = '/p2p_page';
 
   @override
@@ -66,6 +68,7 @@ class _P2pPageState extends ConsumerState<P2pPage> {
                 switch (value) {
                   case 0:
                     return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Container(
                             padding: const EdgeInsets.fromLTRB(5, 12, 12, 12),
@@ -101,32 +104,51 @@ class _P2pPageState extends ConsumerState<P2pPage> {
                                 ).flexible()
                               ],
                             )),
-                        BlocBuilder<MembershipBloc, MembershipState>(
+                        24.0.height,
+                        Text(
+                          "Buy From",
+                          style: KxTypography(
+                              type: KxFontType.fieldText3,
+                              color: KxColors.neutral500),
+                        ).padding(const EdgeInsets.symmetric(horizontal: 16)),
+                        BlocBuilder<TransferBloc, TransferState>(
                           buildWhen: (previous, state) {
-                            return state is FetchP2pSuccessState ||
-                                state is FetchP2pLoadingState ||
-                                state is FetchP2pErrorState;
+                            return state is GetPartnersSuccessState ||
+                                state is GetPartnersLoadingState ||
+                                state is GetPartnersErrorState;
                           },
                           builder: (context, state) {
-                            if (state is FetchP2pSuccessState) {
-                              debugPrint(state.partners.toString());
+                            if (state is GetPartnersSuccessState) {
                               return Column(
                                   children: List.generate(
                                       state.partners.length,
                                       (index) => InkWell(
                                           onTap: () => Navigator.of(context)
-                                              .pushNamed(
-                                                  P2pRequestPage.routeName),
+                                                  .pushNamed(
+                                                      P2pRequestPage.routeName,
+                                                      arguments: P2pArgument(
+                                                          state.partners[index],
+                                                          widget.argument.user,
+                                                          widget.argument
+                                                              .chainId))
+                                                  .then((value) {
+                                                if (value != null) {
+                                                  currentIndex.value = 1;
+                                                }
+                                              }),
                                           child: P2pItemWidget(
-                                            name: state
-                                                    .partners[index].userName ??
+                                            name: state.partners[index].name ??
                                                 "",
-                                            quantity: "1.062, 00 USDC",
-                                            method: "Cash and Transfer",
+                                            quantity: state.partners[index]
+                                                        .balances !=
+                                                    null
+                                                ? "${NumberFormat.currency(locale: 'en_US', symbol: '').format(state.partners[index].balances?.first.amount ?? 0)} ${state.partners[index].balances?.first.token?.symbol ?? ""}"
+                                                : "Loading ...",
                                           ))));
                             } else {
                               return const CupertinoActivityIndicator()
-                                  .padding(const EdgeInsets.only(top: 40));
+                                  .padding(const EdgeInsets.only(top: 40))
+                                  .center();
                             }
                           },
                         )
@@ -197,7 +219,8 @@ class _P2pPageState extends ConsumerState<P2pPage> {
                               isNeedApproval: true,
                               acceptCallback: () =>
                                   _approve(item.groupInformation?.chatId ?? ""),
-                              isShowDivider: spaces.length != 1,
+                              isShowDivider: spaces.length != 1 &&
+                                  index != (spaces.length - 1),
                             );
                           }),
                         ),
@@ -261,8 +284,10 @@ class _P2pPageState extends ConsumerState<P2pPage> {
                         ref
                             .read(chatRoomProvider)
                             .setCurrentChatId(item.chatId!);
-                        Navigator.of(context).pushNamed(ChatRoomPage.routeName,
-                            arguments: ChatRoomArgument(item));
+                        Navigator.of(context).pushNamed(
+                            P2pChatRoomPage.routeName,
+                            arguments: P2pChatRoomArgument(
+                                item, widget.argument.user));
                       },
                       child: ChatItemWidget(
                         imageIcon: ProfileProfileImageWidget(
@@ -289,7 +314,7 @@ class _P2pPageState extends ConsumerState<P2pPage> {
   }
 
   _fetchPartners() {
-    context.read<MembershipBloc>().add(const FetchP2pEvent());
+    context.read<TransferBloc>().add(const GetPartnersEvent());
   }
 
   _approve(String senderAddress) {

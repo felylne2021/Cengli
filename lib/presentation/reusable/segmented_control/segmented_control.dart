@@ -117,7 +117,7 @@ class _SegmentAccountRolesState extends State<SegmentedControl> {
                                     padding: EdgeInsets.symmetric(
                                         horizontal:
                                             MediaQuery.of(context).size.width *
-                                                0.056),
+                                                0.065),
                                     child: Text(
                                       textAlign: TextAlign.center,
                                       widget.title[index],

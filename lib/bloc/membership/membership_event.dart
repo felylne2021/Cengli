@@ -48,13 +48,6 @@ class ApproveEvent extends MembershipEvent {
   List<Object?> get props => [senderAddress];
 }
 
-class FetchP2pEvent extends MembershipEvent {
-  const FetchP2pEvent();
-
-  @override
-  List<Object?> get props => [];
-}
-
 class GetGroupOrderEvent extends MembershipEvent {
   final String groupId;
 

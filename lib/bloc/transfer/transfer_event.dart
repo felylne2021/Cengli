@@ -1,8 +1,9 @@
+import 'package:cengli/data/modules/transfer/model/request/create_order_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/transfer_request.dart';
-import 'package:cengli/data/modules/transfer/model/response/order_response.dart';
 import 'package:velix/velix.dart';
 
 import '../../data/modules/transactional/model/group.dart';
+import '../../presentation/p2p/order_detail_page.dart';
 
 abstract class TransferEvent extends BaseEvent {
   const TransferEvent();
@@ -44,36 +45,29 @@ class GetTransferEvent extends TransferEvent {
 
 class CreateGroupP2pEvent extends TransferEvent {
   final Group group;
+  final CreateOrderRequest order;
 
-  const CreateGroupP2pEvent(this.group);
+  const CreateGroupP2pEvent(this.group, this.order);
 
   @override
   List<Object?> get props => [group];
 }
 
-class CreateOrderEvent extends TransferEvent {
-  final OrderResponse order;
-
-  const CreateOrderEvent(this.order);
-
-  @override
-  List<Object?> get props => [order];
-}
-
 class GetOrderEvent extends TransferEvent {
-  final String groupId;
+  final String orderId;
 
-  const GetOrderEvent(this.groupId);
+  const GetOrderEvent(this.orderId);
 
   @override
-  List<Object?> get props => [groupId];
+  List<Object?> get props => [orderId];
 }
 
 class UpdateOrderStatusEvent extends TransferEvent {
   final String orderId;
-  final String status;
+  final String callerUserId;
+  final OrderStatusEventEnum status;
 
-  const UpdateOrderStatusEvent(this.orderId, this.status);
+  const UpdateOrderStatusEvent(this.orderId, this.callerUserId, this.status);
 
   @override
   List<Object?> get props => [orderId, status];
@@ -87,3 +81,12 @@ class PostTransferEvent extends TransferEvent {
   @override
   List<Object?> get props => [param];
 }
+
+
+class GetPartnersEvent extends TransferEvent {
+  const GetPartnersEvent();
+
+  @override
+  List<Object?> get props => [];
+}
+

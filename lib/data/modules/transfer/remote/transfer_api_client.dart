@@ -1,8 +1,12 @@
+import 'package:cengli/data/modules/transfer/model/request/create_order_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/transfer_request.dart';
 import 'package:cengli/data/modules/transfer/model/response/assets_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/chain_response.dart';
+import 'package:cengli/data/modules/transfer/model/response/order_response.dart';
+import 'package:cengli/data/modules/transfer/model/response/get_partners_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/transaction_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/transfer_response.dart';
+import 'package:cengli/data/modules/transfer/model/response/update_order_response.dart';
 import 'package:dio/dio.dart';
 import 'package:retrofit/http.dart';
 
@@ -25,4 +29,29 @@ abstract class TransferApiClient {
 
   @POST('transfer/send')
   Future<TransferResponse> postTransfer(@Body() TransferRequest param);
+
+  @GET('p2p/partners')
+  Future<List<GetPartnersResponse>> getPartners();
+
+  @POST('p2p/orders')
+  Future<OrderResponse> postOrder(@Body() CreateOrderRequest param);
+
+  @PUT('p2p/orders/{id}/accept')
+  Future<UpdateOrderResponse> acceptOrder(
+      @Path('id') String orderId, @Query('callerUserId') String callerUserId);
+
+  @PUT('p2p/orders/{id}/cancel')
+  Future<UpdateOrderResponse> cancelOrder(
+      @Path('id') String orderId, @Query('callerUserId') String callerUserId);
+
+  @PUT('p2p/orders/{id}/done-payment')
+  Future<UpdateOrderResponse> donePaymentOrder(
+      @Path('id') String orderId, @Query('callerUserId') String callerUserId);
+
+  @PUT('p2p/orders/{id}/release-fund')
+  Future<UpdateOrderResponse> releaseFundOrder(
+      @Path('id') String orderId, @Query('callerUserId') String callerUserId);
+
+  @GET('p2p/orders/{id}')
+  Future<OrderResponse> getOrder(@Path('id') String orderId);
 }

@@ -35,7 +35,7 @@ class BillsPage extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                              bill.groupName ?? "Default Group Name",
+                              bill.groupId ?? "Default Group Name",
                               style: KxTypography(
                                   type: KxFontType.subtitle4,
                                   color: KxColors.neutral700),

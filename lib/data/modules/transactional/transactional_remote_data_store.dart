@@ -7,6 +7,7 @@ import 'package:cengli/services/database_service.dart';
 import 'package:cloud_firestore/cloud_firestore.dart' as firestore;
 import 'package:uuid/uuid.dart';
 
+import 'model/charges.dart';
 import 'model/group.dart';
 
 class TransactionalDataStore extends TransactionalRemoteRepository {
@@ -16,19 +17,34 @@ class TransactionalDataStore extends TransactionalRemoteRepository {
   TransactionalDataStore(this._databaseService, this._firestoreDb);
 
   @override
-  Future<void> createExpense(Expense expense) async {
+  Future<void> createExpense(Expense expense, List<Charges> charges) async {
     final String expenseId = const Uuid().v4();
     await _firestoreDb
         .collection(CollectionEnum.expenses.name)
         .doc(expenseId)
         .set(Expense(
                 id: expenseId,
+                title: expense.title,
                 groupId: expense.groupId,
                 amount: expense.amount,
                 category: expense.category,
+                memberPayId: expense.memberPayId,
+                tokenUnit: expense.tokenUnit,
                 date: expense.date)
             .toJson())
         .catchError((error) {
+      firebaseErrorHandler(error);
+    });
+
+    List<Map<String, dynamic>> mappedCharges =
+        charges.map((charge) => charge.toJson()).toList();
+
+    await _firestoreDb
+        .collection(CollectionEnum.expenses.name)
+        .doc(expenseId)
+        .update({
+      "charges": firestore.FieldValue.arrayUnion(mappedCharges)
+    }).catchError((error) {
       firebaseErrorHandler(error);
     });
   }
@@ -45,6 +61,36 @@ class TransactionalDataStore extends TransactionalRemoteRepository {
     return documents.docs
         .map((value) => Expense.fromJson(value.data()))
         .toList();
+  }
+
+  @override
+  Future<Map<String, dynamic>> getCharges(String groupId, String userId) async {
+    final expenses = await _firestoreDb
+        .collection(CollectionEnum.expenses.name)
+        .where("group_id", isEqualTo: groupId)
+        .get()
+        .catchError((error) {
+      firebaseErrorHandler(error);
+    });
+
+    Map<String, dynamic> chargeParent = {"userId": userId, "data": []};
+
+    Map<String, dynamic> chargeDetails = {"payTo": "", "amount": 0};
+
+    for (var expenseDocs in expenses.docs) {
+      final Expense expense = Expense.fromJson(expenseDocs.data());
+
+      if (expense.charges != null) {
+        for (var charge in expense.charges!) {
+          if (charge.userId == userId) {
+            chargeDetails["payTo"] = expense.memberPayId ?? "";
+            chargeDetails["amount"] += charge.price;
+            chargeParent["data"] = chargeDetails;
+          }
+        }
+      }
+    }
+    return chargeParent;
   }
 
   @override

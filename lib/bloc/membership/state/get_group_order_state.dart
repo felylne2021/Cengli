@@ -1,5 +1,7 @@
 import 'package:cengli/bloc/membership/membership.dart';
 
+import '../../../data/modules/transactional/model/group.dart';
+
 class GetGroupOrderLoadingState extends MembershipState {
   const GetGroupOrderLoadingState() : super();
 
@@ -17,10 +19,10 @@ class GetGroupOrderErrorState extends MembershipState {
 }
 
 class GetGroupOrderSuccessState extends MembershipState {
-  final bool isP2p;
+  final Group group;
 
-  const GetGroupOrderSuccessState(this.isP2p) : super();
+  const GetGroupOrderSuccessState(this.group) : super();
 
   @override
-  List<Object?> get props => [isP2p];
+  List<Object?> get props => [group];
 }

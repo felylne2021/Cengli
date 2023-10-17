@@ -60,7 +60,7 @@ class BillsDetailPage extends StatelessWidget {
                 children: [
                   DetailsWidget(
                     description: 'Request by',
-                    value: bill.groupName ?? "",
+                    value: bill.groupId ?? "",
                   ),
                   DetailsWidget(
                     description: 'Transfer to',

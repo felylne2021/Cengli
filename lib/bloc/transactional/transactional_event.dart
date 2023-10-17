@@ -2,6 +2,8 @@ import 'package:cengli/data/modules/transactional/model/expense.dart';
 import 'package:cengli/data/modules/transactional/model/group.dart';
 import 'package:velix/velix.dart';
 
+import '../../data/modules/transactional/model/charges.dart';
+
 abstract class TransactionalEvent extends BaseEvent {
   const TransactionalEvent();
 }
@@ -70,10 +72,21 @@ class FetchGroupsStoreEvent extends TransactionalEvent {
   List<Object?> get props => [userId];
 }
 
+class FetchChargesStoreEvent extends TransactionalEvent {
+  final String userId;
+  final String groupId;
+
+  const FetchChargesStoreEvent(this.userId, this.groupId);
+
+  @override
+  List<Object?> get props => [userId];
+}
+
 class CreateExpenseStoreEvent extends TransactionalEvent {
   final Expense expense;
+  final List<Charges> membersCharged;
 
-  const CreateExpenseStoreEvent(this.expense);
+  const CreateExpenseStoreEvent(this.expense, this.membersCharged);
 
   @override
   List<Object?> get props => [expense];

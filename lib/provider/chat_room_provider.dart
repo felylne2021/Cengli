@@ -40,7 +40,6 @@ class ChatRoomProvider extends ChangeNotifier {
 
     List<Message>? messages;
     if (hash != null) {
-      debugPrint("duarr disana");
       messages = await history(
           limit: FetchLimit.MAX,
           threadhash: hash,

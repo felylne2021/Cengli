@@ -1,6 +1,7 @@
 import 'package:cengli/presentation/group/components/user_item_widget.dart';
 import 'package:cengli/presentation/reusable/appbar/custom_appbar.dart';
 import 'package:cengli/presentation/transfer/send_detail_page.dart';
+import 'package:cengli/presentation/transfer/send_summary_page.dart';
 import 'package:cengli/services/push_protocol/push_restapi_dart.dart' as push;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -60,7 +61,6 @@ class _SendPageState extends State<SendPage> {
             state is SearchUserErrorState;
       }, listener: ((context, state) {
         if (state is SearchUserSuccessState) {
-          debugPrint(state.user.toString());
           userProfile.value = state.user;
           isValid.value = true;
         } else if (state is SearchUserErrorState) {
@@ -148,7 +148,16 @@ class _SendPageState extends State<SendPage> {
                       return KxTextButton(
                               isDisabled: !value,
                               argument: KxTextButtonArgument(
-                                  onPressed: () {},
+                                  onPressed: () => Navigator.of(context)
+                                      .pushNamed(SendSummaryPage.routeName,
+                                          arguments: SendArgument(
+                                              widget.argument.senderChain,
+                                              widget.argument.senderChain,
+                                              widget.argument.selectedAsset,
+                                              widget.argument.assets,
+                                              widget.argument.chains,
+                                              userProfile.value,
+                                              1)),
                                   buttonText: "Transfer",
                                   buttonColor: primaryGreen600,
                                   buttonTextStyle: KxTypography(

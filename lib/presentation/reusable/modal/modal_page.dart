@@ -4,6 +4,7 @@ import 'package:kinetix/kinetix.dart';
 
 import '../../../data/modules/transfer/model/response/chain_response.dart';
 import 'component/modal_header.dart';
+import 'datepicker/date_picker_component.dart';
 
 class ModalListPage extends StatefulWidget {
   const ModalListPage(
@@ -26,7 +27,7 @@ class _ModalListPageState extends State<ModalListPage> {
   Widget build(BuildContext context) {
     return ConstrainedBox(
       constraints: BoxConstraints(
-          maxHeight: MediaQuery.of(context).size.height * 0.9,
+          maxHeight: KxModalUtil().getHeightModal(widget.argument, context),
           minHeight: MediaQuery.of(context).size.height * 0.3),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -58,6 +59,10 @@ class _ModalListPageState extends State<ModalListPage> {
       switch (argument.modalListType) {
         case KxModalListType.general:
           result = modalListBody(argument);
+          break;
+
+        case KxModalListType.datePicker:
+          result = const DatePickerComponent();
           break;
       }
     }

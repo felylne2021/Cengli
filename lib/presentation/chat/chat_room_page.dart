@@ -1,20 +1,17 @@
 import 'package:cengli/presentation/chat/components/chat_bubble_widget.dart';
+import 'package:cengli/presentation/chat/expense/add_expense_page.dart';
 import 'package:cengli/presentation/group/group_detail_page.dart';
 import 'package:cengli/provider/chat_room_provider.dart';
 import 'package:cengli/services/push_protocol/push_restapi_dart.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:kinetix/kinetix.dart';
 
-import '../../bloc/membership/membership.dart';
-import '../../utils/utils.dart';
 import '../../values/values.dart';
 import '../reusable/appbar/group_chat_appbar.dart';
-import 'components/order_item_widget.dart';
 
 class ChatRoomArgument {
   final Feeds room;
@@ -34,13 +31,11 @@ class ChatRoomPage extends ConsumerStatefulWidget {
 
 class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
   late Feeds room;
-  ValueNotifier<bool> isP2p = ValueNotifier(false);
 
   @override
   void initState() {
     room = widget.argument.room;
     super.initState();
-    _getGroupOrder();
   }
 
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
@@ -52,209 +47,137 @@ class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
     return Scaffold(
         key: _scaffoldKey,
         appBar: GroupChatAppbar(
-          appBarTitle: widget.argument.room.groupInformation?.groupName ?? "",
-          appBarSubtitle: ValueListenableBuilder(
-            valueListenable: isP2p,
-            builder: (context, value, child) {
-              if (value) {
-                return Text(
-                  "P2P Order",
-                  style: KxTypography(
-                      type: KxFontType.caption3, color: KxColors.neutral500),
-                );
-              } else {
-                return Text(
-                  "${widget.argument.room.groupInformation?.members.length} Members",
-                  style: KxTypography(
-                      type: KxFontType.caption3, color: KxColors.neutral500),
-                );
-              }
+            appBarTitle: widget.argument.room.groupInformation?.groupName ?? "",
+            appBarSubtitle:
+                "${widget.argument.room.groupInformation?.members.length} Members",
+            leadingCallBack: () => Navigator.of(context).pop(),
+            trailingWidget: CircleAvatar(
+              backgroundColor: primaryGreen600,
+              child: SvgPicture.asset(IC_CREATE_EXPENSES),
+            ),
+            trailingCallBack: () => Navigator.of(context).pushNamed(
+                GroupDetailPage.routeName,
+                arguments: widget.argument.room.chatId),
+            leadingWidget: Container(
+              height: 48,
+              width: 48,
+              decoration: const BoxDecoration(
+                  color: KxColors.neutral200, shape: BoxShape.circle),
+              child: const Icon(
+                CupertinoIcons.person_2_fill,
+                color: KxColors.neutral400,
+              ),
+            )),
+        body: GestureDetector(
+            onTap: () {
+              FocusScope.of(context).unfocus();
             },
-          ),
-          leadingCallBack: () => Navigator.of(context).pop(),
-          trailingWidget: CircleAvatar(
-            backgroundColor: primaryGreen600,
-            child: SvgPicture.asset(IC_CREATE_EXPENSES),
-          ),
-          trailingCallBack: () => Navigator.of(context).pushNamed(
-              GroupDetailPage.routeName,
-              arguments: widget.argument.room.chatId),
-          leadingWidget: ValueListenableBuilder(
-            valueListenable: isP2p,
-            builder: (context, value, child) {
-              if (value) {
-                return Container(
-                  height: 48,
-                  width: 48,
-                  padding: const EdgeInsets.all(8),
-                  decoration:
-                      BoxDecoration(color: softPurple, shape: BoxShape.circle),
-                  child: SvgPicture.asset(IC_P2P),
-                );
-              } else {
-                return Container(
-                  height: 48,
-                  width: 48,
-                  decoration: const BoxDecoration(
-                      color: KxColors.neutral200, shape: BoxShape.circle),
-                  child: const Icon(
-                    CupertinoIcons.person_2_fill,
-                    color: KxColors.neutral400,
-                  ),
-                );
-              }
-            },
-          ),
-        ),
-        body: MultiBlocListener(
-            listeners: [
-              BlocListener<MembershipBloc, MembershipState>(
-                  listenWhen: (previous, state) {
-                return state is GetGroupOrderSuccessState ||
-                    state is GetGroupOrderErrorState;
-              }, listener: ((context, state) {
-                if (state is GetGroupOrderErrorState) {
-                  showToast(state.message);
-                } else if (state is GetGroupOrderSuccessState) {
-                  isP2p.value = state.isP2p;
-                }
-              })),
-            ],
-            child: GestureDetector(
-              onTap: () {
-                FocusScope.of(context).unfocus();
-              },
-              child: SafeArea(
-                bottom: false,
-                child: Column(
-                  children: [
-                    ValueListenableBuilder(
-                      valueListenable: isP2p,
-                      builder: (context, value, child) {
-                        if (value) {
-                          return const OrderItemWidget();
-                        }
-                        return const SizedBox();
-                      },
-                    ),
-                    Expanded(
-                        child: roomVm.isLoading && messageList.isEmpty
-                            ? const Center(child: CupertinoActivityIndicator())
-                            : messageList.isEmpty
-                                ? ValueListenableBuilder(
-                                    valueListenable: isP2p,
-                                    builder: (context, value, child) {
-                                      return Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          Text(
-                                            value
-                                                ? "Start a conversation"
-                                                : "You create a group",
-                                            textAlign: TextAlign.center,
-                                            style: KxTypography(
-                                                type: KxFontType.body2,
-                                                color: KxColors.neutral500),
-                                          ),
-                                          8.0.height,
-                                          Text(
-                                            value ? "" : "Start a conversation",
-                                            textAlign: TextAlign.center,
-                                            style: KxTypography(
-                                                type: KxFontType.fieldText3,
-                                                color: KxColors.neutral500),
-                                          ),
-                                        ],
-                                      ).padding(const EdgeInsets.symmetric(
-                                          horizontal: 68));
-                                    },
-                                  )
-                                : ListView.separated(
-                                    separatorBuilder: (context, index) =>
-                                        const SizedBox(height: 4),
-                                    itemCount: messageList.length,
-                                    reverse: true,
-                                    padding: const EdgeInsets.symmetric(
-                                        vertical: 16),
-                                    itemBuilder: (context, index) {
-                                      final item = messageList[index];
+            child: SafeArea(
+              bottom: false,
+              child: Column(
+                children: [
+                  Expanded(
+                      child: roomVm.isLoading && messageList.isEmpty
+                          ? const Center(child: CupertinoActivityIndicator())
+                          : messageList.isEmpty
+                              ? Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "You create a group",
+                                      textAlign: TextAlign.center,
+                                      style: KxTypography(
+                                          type: KxFontType.body2,
+                                          color: KxColors.neutral500),
+                                    ),
+                                    8.0.height,
+                                    Text(
+                                      "Start a conversation",
+                                      textAlign: TextAlign.center,
+                                      style: KxTypography(
+                                          type: KxFontType.fieldText3,
+                                          color: KxColors.neutral500),
+                                    ),
+                                  ],
+                                ).padding(
+                                  const EdgeInsets.symmetric(horizontal: 68))
+                              : ListView.separated(
+                                  separatorBuilder: (context, index) =>
+                                      const SizedBox(height: 4),
+                                  itemCount: messageList.length,
+                                  reverse: true,
+                                  padding:
+                                      const EdgeInsets.symmetric(vertical: 16),
+                                  itemBuilder: (context, index) {
+                                    final item = messageList[index];
 
-                                      return ChatBubbleWidget(
-                                              name:
-                                                  pCAIP10ToWallet(item.fromDID),
-                                              message: item.messageContent,
-                                              date: DateTime
-                                                  .fromMillisecondsSinceEpoch(
-                                                      item.timestamp ?? 0))
-                                          .padding(const EdgeInsets.symmetric(
-                                              horizontal: 16));
-                                    },
-                                  )),
-                    Container(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 60),
-                      decoration: KxShadowDecoration(
-                          style: KxShadowStyleEnum.elevationTwo),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Expanded(
-                              child: TextFormField(
-                            controller: roomVm.controller,
-                            minLines: 1,
-                            maxLines: 5,
-                            decoration: InputDecoration(
-                                filled: true,
-                                border: const OutlineInputBorder(
-                                  borderRadius:
-                                      BorderRadius.all(Radius.circular(8.0)),
-                                  borderSide: BorderSide.none,
-                                ),
-                                fillColor: KxColors.neutral50,
-                                hintText: "Type here",
-                                hintStyle: KxTypography(
-                                    type: KxFontType.fieldText1,
-                                    color: KxColors.neutral400),
-                                errorBorder: const OutlineInputBorder(
-                                  borderSide:
-                                      BorderSide(color: Colors.red, width: 1.0),
+                                    return ChatBubbleWidget(
+                                            name: pCAIP10ToWallet(item.fromDID),
+                                            message: item.messageContent,
+                                            date: DateTime
+                                                .fromMillisecondsSinceEpoch(
+                                                    item.timestamp ?? 0))
+                                        .padding(const EdgeInsets.symmetric(
+                                            horizontal: 16));
+                                  },
                                 )),
-                          )),
-                          const SizedBox(width: 12),
-                          InkWell(
-                              onTap: () {
-                                FocusScope.of(context).unfocus();
-                                if (!roomVm.isSending) {
-                                  roomVm.onSendMessage();
-                                }
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(10),
-                                decoration: BoxDecoration(
-                                  shape: BoxShape.circle,
-                                  color: primaryGreen600,
-                                ),
-                                child: roomVm.isSending
-                                    ? const CupertinoActivityIndicator()
-                                    : const Center(
-                                        child: Icon(
-                                          Icons.send,
-                                          color: Colors.black,
-                                        ),
+                  Container(
+                    padding: const EdgeInsets.fromLTRB(16, 16, 16, 60),
+                    decoration: KxShadowDecoration(
+                        style: KxShadowStyleEnum.elevationTwo),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                            child: TextFormField(
+                          controller: roomVm.controller,
+                          minLines: 1,
+                          maxLines: 5,
+                          decoration: InputDecoration(
+                              filled: true,
+                              border: const OutlineInputBorder(
+                                borderRadius:
+                                    BorderRadius.all(Radius.circular(8.0)),
+                                borderSide: BorderSide.none,
+                              ),
+                              fillColor: KxColors.neutral50,
+                              hintText: "Type here",
+                              hintStyle: KxTypography(
+                                  type: KxFontType.fieldText1,
+                                  color: KxColors.neutral400),
+                              errorBorder: const OutlineInputBorder(
+                                borderSide:
+                                    BorderSide(color: Colors.red, width: 1.0),
+                              )),
+                        )),
+                        const SizedBox(width: 12),
+                        InkWell(
+                            onTap: () {
+                              FocusScope.of(context).unfocus();
+                              if (!roomVm.isSending) {
+                                roomVm.onSendMessage();
+                              }
+                            },
+                            child: Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: primaryGreen600,
+                              ),
+                              child: roomVm.isSending
+                                  ? const CupertinoActivityIndicator()
+                                  : const Center(
+                                      child: Icon(
+                                        Icons.send,
+                                        color: Colors.black,
                                       ),
-                              ))
-                        ],
-                      ),
-                    )
-                  ],
-                ),
+                                    ),
+                            ))
+                      ],
+                    ),
+                  )
+                ],
               ),
             )));
-  }
-
-  _getGroupOrder() async {
-    context
-        .read<MembershipBloc>()
-        .add(GetGroupOrderEvent(widget.argument.room.chatId ?? ""));
   }
 }

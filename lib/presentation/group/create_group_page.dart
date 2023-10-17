@@ -8,6 +8,7 @@ import 'package:cengli/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kinetix/kinetix.dart';
 
 import '../../values/values.dart';
@@ -26,6 +27,13 @@ class CreateGroupPage extends StatefulWidget {
 class _CreateGroupPageState extends State<CreateGroupPage> {
   TextEditingController nameController = TextEditingController();
   TextEditingController descController = TextEditingController();
+  TextEditingController tokenController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    tokenController.text = "USDC";
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -103,6 +111,17 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
         ).padding(const EdgeInsets.symmetric(horizontal: 16)),
         16.0.height,
         KxFilledTextField(
+          controller: tokenController,
+          title: "Accepted Token",
+          hint: "",
+          prefix: Image.asset(
+            IC_USDC,
+            width: 24,
+          ).padding(const EdgeInsets.only(left: 16, right: 12)),
+          isEnabled: false,
+        ).padding(const EdgeInsets.symmetric(horizontal: 16)),
+        16.0.height,
+        KxFilledTextField(
           controller: descController,
           title: "Description",
           hint: "Short description",
@@ -138,7 +157,6 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
     final List<String> addressMembers = widget.members
         .map((value) => (push.pCAIP10ToWallet(value.walletAddress ?? "")))
         .toList();
-    debugPrint(addressMembers.toString());
     context.read<TransactionalBloc>().add(CreateGroupStoreEvent(Group(
         name: nameController.text,
         groupDescription: descController.text,

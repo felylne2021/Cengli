@@ -6,5 +6,4 @@ export 'state/approve_chat_state.dart';
 export 'membership_bloc.dart';
 export 'membership_state.dart';
 export 'membership_event.dart';
-export 'state/fetch_p2p_state.dart';
 export 'state/get_group_order_state.dart';

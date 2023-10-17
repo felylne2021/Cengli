@@ -188,7 +188,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           PrefKey.walletAddress.key, walletAddress.walletAddress ?? "");
 
       //Create wallet on cometh
-      await _authRepository.createWallet(CreateWalletRequest(
+       await _authRepository.createWallet(CreateWalletRequest(
           walletAddress: walletAddress.walletAddress ?? "",
           publicKeyId: publicKeyId,
           publicKeyX: publicKeyX,

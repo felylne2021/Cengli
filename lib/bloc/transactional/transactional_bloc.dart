@@ -1,4 +1,5 @@
 import 'package:bloc_concurrency/bloc_concurrency.dart';
+import 'package:cengli/bloc/transactional/state_remote/fetch_charges_store_state.dart';
 import 'package:cengli/data/modules/transactional/model/group.dart';
 import 'package:cengli/data/modules/transactional/transactional_local_repository.dart';
 import 'package:cengli/data/modules/transactional/transactional_remote_repository.dart';
@@ -9,6 +10,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:velix/velix.dart';
 import 'package:ethers/signers/wallet.dart' as ethers;
 
+import '../../data/modules/transactional/model/charges.dart';
 import '../../services/services.dart';
 import 'transactional.dart';
 
@@ -26,6 +28,7 @@ class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
     on<FetchExpensesStoreEvent>(_fetchExpensesStore, transformer: sequential());
     on<MigrateDataEvent>(_migrateData, transformer: sequential());
     on<JoinGroupEvent>(_joinGroup, transformer: sequential());
+    on<FetchChargesStoreEvent>(_fetchChargesStore, transformer: sequential());
 
     //*TODO: setup local database
     on<CreateGroupEvent>(_createGroup, transformer: sequential());
@@ -87,7 +90,8 @@ class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
       CreateExpenseStoreEvent event, Emitter<TransactionalState> emit) async {
     emit(const CreateExpenseStoreLoadingState());
     try {
-      await _transactionRepository.createExpense(event.expense);
+      await _transactionRepository.createExpense(
+          event.expense, event.membersCharged);
       emit(const CreateExpenseStoreSuccessState());
     } on AppException catch (error) {
       emit(CreateExpenseStoreErrorState(error.message));
@@ -133,6 +137,21 @@ class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
       emit(JoinGroupErrorState(error.message));
     } catch (error) {
       emit(JoinGroupErrorState(error.toString()));
+    }
+  }
+
+  Future<void> _fetchChargesStore(
+      FetchChargesStoreEvent event, Emitter<TransactionalState> emit) async {
+    emit(const FetchChargesStoreLoadingState());
+
+    try {
+      final Map<String, dynamic> charges =
+          await _transactionRepository.getCharges(event.groupId, event.userId);
+      emit(FetchChargesStoreSuccessState(charges));
+    } on AppException catch (error) {
+      emit(FetchChargesStoreErrorState(error.message));
+    } catch (error) {
+      emit(FetchChargesStoreErrorState(error.toString()));
     }
   }
 

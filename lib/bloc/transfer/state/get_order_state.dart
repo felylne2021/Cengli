@@ -1,6 +1,5 @@
 import 'package:cengli/bloc/transfer/transfer.dart';
-
-import '../../../data/modules/transfer/model/response/order_response.dart';
+import 'package:cengli/data/modules/transfer/model/response/order_response.dart';
 
 class GetOrderLoadingState extends TransferState {
   const GetOrderLoadingState() : super();

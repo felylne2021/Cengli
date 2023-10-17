@@ -15,6 +15,8 @@ TokenResponse _$TokenResponseFromJson(Map<String, dynamic> json) =>
       decimals: (json['decimals'] as num?)?.toDouble(),
       logoURI: json['logoURI'] as String?,
       priceUsd: (json['priceUsd'] as num?)?.toDouble(),
+      createdAt: json['createdAt'] as String?,
+      updatedAt: json['updatedAt'] as String?,
     );
 
 Map<String, dynamic> _$TokenResponseToJson(TokenResponse instance) =>
@@ -26,4 +28,6 @@ Map<String, dynamic> _$TokenResponseToJson(TokenResponse instance) =>
       'decimals': instance.decimals,
       'logoURI': instance.logoURI,
       'priceUsd': instance.priceUsd,
+      'createdAt': instance.createdAt,
+      'updatedAt': instance.updatedAt,
     };
