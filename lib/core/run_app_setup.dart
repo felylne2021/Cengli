@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'app.dart';
 
 void setupRunApp() async {
@@ -11,7 +12,9 @@ void setupRunApp() async {
   await Firebase.initializeApp();
   injectModules();
   configLoading();
-  runApp(const ProviderScope(child: App()));
+
+  initializeDateFormatting()
+      .then((value) => runApp(const ProviderScope(child: App())));
 }
 
 void configLoading() {

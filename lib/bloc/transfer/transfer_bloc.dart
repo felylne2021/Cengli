@@ -1,5 +1,6 @@
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:cengli/data/modules/transactional/transactional_remote_repository.dart';
+import 'package:cengli/data/modules/transfer/model/request/create_order_request.dart';
 import 'package:cengli/data/modules/transfer/transfer_remote_repository.dart';
 import 'package:cengli/services/push_protocol/push_restapi_dart.dart';
 import 'package:cengli/services/services.dart';
@@ -9,6 +10,7 @@ import 'package:ethers/signers/wallet.dart' as ethers;
 
 import '../../data/modules/transactional/model/group.dart';
 import '../../data/utils/collection_util.dart';
+import '../../presentation/p2p/order_detail_page.dart';
 import '../../utils/signer.dart';
 import 'transfer.dart';
 
@@ -23,10 +25,10 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
     on<GetChainsEvent>(_onGetChains, transformer: sequential());
     on<GetTransactionsEvent>(_onGetTransactions, transformer: sequential());
     on<CreateGroupP2pEvent>(_onCreateGroupP2p, transformer: sequential());
-    on<CreateOrderEvent>(_onCreateOrder, transformer: sequential());
     on<GetOrderEvent>(_onGetOrder, transformer: sequential());
     on<UpdateOrderStatusEvent>(_onUpdateOrder, transformer: sequential());
     on<PostTransferEvent>(_onPostTransfer, transformer: sequential());
+    on<GetPartnersEvent>(_onGetPartners, transformer: sequential());
   }
 
   Future<void> _onGetAssets(
@@ -90,6 +92,18 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
           admins: [],
           isPublic: false);
 
+      // Create order
+      final orderCreated = await _transferRemoteRepository.postOrder(
+          CreateOrderRequest(
+              partnerId: event.order.partnerId,
+              buyerUserId: event.order.buyerUserId,
+              buyerAddress: event.order.buyerAddress,
+              amount: event.order.amount,
+              chainId: event.order.chainId,
+              destinationChainId: event.order.destinationChainId,
+              chatId: group?.chatId,
+              tokenAddress: event.order.tokenAddress));
+
       // Create group on firestore
       final storeGroup = Group(
           id: group?.chatId ?? "",
@@ -97,9 +111,7 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
           name: event.group.name,
           members: event.group.members ?? [],
           groupType: GroupTypeEnum.p2p.name,
-          p2pOrderId: "");
-
-      //*TODO: Create order
+          p2pOrderId: orderCreated.id ?? "");
 
       await _transactionalRemoteRepository.createGroup(storeGroup);
 
@@ -111,24 +123,11 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
     }
   }
 
-  Future<void> _onCreateOrder(
-      CreateOrderEvent event, Emitter<TransferState> emit) async {
-    emit(const CreateOrderLoadingState());
-    try {
-      await _transferRemoteRepository.createOrder(event.order);
-      emit(const CreateOrderSuccessState());
-    } on AppException catch (error) {
-      emit(CreateOrderErrorState(error.message));
-    } catch (error) {
-      emit(CreateOrderErrorState(error.toString()));
-    }
-  }
-
   Future<void> _onGetOrder(
       GetOrderEvent event, Emitter<TransferState> emit) async {
     emit(const GetOrderLoadingState());
     try {
-      final order = await _transferRemoteRepository.getOrder(event.groupId);
+      final order = await _transferRemoteRepository.getOrder(event.orderId);
       emit(GetOrderSuccessState(order));
     } on AppException catch (error) {
       emit(GetOrderErrorState(error.message));
@@ -141,8 +140,28 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
       UpdateOrderStatusEvent event, Emitter<TransferState> emit) async {
     emit(const UpdateOrderStatusLoadingState());
     try {
-      await _transferRemoteRepository.updateOrder(event.orderId, event.status);
-      emit(const UpdateOrderStatusSuccessState());
+      switch (event.status) {
+        case OrderStatusEventEnum.accept:
+          await _transferRemoteRepository.acceptOrder(
+              event.orderId, event.callerUserId);
+          emit(const UpdateOrderStatusSuccessState());
+          break;
+        case OrderStatusEventEnum.cancel:
+          await _transferRemoteRepository.cancelOrder(
+              event.orderId, event.callerUserId);
+          emit(const UpdateOrderStatusSuccessState());
+          break;
+        case OrderStatusEventEnum.payment:
+          await _transferRemoteRepository.payOrder(
+              event.orderId, event.callerUserId);
+          emit(const UpdateOrderStatusSuccessState());
+          break;
+        case OrderStatusEventEnum.fund:
+          await _transferRemoteRepository.fundOrder(
+              event.orderId, event.callerUserId);
+          emit(const UpdateOrderStatusSuccessState());
+          break;
+      }
     } on AppException catch (error) {
       emit(UpdateOrderStatusErrorState(error.message));
     } catch (error) {
@@ -163,6 +182,21 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
       emit(PostTransferErrorState(error.message));
     } catch (error) {
       emit(PostTransferErrorState(error.toString()));
+    }
+  }
+
+  Future<void> _onGetPartners(
+      GetPartnersEvent event, Emitter<TransferState> emit) async {
+    emit(const GetPartnersLoadingState());
+    try {
+      final response = await _transferRemoteRepository.getPartners();
+      emit(GetPartnersSuccessState(response));
+    } on AppException catch (error) {
+      emit(GetPartnersErrorState(error.message));
+    } on ApiException catch (error) {
+      emit(GetPartnersErrorState(error.message));
+    } catch (error) {
+      emit(GetPartnersErrorState(error.toString()));
     }
   }
 }

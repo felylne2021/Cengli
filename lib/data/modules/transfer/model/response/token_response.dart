@@ -26,6 +26,12 @@ class TokenResponse extends Equatable {
   @JsonKey(name: 'priceUsd')
   final double? priceUsd;
 
+  @JsonKey(name: 'createdAt')
+  final String? createdAt;
+
+  @JsonKey(name: 'updatedAt')
+  final String? updatedAt;
+
   const TokenResponse(
       {this.address,
       this.chainId,
@@ -33,12 +39,25 @@ class TokenResponse extends Equatable {
       this.symbol,
       this.decimals,
       this.logoURI,
-      this.priceUsd});
+      this.priceUsd,
+      this.createdAt,
+      this.updatedAt});
 
   @override
-  List<Object?> get props => [address, chainId, name, symbol, decimals, logoURI, priceUsd];
+  List<Object?> get props => [
+        address,
+        chainId,
+        name,
+        symbol,
+        decimals,
+        logoURI,
+        priceUsd,
+        createdAt,
+        updatedAt
+      ];
 
   Map<String, dynamic> toJson() => _$TokenResponseToJson(this);
 
-  factory TokenResponse.fromJson(Map<String, dynamic> json) => _$TokenResponseFromJson(json);
+  factory TokenResponse.fromJson(Map<String, dynamic> json) =>
+      _$TokenResponseFromJson(json);
 }

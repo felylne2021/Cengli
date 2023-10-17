@@ -16,9 +16,9 @@ GetIt locator = GetIt.instance;
 
 void injectModules() async {
   BaseOptions commethOptions = BaseOptions(
-      connectTimeout: 6000, receiveTimeout: 60000, followRedirects: false);
+      connectTimeout: 100000, receiveTimeout: 100000, followRedirects: false);
   BaseOptions cengliOptions = BaseOptions(
-      connectTimeout: 6000, receiveTimeout: 60000, followRedirects: false);
+      connectTimeout: 100000, receiveTimeout: 100000, followRedirects: false);
 
   Dio dioCommeth = Dio(commethOptions);
   Dio dioCengli = Dio(cengliOptions);

@@ -4,7 +4,7 @@ part 'bill.g.dart';
 
 @JsonSerializable()
 class Bill extends Equatable {
-  final String? groupName;
+  final String? groupId;
 
   final String? recipient;
 
@@ -22,12 +22,12 @@ class Bill extends Equatable {
 
   final String? amount;
 
-  const Bill(this.groupName, this.recipient, this.tokenUnit, this.chain,
+  const Bill(this.groupId, this.recipient, this.tokenUnit, this.chain,
       this.walletAddress, this.date, this.notes, this.status, this.amount);
 
   @override
   List<Object?> get props => [
-        groupName,
+        groupId,
         recipient,
         tokenUnit,
         chain,

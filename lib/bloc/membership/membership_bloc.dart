@@ -1,11 +1,10 @@
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:cengli/bloc/membership/membership.dart';
+import 'package:cengli/data/modules/auth/model/user_profile.dart';
 import 'package:cengli/data/modules/membership/membership_remote_repository.dart';
-import 'package:cengli/data/utils/collection_util.dart';
 import 'package:cengli/services/push_protocol/push_restapi_dart.dart';
 import 'package:cengli/services/services.dart';
 import 'package:cengli/utils/signer.dart';
-import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:velix/velix.dart';
 import 'package:ethers/signers/wallet.dart' as ethers;
@@ -20,7 +19,6 @@ class MembershipBloc extends Bloc<MembershipEvent, MembershipState> {
     on<GetMembersEvent>(_onGetMembers, transformer: sequential());
     on<GetChatRequestEvent>(_onGetChatRequest, transformer: sequential());
     on<ApproveEvent>(_onApproveChat, transformer: sequential());
-    on<FetchP2pEvent>(_onFetchP2p, transformer: sequential());
     on<GetGroupOrderEvent>(_onGetGroupOrder, transformer: sequential());
   }
 
@@ -76,9 +74,13 @@ class MembershipBloc extends Bloc<MembershipEvent, MembershipState> {
       GetMembersEvent event, Emitter<MembershipState> emit) async {
     emit(const GetMembersInfoLoadingState());
     try {
+      final address = await SessionService.getWalletAddress();
+      final user = await _membershipRemoteRepository.searchUser(null, address);
       final members =
           await _membershipRemoteRepository.getGroupMembersInfo(event.ids);
-
+      if (user != null) {
+        members.add(user);
+      }
       emit(GetMembersInfoSuccessState(members));
     } on AppException catch (error) {
       emit(GetMembersInfoErrorState(error.message));
@@ -134,20 +136,6 @@ class MembershipBloc extends Bloc<MembershipEvent, MembershipState> {
     }
   }
 
-  Future<void> _onFetchP2p(
-      FetchP2pEvent event, Emitter<MembershipState> emit) async {
-    emit(const FetchP2pLoadingState());
-    try {
-      final partners = await _membershipRemoteRepository.fetchPartners();
-      debugPrint(partners.toString());
-      emit(FetchP2pSuccessState(partners));
-    } on AppException catch (error) {
-      emit(FetchP2pErrorState(error.message));
-    } catch (error) {
-      emit(FetchP2pErrorState(error.toString()));
-    }
-  }
-
   Future<void> _onGetGroupOrder(
       GetGroupOrderEvent event, Emitter<MembershipState> emit) async {
     emit(const GetGroupOrderLoadingState());
@@ -156,13 +144,7 @@ class MembershipBloc extends Bloc<MembershipEvent, MembershipState> {
           await _membershipRemoteRepository.getGroupFireStore(event.groupId);
 
       if (group != null) {
-        if (group.groupType == GroupTypeEnum.p2p.name) {
-          emit(const GetGroupOrderSuccessState(true));
-        } else {
-          emit(const GetGroupOrderSuccessState(false));
-        }
-      } else {
-        emit(const GetGroupOrderErrorState("Invalid Id"));
+        emit(GetGroupOrderSuccessState(group));
       }
     } on AppException catch (error) {
       emit(GetGroupOrderErrorState(error.message));

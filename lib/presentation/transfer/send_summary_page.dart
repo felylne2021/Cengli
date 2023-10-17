@@ -3,6 +3,7 @@ import 'package:cengli/data/modules/transfer/model/request/transfer_request.dart
 import 'package:cengli/presentation/home/home_page.dart';
 import 'package:cengli/presentation/reusable/page/status_page.dart';
 import 'package:cengli/presentation/transfer/send_detail_page.dart';
+import 'package:cengli/services/eth_service.dart';
 import 'package:cengli/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -90,7 +91,7 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
                               16.0.height,
                               _item(
                                   "Chain",
-                                  (widget.argument.selectedChain.chainName ??
+                                  (widget.argument.receiverChain.chainName ??
                                           "")
                                       .split(" ")
                                       .first),
@@ -132,6 +133,11 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
                                   argument: KxTextButtonArgument(
                                       onPressed: () {
                                         //*TODO: Sign and Transfer
+                                        EthService().sendTransaction(widget
+                                                .argument
+                                                .receiverProfile
+                                                .walletAddress ??
+                                            "");
                                       },
                                       buttonText: "Transfer",
                                       buttonColor: primaryGreen600,

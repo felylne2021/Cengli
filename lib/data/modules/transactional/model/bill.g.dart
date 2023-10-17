@@ -7,7 +7,7 @@ part of 'bill.dart';
 // **************************************************************************
 
 Bill _$BillFromJson(Map<String, dynamic> json) => Bill(
-      json['groupName'] as String?,
+      json['groupId'] as String?,
       json['recipient'] as String?,
       json['tokenUnit'] as String?,
       json['chain'] as String?,
@@ -19,7 +19,7 @@ Bill _$BillFromJson(Map<String, dynamic> json) => Bill(
     );
 
 Map<String, dynamic> _$BillToJson(Bill instance) => <String, dynamic>{
-      'groupName': instance.groupName,
+      'groupId': instance.groupId,
       'recipient': instance.recipient,
       'tokenUnit': instance.tokenUnit,
       'chain': instance.chain,

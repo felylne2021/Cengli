@@ -1,10 +1,13 @@
-import 'package:cengli/presentation/p2p/order_detail_page.dart';
 import 'package:cengli/values/values.dart';
 import 'package:flutter/material.dart';
 import 'package:kinetix/kinetix.dart';
 
 class OrderItemWidget extends StatelessWidget {
-  const OrderItemWidget({super.key});
+  final String status;
+  final String amount;
+  final Function() detailsCallback;
+  const OrderItemWidget(
+      {super.key, required this.status, required this.amount, required this.detailsCallback});
 
   @override
   Widget build(BuildContext context) {
@@ -17,14 +20,14 @@ class OrderItemWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  "Waiting for approval",
+                  status,
                   style: KxTypography(
                       type: KxFontType.buttonMedium,
                       color: KxColors.neutral700),
                 ),
                 4.0.height,
                 Text(
-                  "Amount: 50 USDC",
+                  amount,
                   style: KxTypography(
                       type: KxFontType.fieldText3, color: KxColors.neutral500),
                 ),
@@ -32,8 +35,7 @@ class OrderItemWidget extends StatelessWidget {
             ),
             24.0.height,
             InkWell(
-                onTap: () =>
-                    Navigator.of(context).pushNamed(OrderDetailPage.routeName),
+                onTap: detailsCallback,
                 child: Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 10),

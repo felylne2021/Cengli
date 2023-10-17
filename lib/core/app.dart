@@ -8,6 +8,9 @@ import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:intl/date_symbol_data_custom.dart';
+import 'package:intl/date_symbol_data_local.dart';
+import 'package:intl/date_time_patterns.dart';
 import 'package:velix/velix.dart';
 
 import '../di/injector.dart';

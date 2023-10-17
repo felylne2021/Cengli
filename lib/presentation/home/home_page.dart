@@ -6,7 +6,9 @@ import 'package:cengli/data/modules/auth/model/user_profile.dart';
 import 'package:cengli/data/modules/transactional/model/expense.dart';
 import 'package:cengli/data/modules/transfer/model/response/balance_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/chain_response.dart';
+import 'package:cengli/data/modules/transfer/model/response/get_partners_response.dart';
 import 'package:cengli/presentation/home/component/bills/bills_page.dart';
+import 'package:cengli/presentation/p2p/p2p_request_page.dart';
 import 'package:cengli/presentation/reusable/notifier/double_notifier.dart';
 import 'package:cengli/presentation/transfer/send_detail_page.dart';
 import 'package:cengli/presentation/transfer/send_page.dart';
@@ -15,6 +17,7 @@ import 'package:flutter/cupertino.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kinetix/kinetix.dart';
 import 'package:intl/intl.dart';
 
@@ -56,10 +59,13 @@ class _HomePageState extends State<HomePage> {
   ValueNotifier<List<BalanceResponse>> assets = ValueNotifier([]);
 
   String username = "";
+  String address = "";
+  String publicId = "";
 
   _getWalletAddress() async {
     walletAddress.value = await SessionService.getWalletAddress();
     username = await SessionService.getUsername();
+
     _getUserData(username);
   }
 
@@ -81,8 +87,8 @@ class _HomePageState extends State<HomePage> {
                 state is GetChainsSuccessState;
           }, listener: ((context, state) {
             if (state is GetChainsSuccessState) {
-              _getAssets(state.chains.first.chainId ?? 0);
-              selectedChain.value = state.chains.first;
+              _getAssets(state.chains.last.chainId ?? 0);
+              selectedChain.value = state.chains.last;
               chains = state.chains;
               _getUserId();
             } else if (state is GetChainsErrorState) {
@@ -156,20 +162,23 @@ class _HomePageState extends State<HomePage> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  //TODO: FILL ONTAP ACTION
                   ActionWidget(
                       title: 'Send',
                       bgColor: softGreen,
                       iconPath: IC_SEND,
-                      onTap: () => Navigator.of(context).pushNamed(
-                          SendPage.routeName,
-                          arguments: SendArgument(
-                              selectedChain.value,
-                              const BalanceResponse(),
-                              assets.value,
-                              chains,
-                              const UserProfile(),
-                              0))),
+                      onTap: () => Navigator.of(context)
+                              .pushNamed(SendPage.routeName,
+                                  arguments: SendArgument(
+                                      selectedChain.value,
+                                      const ChainResponse(),
+                                      const BalanceResponse(),
+                                      assets.value,
+                                      chains,
+                                      const UserProfile(),
+                                      0))
+                              .then((_) {
+                            _getChains();
+                          })),
                   BlocBuilder<AuthBloc, AuthState>(
                     buildWhen: (previous, state) {
                       return state is GetUserDataErrorState ||
@@ -182,9 +191,15 @@ class _HomePageState extends State<HomePage> {
                             title: 'P2P',
                             bgColor: softPurple,
                             iconPath: IC_P2P,
-                            onTap: () => Navigator.of(context).pushNamed(
-                                P2pPage.routeName,
-                                arguments: state.user));
+                            onTap: () => Navigator.of(context)
+                                    .pushNamed(P2pPage.routeName,
+                                        arguments: P2pArgument(
+                                            const GetPartnersResponse(),
+                                            state.user,
+                                            selectedChain.value.chainId ?? 0))
+                                    .then((_) {
+                                  _getChains();
+                                }));
                       } else {
                         return ActionWidget(
                             title: 'P2P',
@@ -195,11 +210,13 @@ class _HomePageState extends State<HomePage> {
                     },
                   ),
                   ActionWidget(
-                      title: 'Bills',
-                      bgColor: softBlue,
-                      iconPath: IC_BILLS,
-                      onTap: () =>
-                          Navigator.of(context).pushNamed(BillsPage.routeName)),
+                    title: 'Bills',
+                    bgColor: softBlue,
+                    iconPath: IC_BILLS,
+                    onTap: () async {
+                      EthService().sendTransaction("receiverAddress");
+                    },
+                  )
                 ],
               ),
             ),
@@ -208,6 +225,11 @@ class _HomePageState extends State<HomePage> {
               activeColor: primaryGreen600,
               onSelected: (index) {
                 currentIndex.value = index;
+                if (index == 0) {
+                  _getAssets(selectedChain.value.chainId ?? 0);
+                } else {
+                  _getUserId();
+                }
               },
               title: segmentedTitles,
               initialIndex: currentIndex.value,
@@ -215,61 +237,124 @@ class _HomePageState extends State<HomePage> {
               padding: 50,
             ),
             14.0.height,
-            DoubleValueListenableBuilder(
-              first: currentIndex,
-              second: expenseResponse,
-              builder: (context, currIndex, expense, child) {
+            ValueListenableBuilder(
+              valueListenable: currentIndex,
+              builder: (context, currIndex, child) {
                 switch (currIndex) {
                   case 1:
-                    return ValueListenableBuilder(
-                      valueListenable: transactions,
-                      builder: (context, value, child) {
-                        return Column(
-                            children: List.generate(value.length, (index) {
-                          return Column(
-                            children: [
-                              HomeItemsWidget(
-                                title: value[index].note ?? "",
-                                subtitle: DateFormat('d MMM y, h:mma').format(
-                                    DateTime.parse(
-                                        value[index].createdAt ?? "")),
-                                value: NumberFormat.currency(
-                                        locale: 'en_US', symbol: '\$')
-                                    .format(value[index].amount),
-                              ),
-                              const Divider(
-                                thickness: 1,
-                                color: KxColors.neutral200,
-                              )
-                            ],
-                          );
-                        }));
+                    return BlocBuilder<TransferBloc, TransferState>(
+                      buildWhen: (previous, state) {
+                        return state is GetTransactionsErrorState ||
+                            state is GetTransactionsLoadingState ||
+                            state is GetTransactionsSuccessState;
+                      },
+                      builder: (context, state) {
+                        if (state is GetTransactionsSuccessState) {
+                          if (state.transactions.isNotEmpty) {
+                            return Column(
+                                children: List.generate(
+                                    state.transactions.length, (index) {
+                              return Column(
+                                children: [
+                                  HomeItemsWidget(
+                                    title: state.transactions[index].note ?? "",
+                                    subtitle: DateFormat('d MMM y, h:mma')
+                                        .format(DateTime.parse(state
+                                                .transactions[index]
+                                                .createdAt ??
+                                            "")),
+                                    value: NumberFormat.currency(
+                                            locale: 'en_US', symbol: '\$')
+                                        .format(
+                                            state.transactions[index].amount),
+                                  ),
+                                  const Divider(
+                                    thickness: 1,
+                                    color: KxColors.neutral200,
+                                  )
+                                ],
+                              );
+                            }));
+                          } else {
+                            return Column(
+                              children: [
+                                Image.asset(
+                                  IMG_EMPTY_CHAT,
+                                  width: 150,
+                                ),
+                                Text(
+                                  "No Transaction Found",
+                                  style: KxTypography(
+                                      type: KxFontType.buttonMedium,
+                                      color: KxColors.neutral700),
+                                )
+                              ],
+                            ).padding(
+                                const EdgeInsetsDirectional.only(top: 24));
+                          }
+                        } else if (state is GetTransactionsLoadingState) {
+                          return const CupertinoActivityIndicator().padding(
+                              const EdgeInsetsDirectional.only(top: 24));
+                        } else {
+                          return const SizedBox();
+                        }
                       },
                     );
                   default:
-                    return ValueListenableBuilder(
-                      valueListenable: assets,
-                      builder: (context, value, child) {
-                        return Column(
-                            children: List.generate(value.length, (index) {
-                          return Column(
-                            children: [
-                              HomeItemsWidget(
-                                title: value[index].token?.name ?? "",
-                                subtitle:
-                                    "${value[index].balance} ${value[index].token?.symbol}",
-                                networkImage: value[index].token?.logoURI,
-                                value: NumberFormat.currency(
-                                        locale: 'en_US', symbol: '\$')
-                                    .format(value[index].balanceUSd),
-                              ),
-                              const Divider(
-                                thickness: 1,
-                                color: KxColors.neutral200,
-                              )
-                            ],
-                          );
-                        }));
+                    return BlocBuilder<TransferBloc, TransferState>(
+                      buildWhen: (previous, state) {
+                        return state is GetAssetsErrorState ||
+                            state is GetAssetsLoadingState ||
+                            state is GetAssetsSuccessState;
+                      },
+                      builder: (context, state) {
+                        if (state is GetAssetsSuccessState) {
+                          final tokens = state.assets.tokens ?? [];
+
+                          if (tokens.isNotEmpty) {
+                            return Column(
+                                children: List.generate(tokens.length, (index) {
+                              return Column(
+                                children: [
+                                  HomeItemsWidget(
+                                    title: tokens[index].token?.name ?? "",
+                                    subtitle:
+                                        "${tokens[index].balance} ${tokens[index].token?.symbol}",
+                                    networkImage: tokens[index].token?.logoURI,
+                                    value: NumberFormat.currency(
+                                            locale: 'en_US', symbol: '\$')
+                                        .format(tokens[index].balanceUSd),
+                                  ),
+                                  const Divider(
+                                    thickness: 1,
+                                    color: KxColors.neutral200,
+                                  )
+                                ],
+                              );
+                            }));
+                          } else {
+                            return Column(
+                              children: [
+                                Image.asset(
+                                  IMG_EMPTY_CHAT,
+                                  width: 150,
+                                ),
+                                Text(
+                                  "No Transaction Found",
+                                  style: KxTypography(
+                                      type: KxFontType.buttonMedium,
+                                      color: KxColors.neutral700),
+                                )
+                              ],
+                            ).padding(
+                                const EdgeInsetsDirectional.only(top: 24));
+                          }
+                        } else if (state is GetAssetsLoadingState) {
+                          return const CupertinoActivityIndicator().padding(
+                              const EdgeInsetsDirectional.only(top: 24));
+                        } else {
+                          return const SizedBox();
+                        }
                       },
                     );
                 }
@@ -342,9 +427,7 @@ class _HomePageState extends State<HomePage> {
                                       const CupertinoActivityIndicator(),
                                     8.0.width,
                                     Text(
-                                      (item.chainName ?? "Polygon")
-                                          .split(" ")
-                                          .first,
+                                      (item.chainName ?? "").split(" ").first,
                                       style: KxTypography(
                                           type: KxFontType.fieldText2,
                                           color: KxColors.neutral700),

@@ -1,6 +1,7 @@
 import 'package:cengli/utils/color_util.dart';
 import 'package:flutter/material.dart';
 
+Color softOrange = Color(getColorHexFromStr("#FBF2EC"));
 Color softGreen = Color(getColorHexFromStr("#E9F8E8"));
 Color softYellow = Color(getColorHexFromStr("#FFF7E6"));
 Color softPurple = Color(getColorHexFromStr("#EDECFB"));

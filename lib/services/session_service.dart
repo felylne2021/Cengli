@@ -100,4 +100,11 @@ class SessionService {
       ),
     );
   }
+
+  static Future<String> getPublicKeyId() async {
+    final walletAddress = await getWalletAddress();
+    final prefs = await SharedPreferences.getInstance();
+    return jsonDecode(
+        prefs.getString(PrefKey.commeth.key + walletAddress) ?? "")['publicKeyId'];
+  }
 }

@@ -8,7 +8,7 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
       this.leadingWidget,
       this.leadingCallback,
       this.trailingWidgets})
-      : preferredSize = const Size.fromHeight(120);
+      : preferredSize = const Size.fromHeight(100);
 
   final String appbarTitle;
   final Widget? leadingWidget;
@@ -21,7 +21,7 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        40.0.height,
+        20.0.height,
         KxAppBarCenterTitle(
           elevationType: KxElevationAppBarEnum.ghost,
           appBarTitle: appbarTitle,

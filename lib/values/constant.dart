@@ -11,5 +11,6 @@ class Constant {
       ? "com.cengli.iosapp.dev"
       : "com.cengli.iosapp";
   static const String appStoreId = "6446429674";
-  static const String commethApiKey = "a83131c6-6c56-48d2-bacd-09ad4c24428b";
+  static const String commethApiKey = "4a6194e8-d56f-4ec3-bc1e-fe821c689dae";
+  static const String formatDate = 'dd MMMM yyyy';
 }

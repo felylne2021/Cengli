@@ -56,7 +56,7 @@ class UserItemWidget extends StatelessWidget {
               ],
             ),
           ],
-        ),
+        ).padding(EdgeInsets.symmetric(horizontal: isShowDivider ? 16 : 0)),
         12.0.height,
         Visibility(
             visible: isShowDivider,

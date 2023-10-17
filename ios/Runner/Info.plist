@@ -60,5 +60,7 @@
 	<string>This feature is used to allow you to attach photos directly to chats</string>
   <key>NSCameraUsageDescription</key>
   <string>This app needs camera access to scan QR codes</string>
+  <key>NSFaceIDUsageDescription</key>
+  <string>This app needs Face id for security of wallet</string>
 </dict>
 </plist>

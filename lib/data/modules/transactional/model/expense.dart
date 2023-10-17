@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
+import 'charges.dart';
 
 part 'expense.g.dart';
 
@@ -22,16 +23,38 @@ class Expense extends Equatable {
   @JsonKey(name: 'date')
   final String? date;
 
+  @JsonKey(name: 'memberPayId')
+  final String? memberPayId;
+
+  @JsonKey(name: 'tokenUnit')
+  final String? tokenUnit;
+
+  @JsonKey(name: 'charges')
+  final List<Charges>? charges;
+
   const Expense(
       {this.id,
       this.title,
       this.groupId,
       this.amount,
       this.category,
+      this.memberPayId,
+      this.tokenUnit,
+      this.charges,
       this.date});
 
   @override
-  List<Object?> get props => [id, title, groupId, amount, category, date];
+  List<Object?> get props => [
+        id,
+        title,
+        groupId,
+        amount,
+        category,
+        date,
+        memberPayId,
+        tokenUnit,
+        charges
+      ];
 
   Map<String, dynamic> toJson() => _$ExpenseToJson(this);
 

@@ -1,12 +1,13 @@
+import 'package:cengli/data/modules/transfer/model/request/create_order_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/transfer_request.dart';
 import 'package:cengli/data/modules/transfer/model/response/assets_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/chain_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/order_response.dart';
+import 'package:cengli/data/modules/transfer/model/response/get_partners_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/transfer_response.dart';
+import 'package:cengli/data/modules/transfer/model/response/update_order_response.dart';
 import 'package:cengli/data/modules/transfer/remote/transfer_api.dart';
 import 'package:cengli/data/modules/transfer/transfer_remote_repository.dart';
-import 'package:cengli/data/utils/collection_util.dart';
-import 'package:cengli/error/error_handler.dart';
 import 'package:velix/velix.dart';
 
 import 'model/response/transaction_response.dart';
@@ -40,41 +41,65 @@ class TransferRemoteDataStore extends TransferRemoteRepository {
   }
 
   @override
-  Future<void> createOrder(OrderResponse order) async {
-    await _firestoreDb
-        .collection(CollectionEnum.orders.name)
-        .add(order.toJson())
-        .catchError((error) {
-      firebaseErrorHandler(error);
-    });
-  }
-
-  @override
-  Future<void> updateOrder(String id, String status) async {
-    await _firestoreDb
-        .collection(CollectionEnum.orders.name)
-        .doc(id)
-        .update({'status': status}).catchError((error) {
-      firebaseErrorHandler(error);
-    });
-  }
-
-  @override
-  Future<OrderResponse> getOrder(String groupId) async {
-    final documents = await _firestoreDb
-        .collection(CollectionEnum.orders.name)
-        .where("group_id", isEqualTo: groupId)
-        .limit(1)
-        .get()
-        .catchError((error) {
-      firebaseErrorHandler(error);
-    });
-    return OrderResponse.fromJson(documents.docs.first.data());
-  }
-
-  @override
   Future<TransferResponse> postTransfer(TransferRequest param) async {
     return await _api.postTransfer(param).catchError((error) {
+      errorHandler(error);
+    });
+  }
+
+  @override
+  Future<List<GetPartnersResponse>> getPartners() async {
+    return await _api.getPartners().catchError((error) {
+      errorHandler(error);
+    });
+  }
+
+  @override
+  Future<OrderResponse> postOrder(CreateOrderRequest param) async {
+    return await _api.postOrder(param).catchError((error) {
+      errorHandler(error);
+    });
+  }
+
+  @override
+  Future<OrderResponse> getOrder(String orderId) async {
+    return await _api.getOrder(orderId).catchError((error) {
+      errorHandler(error);
+    });
+  }
+
+  @override
+  Future<UpdateOrderResponse> acceptOrder(
+      String orderId, String callerUserId) async {
+    return await _api.acceptOrder(orderId, callerUserId).catchError((error) {
+      errorHandler(error);
+    });
+  }
+
+  @override
+  Future<UpdateOrderResponse> cancelOrder(
+      String orderId, String callerUserId) async {
+    return await _api.cancelOrder(orderId, callerUserId).catchError((error) {
+      errorHandler(error);
+    });
+  }
+
+  @override
+  Future<UpdateOrderResponse> payOrder(
+      String orderId, String callerUserId) async {
+    return await _api
+        .donePaymentOrder(orderId, callerUserId)
+        .catchError((error) {
+      errorHandler(error);
+    });
+  }
+
+  @override
+  Future<UpdateOrderResponse> fundOrder(
+      String orderId, String callerUserId) async {
+    return await _api
+        .releaseFundOrder(orderId, callerUserId)
+        .catchError((error) {
       errorHandler(error);
     });
   }

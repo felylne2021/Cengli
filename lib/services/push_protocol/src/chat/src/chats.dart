@@ -19,7 +19,8 @@ Future<List<Feeds>?> chats({
   }
 
   if (!isValidETHAddress(accountAddress)) {
-    throw Exception('Invalid address $accountAddress');
+    //TODO: unhide
+    // throw Exception('Invalid address $accountAddress');
   }
 
   pgpPrivateKey ??= getCachedWallet()?.pgpPrivateKey;
@@ -28,7 +29,9 @@ Future<List<Feeds>?> chats({
   }
 
   if (!isValidETHAddress(accountAddress)) {
-    throw Exception('Invalid address!');
+    //TODO: unhide
+
+    // throw Exception('Invalid address!');
   }
 
   try {
@@ -56,6 +59,7 @@ Future<List<Feeds>?> chats({
     return feedWithInbox;
   } catch (e) {
     log(e);
-    throw Exception('[Push SDK] - API chats: $e');
+//TODO: unhide
+    // throw Exception('[Push SDK] - API chats: $e');
   }
 }

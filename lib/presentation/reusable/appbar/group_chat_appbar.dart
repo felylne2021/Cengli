@@ -12,7 +12,7 @@ class GroupChatAppbar extends StatelessWidget implements PreferredSizeWidget {
       required this.trailingWidget})
       : preferredSize = const Size.fromHeight(64);
   final String appBarTitle;
-  final Widget appBarSubtitle;
+  final String appBarSubtitle;
   final Widget? leadingWidget;
   final Function() leadingCallBack;
   final Function() trailingCallBack;
@@ -50,7 +50,12 @@ class GroupChatAppbar extends StatelessWidget implements PreferredSizeWidget {
                       style: KxTypography(
                           type: KxFontType.body1, color: KxColors.neutral700),
                     ),
-                    appBarSubtitle
+                    Text(
+                      appBarSubtitle,
+                      style: KxTypography(
+                          type: KxFontType.caption3,
+                          color: KxColors.neutral500),
+                    )
                   ],
                 ),
                 InkWell(

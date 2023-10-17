@@ -24,7 +24,7 @@ class StatusPage extends StatelessWidget {
       body: Column(
         children: [
           const Spacer(),
-          SvgPicture.asset(IC_SUCCESS),
+          Image.asset(IMG_SUCCESS, width: 180, height: 180),
           const Spacer(),
           KxTextButton(
                   argument: KxTextButtonArgument(

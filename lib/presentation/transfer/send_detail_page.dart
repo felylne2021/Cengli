@@ -11,14 +11,15 @@ import '../reusable/list/user_address_item_widget.dart';
 import '../reusable/modal/modal_page.dart';
 
 class SendArgument {
-  final ChainResponse selectedChain;
+  final ChainResponse senderChain;
+  final ChainResponse receiverChain;
   final BalanceResponse selectedAsset;
   final List<BalanceResponse> assets;
   final List<ChainResponse> chains;
   final UserProfile receiverProfile;
   final double amount;
 
-  SendArgument(this.selectedChain, this.selectedAsset, this.assets, this.chains,
+  SendArgument(this.senderChain, this.receiverChain, this.selectedAsset, this.assets, this.chains,
       this.receiverProfile, this.amount);
 }
 
@@ -226,6 +227,7 @@ class _SendDetailPageState extends State<SendDetailPage> {
                           onPressed: () => Navigator.of(context).pushNamed(
                               SendSummaryPage.routeName,
                               arguments: SendArgument(
+                                  widget.argument.senderChain,
                                   selectedChain.value,
                                   selectedAsset.value,
                                   [],

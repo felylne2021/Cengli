@@ -115,7 +115,7 @@ class _ChatePageState extends ConsumerState<ChatPage> {
                     thickness: 4,
                   ),
                 ],
-              );
+              ).visibility(spaces.isNotEmpty);
             }
             return const SizedBox();
           },
