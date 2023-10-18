@@ -19,6 +19,7 @@ model Chain {
   logoURI        String
 
   tokens Token[]
+  comethSponsoredAddresses ComethSponsoredAddress[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -136,4 +137,15 @@ model OrderChat {
   isActive Boolean @default(true)
 
   order P2POrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+}
+
+model ComethSponsoredAddress {
+  chainId Int
+  targetAddress String
+  chain   Chain @relation(fields: [chainId], references: [chainId], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([chainId, targetAddress])
 }

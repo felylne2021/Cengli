@@ -14,8 +14,10 @@ import { partnerWorker } from './workers/partnerWorker.js';
 import { accountRoutes } from './routes/accountRoutes.js';
 import { transferRoutes } from './routes/transferRoutes.js';
 import { infoRoutes } from './routes/infoRoutes.js';
-import { docs } from './routes/docs.js';
 import { p2pRoutes } from './routes/p2pRoutes.js';
+import { comethRoutes } from './routes/comethRoutes.js';
+
+import { docs } from './routes/docs.js';
 
 
 const fastify = Fastify({ logger: false });
@@ -57,6 +59,10 @@ fastify.register(infoRoutes, {
 
 fastify.register(p2pRoutes, {
   prefix: '/p2p'
+})
+
+fastify.register(comethRoutes, {
+  prefix: '/cometh'
 })
 
 // Docs
