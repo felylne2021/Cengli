@@ -41,6 +41,21 @@ export const comethRoutes = async (server) => {
     )
   }
 
+  const EIP712_SAFE_TX_TYPES = {
+    SafeTx: [
+      { type: 'address', name: 'to' },
+      { type: 'uint256', name: 'value' },
+      { type: 'bytes', name: 'data' },
+      { type: 'uint8', name: 'operation' },
+      { type: 'uint256', name: 'safeTxGas' },
+      { type: 'uint256', name: 'baseGas' },
+      { type: 'uint256', name: 'gasPrice' },
+      { type: 'address', name: 'gasToken' },
+      { type: 'address', name: 'refundReceiver' },
+      { type: 'uint256', name: 'nonce' }
+    ]
+  };
+
   const getUserNonce = async (address) => {
     const nonce = Number(await SafeFactoryContract(address).getFunction('nonce')())
     console.log('nonce', nonce)
@@ -134,18 +149,48 @@ export const comethRoutes = async (server) => {
           to: safeTxDataTyped.to,
           value: safeTxDataTyped.value,
           data: safeTxDataTyped.data,
-          operation: 0,
-          safeTxGas: 0,
-          baseGas: 0,
-          gasPrice: 0,
+          operation: "0",
+          safeTxGas: "0",
+          baseGas: "0",
+          gasPrice: "0",
           gasToken: '0x0000000000000000000000000000000000000000',
           refundReceiver: '0x0000000000000000000000000000000000000000',
           // maybe nonce will be converted to bigint in client
-          nonce: safeTxDataTyped.nonce ? safeTxDataTyped.nonce : await getUserNonce(walletAddress)
+          nonce: safeTxDataTyped.nonce ? safeTxDataTyped.nonce : (await getUserNonce(walletAddress)).toString()
         }
       }
 
       console.log('toBeSignedTransaction', toBeSignedTransaction)
+
+      // const test = await wallet.getProvider().getSigner()._signTypedData(toBeSignedTransaction.domain, EIP712_SAFE_TX_TYPES, toBeSignedTransaction.types)
+
+      const testWallet = new ethers.Wallet('0x50017319f778fa0b7f71a4abe90d2709499a4e14dad3136bbb27607c6b9a2f78', provider)
+      console.log('testWallet', testWallet.address)
+      const testSign = await testWallet.signTypedData(toBeSignedTransaction.domain, EIP712_SAFE_TX_TYPES, toBeSignedTransaction.types)
+      console.log('testSign', testSign)
+
+      // const txSignature = yield this.signTransaction(safeTxDataTyped);
+      // return yield this.API.relayTransaction({
+      //     safeTxData: safeTxDataTyped,
+      //     signatures: txSignature,
+      //     walletAddress: this.getAddress()
+      // });
+      // send the transaction
+
+      toBeSignedTransaction.types.signatures = testSign
+
+      console.log('safeTxDataTyped', safeTxDataTyped)
+      const tx = await axios({
+        method: 'POST',
+        url: `${COMETH_API_BASE_URL}/wallets/0x001eAaF6F02e2266C912a3F33F07Bb9934D4A202/relay`,
+        headers: {
+          apiKey: process.env.COMETH_API_KEY
+        },
+        data: toBeSignedTransaction.types
+      })
+
+      console.log('tx', tx.data)
+
 
       return reply.code(200).send(toBeSignedTransaction)
     } catch (error) {
