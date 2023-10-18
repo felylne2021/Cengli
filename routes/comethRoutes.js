@@ -1,7 +1,6 @@
 
 import {
   ComethWallet,
-  ComethProvider,
   ConnectAdaptor,
   SupportedNetworks,
 } from "@cometh/connect-sdk"
@@ -57,9 +56,15 @@ export const comethRoutes = async (server) => {
   };
 
   const getUserNonce = async (address) => {
-    const nonce = Number(await SafeFactoryContract(address).getFunction('nonce')())
-    console.log('nonce', nonce)
-    return nonce
+    try {
+      const nonce = Number(await SafeFactoryContract(address).getFunction('nonce')())
+      console.log('nonce', nonce)
+      return nonce.toString()
+    } catch (error) {
+      // can error if address have not created a safe yet
+      console.error('An error occurred:', error)
+      return "0"
+    }
   }
 
   server.get('/sponsored-address', async (request, reply) => {
@@ -164,10 +169,10 @@ export const comethRoutes = async (server) => {
 
       // const test = await wallet.getProvider().getSigner()._signTypedData(toBeSignedTransaction.domain, EIP712_SAFE_TX_TYPES, toBeSignedTransaction.types)
 
-      const testWallet = new ethers.Wallet('0x50017319f778fa0b7f71a4abe90d2709499a4e14dad3136bbb27607c6b9a2f78', provider)
-      console.log('testWallet', testWallet.address)
-      const testSign = await testWallet.signTypedData(toBeSignedTransaction.domain, EIP712_SAFE_TX_TYPES, toBeSignedTransaction.types)
-      console.log('testSign', testSign)
+      // const testWallet = new ethers.Wallet('0x50017319f778fa0b7f71a4abe90d2709499a4e14dad3136bbb27607c6b9a2f78', provider)
+      // console.log('testWallet', testWallet.address)
+      // const testSign = await testWallet.signTypedData(toBeSignedTransaction.domain, EIP712_SAFE_TX_TYPES, toBeSignedTransaction.types)
+      // console.log('testSign', testSign)
 
       // const txSignature = yield this.signTransaction(safeTxDataTyped);
       // return yield this.API.relayTransaction({
@@ -177,19 +182,19 @@ export const comethRoutes = async (server) => {
       // });
       // send the transaction
 
-      toBeSignedTransaction.types.signatures = testSign
+      // toBeSignedTransaction.types.signatures = testSign
 
-      console.log('safeTxDataTyped', safeTxDataTyped)
-      const tx = await axios({
-        method: 'POST',
-        url: `${COMETH_API_BASE_URL}/wallets/0x001eAaF6F02e2266C912a3F33F07Bb9934D4A202/relay`,
-        headers: {
-          apiKey: process.env.COMETH_API_KEY
-        },
-        data: toBeSignedTransaction.types
-      })
+      // console.log('safeTxDataTyped', safeTxDataTyped)
+      // const tx = await axios({
+      //   method: 'POST',
+      //   url: `${COMETH_API_BASE_URL}/wallets/0x001eAaF6F02e2266C912a3F33F07Bb9934D4A202/relay`,
+      //   headers: {
+      //     apiKey: process.env.COMETH_API_KEY
+      //   },
+      //   data: toBeSignedTransaction.types
+      // })
 
-      console.log('tx', tx.data)
+      // console.log('tx', tx.data)
 
 
       return reply.code(200).send(toBeSignedTransaction)
@@ -212,7 +217,6 @@ export const comethRoutes = async (server) => {
         provider: provider
       })
 
-      // wallet._prepareTransaction('0x7ee6eb942378f7082fc58ab09dafd5f7c33a98bd', safeTransactionData.value, safeTransactionData.data)
       return reply.code(200).send(safeTxGas)
     } catch (error) {
       console.error('An error occurred:', error)
