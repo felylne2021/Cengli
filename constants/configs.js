@@ -5,7 +5,7 @@ export const CHAINS_CONFIGS = [
     chainId: 5,
     chainName: 'Goerli',
     rpcUrl: 'https://goerli.infura.io/v3',
-    logoURI: 'https://s2.coinmarketcap.com/static/img/coins/64x64/1027.png',
+    logoURI: 'https://s2.coinmarketcap.com/static/img/coins/128x128/1027.png',
     nativeCurrency: {
       name: 'Goerli Ether',
       symbol: 'GTH',
@@ -18,7 +18,7 @@ export const CHAINS_CONFIGS = [
         name: "USD Coin",
         symbol: "USDC",
         decimals: 6,
-        logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/3408.png",
+        logoURI: "https://s2.coinmarketcap.com/static/img/coins/128x128/3408.png",
         priceUsd: 1
       }
     ]
@@ -27,7 +27,7 @@ export const CHAINS_CONFIGS = [
     chainId: 420,
     chainName: 'Optimism Goerli',
     rpcUrl: 'https://endpoints.omniatech.io/v1/op/goerli/public',
-    logoURI: 'https://s2.coinmarketcap.com/static/img/coins/64x64/11840.png',
+    logoURI: 'https://s2.coinmarketcap.com/static/img/coins/128x128/11840.png',
     nativeCurrency: {
       name: 'Goerli Ether',
       symbol: 'GTH',
@@ -40,7 +40,7 @@ export const CHAINS_CONFIGS = [
         name: "USD Coin",
         symbol: "USDC",
         decimals: 6,
-        logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/3408.png",
+        logoURI: "https://s2.coinmarketcap.com/static/img/coins/128x128/3408.png",
         priceUsd: 1
       }
     ]
@@ -49,7 +49,7 @@ export const CHAINS_CONFIGS = [
     chainId: 80001,
     chainName: 'Polygon Mumbai Testnet',
     rpcUrl: 'https://polygon-mumbai-bor.publicnode.com',
-    logoURI: 'https://s2.coinmarketcap.com/static/img/coins/64x64/3408.png',
+    logoURI: 'https://s2.coinmarketcap.com/static/img/coins/128x128/3408.png',
     nativeCurrency: {
       name: 'Matic',
       symbol: 'MATIC',
@@ -62,7 +62,7 @@ export const CHAINS_CONFIGS = [
         name: "USD Coin",
         symbol: "USDC",
         decimals: 6,
-        logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/3408.png",
+        logoURI: "https://s2.coinmarketcap.com/static/img/coins/128x128/3408.png",
         priceUsd: 1
       }
     ]
@@ -72,7 +72,7 @@ export const CHAINS_CONFIGS = [
     chainName: "Avalanche Fuji Testnet",
     rpcUrl: "https://avalanche-fuji-c-chain.publicnode.com",
     blockExplorerUrls: "https://testnet.snowtrace.io",
-    logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/5805.png",
+    logoURI: "https://s2.coinmarketcap.com/static/img/coins/128x128/5805.png",
     nativeCurrency: {
       name: "Avalanche",
       symbol: "AVAX",
@@ -84,7 +84,29 @@ export const CHAINS_CONFIGS = [
         name: "USD Coin",
         symbol: "USDC",
         decimals: 6,
-        logoURI: "https://s2.coinmarketcap.com/static/img/coins/64x64/3408.png",
+        logoURI: "https://s2.coinmarketcap.com/static/img/coins/128x128/3408.png",
+        priceUsd: 1
+      }
+    ]
+  },
+  {
+    chainId: 421613,
+    chainName: "Arbitrum Testnet Goerli",
+    rpcUrl: "https://arb-goerli.g.alchemy.com/v2/demo",
+    blockExplorerUrls: "https://goerli.arbiscan.io",
+    logoURI: "https://s2.coinmarketcap.com/static/img/coins/128x128/11841.png",
+    nativeCurrency: {
+      name: "Arbitrum Goerli",
+      symbol: "AGOR",
+      decimals: 18
+    },
+    tokens: [
+      {
+        address: "0xfd064A18f3BF249cf1f87FC203E90D8f650f2d63",
+        name: "USD Coin",
+        symbol: "USDC",
+        decimals: 6,
+        logoURI: "https://s2.coinmarketcap.com/static/img/coins/128x128/3408.png",
         priceUsd: 1
       }
     ]

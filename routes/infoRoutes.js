@@ -4,7 +4,7 @@ export const infoRoutes = async (server) => {
   server.get('/chains', async (request, reply) => {
     const chains = await prismaClient.chain.findMany({
       orderBy: {
-        chainId: 'desc'
+        chainId: 'asc'
       }
     })
 
