@@ -35,12 +35,12 @@ export const fetchUSDCTokenBalance = async (partnerId) => {
 
   for (const partner of partners) {
     // const balance = Number(await contractByChain.checkBalance(partner.address, usdcToken.address));
-    console.log({
-      partnerId: partner.id,
-      tokenAddress: usdcToken.address,
-      tokenChainId: usdcToken.chainId,
-      name: partner.name
-    })
+    // console.log({
+    //   partnerId: partner.id,
+    //   tokenAddress: usdcToken.address,
+    //   tokenChainId: usdcToken.chainId,
+    //   name: partner.name
+    // })
     const balance = await checkBalance(usdcToken?.address, partner.address)
 
     // upsert partner's USDC balance on AVAX

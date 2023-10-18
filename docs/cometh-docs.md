@@ -104,6 +104,16 @@ Approval of 10,000 USDC to a target address (mostly Febi's or P2PEscrow Contract
     console.log('populated approve transaction', approveTransaction);
     ```
 
+    **populatedTransaction Example:**
+    ```json
+    {
+      "chainId": 43113,
+      "data": "0x095ea7b30000000000000000000000001e1960b1528541fa85a331c8933521073d6d368200000000000000000000000000000000000000000000000000000004a817c800",
+      "from": "0x1E1960b1528541fa85a331C8933521073D6d3682",
+      "to": "0x7ee6eb942378f7082fc58ab09dafd5f7c33a98bd"
+    }
+    ```
+
 4. **Request Prepared Transaction**:
    Send a request to Cengli's backend to prepare the transaction.
 
