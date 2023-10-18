@@ -7,21 +7,21 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 export const docs = async (server) => {
-  // Docs
-  const md = new MarkdownIt({
-    html: true,
-    linkify: true,
-    typographer: true
-  });
+   // Docs
+   const md = new MarkdownIt({
+      html: true,
+      linkify: true,
+      typographer: true
+   });
 
-  const getStyledHtml = (htmlContent) => {
-    const styledHtml = `
+   const getStyledHtml = (htmlContent) => {
+      const styledHtml = `
       <!DOCTYPE html>
       <html>
-        <meta charset="utf-8">
-        <head>
-          <link href="https://cdn.jsdelivr.net/npm/github-markdown-css@5.3.0/github-markdown.min.css" rel="stylesheet"></link>
-          <style>body {
+      <meta charset="utf-8">
+      <head>
+         <link href="https://cdn.jsdelivr.net/npm/github-markdown-css@5.3.0/github-markdown.min.css" rel="stylesheet"></link>
+         <style>body {
             font-family: Helvetica, arial, sans-serif;
             font-size: 14px;
             line-height: 1.6;
@@ -316,38 +316,38 @@ export const docs = async (server) => {
                word-wrap: break-word;
             }
          }
-          </style>
-        </head>
-        <body style="display: flex; flex-direction: column">
-          <div style="max-width: 80rem; margin-left: auto; margin-right: auto">
+         </style>
+      </head>
+      <body style="display: flex; flex-direction: column">
+         <div>
             ${htmlContent}
-          </div>
-        </body>
+         </div>
+      </body>
       </html>
-    `;
+   `;
 
-    return styledHtml;
-  }
+      return styledHtml;
+   }
 
-  server.get('', async (request, reply) => {
-    const markdownPath = path.join(__dirname, '../docs/docs.md');
-    const markdownContent = fs.readFileSync(markdownPath, 'utf-8');
-    const htmlContent = md.render(markdownContent);
+   server.get('', async (request, reply) => {
+      const markdownPath = path.join(__dirname, '../docs/docs.md');
+      const markdownContent = fs.readFileSync(markdownPath, 'utf-8');
+      const htmlContent = md.render(markdownContent);
 
-    const styledHtml = getStyledHtml(htmlContent);
+      const styledHtml = getStyledHtml(htmlContent);
 
-    reply.type('text/html').send(styledHtml);
-  });
+      reply.type('text/html').send(styledHtml);
+   });
 
-  server.get('/cometh', async (request, reply) => {
-    const markdownPath = path.join(__dirname, '../docs/cometh-docs.md');
-    const markdownContent = fs.readFileSync(markdownPath, 'utf-8');
-    const htmlContent = md.render(markdownContent);
+   server.get('/cometh', async (request, reply) => {
+      const markdownPath = path.join(__dirname, '../docs/cometh-docs.md');
+      const markdownContent = fs.readFileSync(markdownPath, 'utf-8');
+      const htmlContent = md.render(markdownContent);
 
-    const styledHtml = getStyledHtml(htmlContent);
+      const styledHtml = getStyledHtml(htmlContent);
 
-    reply.type('text/html').send(styledHtml);
-  })
+      reply.type('text/html').send(styledHtml);
+   })
 }
 
 

@@ -3,6 +3,7 @@
 ### Preliminary Steps
 
 Before proceeding, ensure to check all transactions and contracts on [Snowtrace Testnet](https://testnet.snowtrace.io/).
+All things done here will be on Avalanche Fuji Testnet (chainId: 43113), and the RPC URL is `https://rpc.ankr.com/avalanche_fuji`.
 
 ### Wallet Creation Flow
 
@@ -150,3 +151,84 @@ Approval of 10,000 USDC to a target address (mostly Febi's or P2PEscrow Contract
    Check the Cometh's wallet address on [Snowtrace Testnet](https://testnet.snowtrace.io) to verify the transaction.
 
 ---
+---
+---
+
+# Cometh API
+---
+
+## 1. **Fetch Sponsored Addresses**
+**Endpoint:** `GET /sponsored-address`
+- Description: Retrieve a list of all sponsored addresses.
+
+**Response Example:**
+```json
+[
+    {
+        "chainId": 43113,
+        "targetAddress": "0x36285302bd47f1db795dd8ebe2d2de0b866298b4",
+        "createdAt": "2023-10-18T20:16:32.125Z",
+        "updatedAt": "2023-10-18T20:21:31.612Z"
+    },
+    {
+        "chainId": 43113,
+        "targetAddress": "0x4a7a4ffad91b4f4588dc61f517b7c712c9e7bfd7",
+        "createdAt": "2023-10-18T20:16:32.274Z",
+        "updatedAt": "2023-10-18T20:21:31.788Z"
+    }
+]
+```
+
+---
+
+## 2. **Add Sponsored Address**
+**Endpoint:** `POST /sponsored-address`
+- Description: Register a new sponsored address.
+
+**Request Example:**
+```json
+{
+    "targetAddress": "0x36285302bd47F1db795dD8ebe2d2De0B866298b4"
+}
+```
+
+---
+
+## 3. **Prepare Transaction**
+**Endpoint:** `POST /prepare-tx`
+- Description: Prepare a transaction by estimating the gas, checking the sponsored address, and formatting the transaction data.
+
+**Request Example:**
+```json
+{
+    "walletAddress": "0x94d48965E73603a7CCf1632177ce5A9e0a5A16C6",
+    "safeTransactionData": {
+        "from": "0x94d48965E73603a7CCf1632177ce5A9e0a5A16C6",
+        "to": "0x7ee6eb942378f7082fc58ab09dafd5f7c33a98bd",
+        "data": "0x095ea7b3000000000000000000000000278a2d5b5c8696882d1d2002ce107efc74704ecf00000000000000000000000000000000000000000000d3c21bcecceda1000000",
+        "value": "0"
+    }
+}
+```
+
+**Response Example:**
+```json
+{
+    "domain": {
+        "chainId": 43113,
+        "verifyingContract": "0x94d48965E73603a7CCf1632177ce5A9e0a5A16C6"
+    },
+    "types": {
+        "to": "0x7ee6eb942378f7082fc58ab09dafd5f7c33a98bd",
+        "value": "0",
+        "data": "0x095ea7b3000000000000000000000000278a2d5b5c8696882d1d2002ce107efc74704ecf00000000000000000000000000000000000000000000d3c21bcecceda1000000",
+        "operation": "0",
+        "safeTxGas": "0",
+        "baseGas": "0",
+        "gasPrice": "0",
+        "gasToken": "0x0000000000000000000000000000000000000000",
+        "refundReceiver": "0x0000000000000000000000000000000000000000",
+        "nonce": "5"
+    }
+}
+```
