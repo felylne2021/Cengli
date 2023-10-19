@@ -1,0 +1,9 @@
+{
+  "dependencies": {
+    "@hyperlane-xyz/sdk": "^1.5.8",
+    "@openzeppelin/contracts": "^4.8.0",
+    "@openzeppelin/contracts-upgradeable": "^4.8.0",
+    "avalanche": "^3.16.0",
+    "dotenv": "^16.3.1"
+  }
+}

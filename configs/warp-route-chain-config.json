@@ -1,0 +1,29 @@
+{
+  "fuji": {
+    "chainId": 43113,
+    "name": "fuji",
+    "displayName": "Fuji",
+    "nativeToken": { "name": "Avalanche", "symbol": "AVAX", "decimals": 18 },
+    "publicRpcUrls": [{ "http": "https://avalanche-fuji-c-chain.publicnode.com" }],
+    "blockExplorers": [
+      {
+        "name": "Snowtrace",
+        "url": "https://testnet.snowtrace.io",
+        "apiUrl": "https://api-testnet.snowtrace.io",
+        "family": "snowtrace"
+      }
+    ],
+    "blocks": {
+      "confirmations": 1,
+      "reorgPeriod": 2,
+      "estimateBlockTime": 13
+    }
+  },
+  "mumbai": {
+    "chainId": 80001,
+    "name": "mumbai",
+    "displayName": "Mumbai",
+    "nativeToken": { "name": "Matic", "symbol": "MATIC", "decimals": 18 },
+    "publicRpcUrls": [{ "http": "https://polygon-mumbai-bor.publicnode.com" }]
+  }
+}
