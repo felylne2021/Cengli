@@ -16,7 +16,7 @@ class AccountDetailsPage extends StatelessWidget {
           children: [
             ProfileMenuWidget(
               title: 'Email',
-              description: user.email ?? "no data",
+              description: "dummy@email.com",
               onTap: () {},
               isShowDivider: true,
             ),

@@ -80,7 +80,6 @@ class _AddExpensePageState extends State<AddExpensePage> {
     context
         .read<TransactionalBloc>()
         .add(CreateExpenseStoreEvent(expense, charges));
-    // Navigator.of(context).pop();
   }
 
   _getUserData(String name) {
@@ -181,16 +180,10 @@ class _AddExpensePageState extends State<AddExpensePage> {
                     state is GetGroupErrorState;
               }, listener: ((context, state) {
                 if (state is GetGroupSuccessState) {
-                  hideLoading();
                   debugPrint(state.group.toString());
                   groupId = state.group.id ?? "";
                   _getMembers(state.group.members ?? []);
-                } else if (state is GetGroupErrorState) {
-                  hideLoading();
-                  showToast(state.message);
-                } else if (state is GetGroupLoadingState) {
-                  showLoading();
-                }
+                } else if (state is GetGroupErrorState) {}
               })),
               BlocListener<AuthBloc, AuthState>(listenWhen: (previous, state) {
                 return state is GetUserDataLoadingState ||
@@ -211,12 +204,12 @@ class _AddExpensePageState extends State<AddExpensePage> {
                       state is CreateExpenseStoreSuccessState ||
                       state is CreateExpenseStoreErrorState;
                 },
-                listener: (previous, state) {
+                listener: (previous, state) async {
                   if (state is CreateExpenseStoreSuccessState) {
-                    context
-                        .read<TransactionalBloc>()
-                        .add(FetchExpensesStoreEvent(groupId));
-                    Navigator.of(context).pop();
+                    await _getExpense().then((value) {
+                      members.value.clear();
+                      Navigator.of(context).pop();
+                    });
                   }
                 },
               )
@@ -229,16 +222,10 @@ class _AddExpensePageState extends State<AddExpensePage> {
               },
               builder: (context, state) {
                 if (state is GetMembersInfoSuccessState) {
+                  members.value.clear();
                   members.value.addAll(state.membersInfo);
-                  members.value.add(userData.value);
                   _insertData();
                   return addExpenseBody(context, members.value);
-                } else if (state is GetMembersInfoLoadingState) {
-                  return Center(
-                    child: CircularProgressIndicator(
-                      color: primaryGreen600,
-                    ),
-                  );
                 } else {
                   return Center(
                     child: CircularProgressIndicator(
@@ -345,7 +332,6 @@ class _AddExpensePageState extends State<AddExpensePage> {
             8.0.height,
 
             InkWell(
-              //TODO: show modal select people
               onTap: () {
                 KxGeneralListModalArgument argument =
                     KxGeneralListModalArgument(
@@ -551,6 +537,10 @@ class _AddExpensePageState extends State<AddExpensePage> {
     DateTime currentDate = DateTime(now.year, now.month, now.day);
     String currentDateText = DateFormat(FORMAT_DATE).format(currentDate);
     return currentDateText;
+  }
+
+  Future<void> _getExpense() async {
+    context.read<TransactionalBloc>().add(FetchExpensesStoreEvent(groupId));
   }
 
   _getMembers(List<String> ids) {

@@ -1,7 +1,6 @@
 import 'package:cengli/presentation/group/components/user_item_widget.dart';
 import 'package:cengli/presentation/reusable/appbar/custom_appbar.dart';
 import 'package:cengli/presentation/transfer/send_detail_page.dart';
-import 'package:cengli/presentation/transfer/send_summary_page.dart';
 import 'package:cengli/services/push_protocol/push_restapi_dart.dart' as push;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -109,9 +108,11 @@ class _SendPageState extends State<SendPage> {
                     builder: (context, value, child) {
                       if (value.userName != null) {
                         return UserItemWidget(
-                            name: value.name ?? "",
-                            username: value.userName ?? "",
-                            address: value.walletAddress ?? "");
+                          name: value.name ?? "",
+                          username: value.userName ?? "",
+                          address: value.walletAddress ?? "",
+                          image: value.imageProfile ?? "",
+                        );
                       } else {
                         if (isValidEth) {
                           return Row(
@@ -149,7 +150,7 @@ class _SendPageState extends State<SendPage> {
                               isDisabled: !value,
                               argument: KxTextButtonArgument(
                                   onPressed: () => Navigator.of(context)
-                                      .pushNamed(SendSummaryPage.routeName,
+                                      .pushNamed(SendDetailPage.routeName,
                                           arguments: SendArgument(
                                               widget.argument.senderChain,
                                               widget.argument.senderChain,

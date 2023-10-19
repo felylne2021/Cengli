@@ -15,6 +15,7 @@ const String IMG_ONBOARD4 = _IMAGE_PATH + 'img-onboard4.png';
 const String IMG_TOPUP = _IMAGE_PATH + 'img-topup.png';
 const String IMG_EMPTY_CHAT = _IMAGE_PATH + 'img-empty-chat.png';
 const String IMG_SUCCESS = _IMAGE_PATH + 'img-success.png';
+const String IMG_EMPTY_GROUP = _IMAGE_PATH + 'img-empty-group.png';
 
 //* ICONS
 const String IC_WALLET = _ICON_PATH + 'ic-wallet.svg';

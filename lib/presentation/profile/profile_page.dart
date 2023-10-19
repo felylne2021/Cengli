@@ -1,10 +1,9 @@
 import 'package:cengli/bloc/auth/state/get_user_state.dart';
 import 'package:cengli/data/modules/auth/model/user_profile.dart';
-import 'package:cengli/presentation/chat/expense/add_expense_page.dart';
 import 'package:cengli/presentation/profile/components/account_details_page.dart';
 import 'package:cengli/presentation/profile/components/profile_menu_widget.dart';
 import 'package:cengli/presentation/profile/edit/edit_profile_page.dart';
-import 'package:cengli/services/services.dart';
+import 'package:dartx/dartx.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -81,22 +80,33 @@ class _ProfilePageState extends State<ProfilePage> {
   }
 
   Column _profileBody(UserProfile user) {
+    final imageProfile = user.imageProfile ?? "";
     return Column(
       mainAxisAlignment: MainAxisAlignment.start,
       crossAxisAlignment: CrossAxisAlignment.center,
       children: [
         Stack(
           children: [
-            Container(
-              height: 100,
-              width: 100,
-              decoration: const BoxDecoration(
-                  color: KxColors.neutral200, shape: BoxShape.circle),
-              child: const Icon(
-                CupertinoIcons.person_fill,
-                color: KxColors.neutral400,
+            if (imageProfile.isNotNullOrEmpty)
+              Container(
+                  height: 100,
+                  width: 100,
+                  decoration: const BoxDecoration(shape: BoxShape.circle),
+                  child: Image.network(
+                    imageProfile,
+                    fit: BoxFit.cover,
+                  ))
+            else
+              Container(
+                height: 100,
+                width: 100,
+                decoration: const BoxDecoration(
+                    color: KxColors.neutral200, shape: BoxShape.circle),
+                child: const Icon(
+                  CupertinoIcons.person_fill,
+                  color: KxColors.neutral400,
+                ),
               ),
-            ),
             Positioned(
               right: 0,
               bottom: 0,

@@ -75,4 +75,15 @@ class MembershipRemoteDataStore extends MembershipRemoteRepository {
     }
     return users;
   }
+
+  @override
+  Future<void> updateUsername(
+      String fullname, String username, String userId) async {
+    await _firestoreDb
+        .collection(CollectionEnum.users.name)
+        .doc(userId)
+        .update({"name": fullname, "userName": username}).catchError((error) {
+      firebaseErrorHandler(error);
+    });
+  }
 }

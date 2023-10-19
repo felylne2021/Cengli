@@ -5,4 +5,5 @@ abstract class MembershipRemoteRepository {
   Future<UserProfile?> searchUser(String? username, String? address);
   Future<Group?> getGroupFireStore(String id);
   Future<List<UserProfile>> getGroupMembersInfo(List<String> ids);
+  Future<void> updateUsername(String fullname, String username, String userId);
 }

@@ -15,7 +15,7 @@ class AccountProvider extends ChangeNotifier {
   Future<void> connectWebSocket(String address, String pgpPrivateKey) async {
     final options = SocketInputOptions(
       user: address,
-      env: ENV.staging,
+      env: ENV.prod,
       socketType: SOCKETTYPES.CHAT,
       socketOptions: SocketOptions(
         autoConnect: true,
@@ -34,25 +34,25 @@ class AccountProvider extends ChangeNotifier {
     pushSDKSocket.on(
       EVENTS.CONNECT,
       (data) async {
-        print(' NOTIFICATION EVENTS.CONNECT: $data');
+        debugPrint(' NOTIFICATION EVENTS.CONNECT: $data');
       },
     );
     // To get messages in realtime
     pushSDKSocket.on(EVENTS.CHAT_RECEIVED_MESSAGE, (message) {
-      print('CHAT NOTIFICATION EVENTS.CHAT_RECEIVED_MESSAGE: $message');
+      debugPrint('CHAT NOTIFICATION EVENTS.CHAT_RECEIVED_MESSAGE: $message');
       ref.read(conversationsProvider).onRecieveSocket(message);
     });
 
     // To get group creation or updation events
     pushSDKSocket.on(EVENTS.CHAT_GROUPS, (groupInfo) {
-      print('CHAT NOTIFICATION EVENTS.CHAT_GROUPS: $groupInfo');
+      debugPrint('CHAT NOTIFICATION EVENTS.CHAT_GROUPS: $groupInfo');
       ref.read(conversationsProvider).onRecieveSocket(groupInfo);
     });
 
     pushSDKSocket.on(
       EVENTS.DISCONNECT,
       (data) {
-        print(' NOTIFICATION EVENTS.DISCONNECT: $data');
+        debugPrint(' NOTIFICATION EVENTS.DISCONNECT: $data');
       },
     );
 

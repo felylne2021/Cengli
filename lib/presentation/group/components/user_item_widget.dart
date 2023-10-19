@@ -8,12 +8,14 @@ class UserItemWidget extends StatelessWidget {
   final String username;
   final String address;
   final bool isShowDivider;
+  final String image;
 
   const UserItemWidget(
       {super.key,
       required this.name,
       required this.username,
       required this.address,
+      required this.image,
       this.isShowDivider = false});
 
   @override
@@ -23,16 +25,27 @@ class UserItemWidget extends StatelessWidget {
         12.0.height,
         Row(
           children: [
-            Container(
-              height: 40,
-              width: 40,
-              decoration: const BoxDecoration(
-                  shape: BoxShape.circle, color: KxColors.neutral200),
-              child: const Icon(
-                CupertinoIcons.person_fill,
-                color: KxColors.neutral400,
+            if (image.isNotEmpty)
+              Container(
+                height: 40,
+                width: 40,
+                decoration: const BoxDecoration(shape: BoxShape.circle),
+                child: Image.network(
+                  image,
+                  fit: BoxFit.cover,
+                ),
+              )
+            else
+              Container(
+                height: 40,
+                width: 40,
+                decoration: const BoxDecoration(
+                    shape: BoxShape.circle, color: KxColors.neutral200),
+                child: const Icon(
+                  CupertinoIcons.person_fill,
+                  color: KxColors.neutral400,
+                ),
               ),
-            ),
             16.0.width,
             Text(name,
                 style: KxTypography(

@@ -1,4 +1,3 @@
-import '../../../data/modules/transactional/model/charges.dart';
 import '../transactional.dart';
 
 class FetchChargesStoreLoadingState extends TransactionalState {
@@ -18,7 +17,7 @@ class FetchChargesStoreErrorState extends TransactionalState {
 }
 
 class FetchChargesStoreSuccessState extends TransactionalState {
-  final Map<String, dynamic> charges;
+  final List<Map<String, dynamic>> charges;
 
   const FetchChargesStoreSuccessState(this.charges) : super();
 

@@ -29,6 +29,7 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
     on<UpdateOrderStatusEvent>(_onUpdateOrder, transformer: sequential());
     on<PostTransferEvent>(_onPostTransfer, transformer: sequential());
     on<GetPartnersEvent>(_onGetPartners, transformer: sequential());
+    on<PrepareTransactionEvent>(_onPrepareTransaction, transformer: sequential());
   }
 
   Future<void> _onGetAssets(
@@ -79,7 +80,7 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
     emit(const CreateGroupP2pLoadingState());
     try {
       final walletAddress = await SessionService.getWalletAddress();
-      final privateKey = await SessionService.getSignerAddress(walletAddress);
+      final privateKey = await SessionService.getPrivateKey(walletAddress);
 
       // Create group on push
       final group = await createGroup(
@@ -144,22 +145,22 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
         case OrderStatusEventEnum.accept:
           await _transferRemoteRepository.acceptOrder(
               event.orderId, event.callerUserId);
-          emit(const UpdateOrderStatusSuccessState());
+          emit(UpdateOrderStatusSuccessState(event.status));
           break;
         case OrderStatusEventEnum.cancel:
           await _transferRemoteRepository.cancelOrder(
               event.orderId, event.callerUserId);
-          emit(const UpdateOrderStatusSuccessState());
+          emit(UpdateOrderStatusSuccessState(event.status));
           break;
         case OrderStatusEventEnum.payment:
           await _transferRemoteRepository.payOrder(
               event.orderId, event.callerUserId);
-          emit(const UpdateOrderStatusSuccessState());
+          emit(UpdateOrderStatusSuccessState(event.status));
           break;
         case OrderStatusEventEnum.fund:
           await _transferRemoteRepository.fundOrder(
               event.orderId, event.callerUserId);
-          emit(const UpdateOrderStatusSuccessState());
+          emit(UpdateOrderStatusSuccessState(event.status));
           break;
       }
     } on AppException catch (error) {
@@ -197,6 +198,21 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
       emit(GetPartnersErrorState(error.message));
     } catch (error) {
       emit(GetPartnersErrorState(error.toString()));
+    }
+  }
+
+   Future<void> _onPrepareTransaction(
+      PrepareTransactionEvent event, Emitter<TransferState> emit) async {
+    emit(const PrepareTransactionLoadingState());
+    try {
+      final response = await _transferRemoteRepository.prepareTx(event.param);
+      emit(PrepareTransactionSuccessState(response));
+    } on AppException catch (error) {
+      emit(PrepareTransactionErrorState(error.message));
+    } on ApiException catch (error) {
+      emit(PrepareTransactionErrorState(error.message));
+    } catch (error) {
+      emit(PrepareTransactionErrorState(error.toString()));
     }
   }
 }

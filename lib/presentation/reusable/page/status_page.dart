@@ -1,8 +1,6 @@
 import 'package:cengli/presentation/reusable/appbar/custom_appbar.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kinetix/kinetix.dart';
-
 import '../../../values/values.dart';
 
 class StatusArgument {

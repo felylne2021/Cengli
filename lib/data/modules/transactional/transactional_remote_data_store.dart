@@ -64,7 +64,8 @@ class TransactionalDataStore extends TransactionalRemoteRepository {
   }
 
   @override
-  Future<Map<String, dynamic>> getCharges(String groupId, String userId) async {
+  Future<List<Map<String, dynamic>>> getCharges(
+      String groupId, String userId) async {
     final expenses = await _firestoreDb
         .collection(CollectionEnum.expenses.name)
         .where("group_id", isEqualTo: groupId)
@@ -74,23 +75,52 @@ class TransactionalDataStore extends TransactionalRemoteRepository {
     });
 
     Map<String, dynamic> chargeParent = {"userId": userId, "data": []};
-
+    Map<String, dynamic> noDuplicateChargeData = {};
     Map<String, dynamic> chargeDetails = {"payTo": "", "amount": 0};
+    List<Map<String, dynamic>> chargesData = [];
+    List<int> sameDataIndex = [];
 
+// *Through every expenses in certain group
     for (var expenseDocs in expenses.docs) {
       final Expense expense = Expense.fromJson(expenseDocs.data());
 
       if (expense.charges != null) {
         for (var charge in expense.charges!) {
           if (charge.userId == userId) {
+            // *Get every charges from certain expense
             chargeDetails["payTo"] = expense.memberPayId ?? "";
             chargeDetails["amount"] += charge.price;
-            chargeParent["data"] = chargeDetails;
+            chargeParent["data"].add(chargeDetails);
+            chargeDetails = {"payTo": "", "amount": 0};
           }
         }
       }
     }
-    return chargeParent;
+
+    //*Remove any duplicate charges and merge them into existing charges
+
+    for (var item in chargeParent["data"]) {
+      String payTo = item['payTo'];
+      double amount = item['amount'];
+
+      if (noDuplicateChargeData.containsKey(payTo)) {
+        noDuplicateChargeData[payTo] += amount;
+      } else {
+        noDuplicateChargeData[payTo] = amount;
+      }
+    }
+
+    List<Map<String, dynamic>> resultList = noDuplicateChargeData.entries
+        .map((entry) => {
+              "payTo": entry.key,
+              "amount": entry.value,
+            })
+        .toList();
+
+    chargeParent["data"].clear();
+    chargeParent["data"] = resultList;
+    chargesData.add(chargeParent);
+    return chargesData;
   }
 
   @override
@@ -197,5 +227,31 @@ class TransactionalDataStore extends TransactionalRemoteRepository {
     await database.delete(CollectionEnum.groups.name);
     await database.delete(CollectionEnum.expenses.name);
     await database.delete(CollectionEnum.participants.name);
+  }
+
+  @override
+  List<Map<String, dynamic>> removeDuplicateCharges(
+      List<Map<String, dynamic>> charges) {
+    Map<String, dynamic> aggregateData = {};
+
+    for (var item in charges) {
+      String payTo = item['payTo'];
+      double amount = item['amount'];
+
+      if (aggregateData.containsKey(payTo)) {
+        aggregateData[payTo] += amount;
+      } else {
+        aggregateData[payTo] = amount;
+      }
+    }
+
+    List<Map<String, dynamic>> resultList = aggregateData.entries
+        .map((entry) => {
+              "payTo": entry.key,
+              "amount": entry.value,
+            })
+        .toList();
+
+    return resultList;
   }
 }

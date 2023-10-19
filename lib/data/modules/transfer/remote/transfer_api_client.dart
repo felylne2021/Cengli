@@ -1,9 +1,11 @@
 import 'package:cengli/data/modules/transfer/model/request/create_order_request.dart';
+import 'package:cengli/data/modules/transfer/model/request/prepare_erc20_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/transfer_request.dart';
 import 'package:cengli/data/modules/transfer/model/response/assets_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/chain_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/order_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/get_partners_response.dart';
+import 'package:cengli/data/modules/transfer/model/response/transaction_data_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/transaction_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/transfer_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/update_order_response.dart';
@@ -54,4 +56,7 @@ abstract class TransferApiClient {
 
   @GET('p2p/orders/{id}')
   Future<OrderResponse> getOrder(@Path('id') String orderId);
+
+  @POST('cometh/prepare-erc20-tx')
+  Future<TransactionDataResponse> prepareTx(@Body() PrepareErc20Request param);
 }

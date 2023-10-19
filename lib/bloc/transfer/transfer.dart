@@ -10,3 +10,4 @@ export 'state/get_order_state.dart';
 export 'state/update_order_state.dart';
 export 'state/transfer_state.dart';
 export 'state/get_partners_state.dart';
+export 'state/prepare_transaction_state.dart';

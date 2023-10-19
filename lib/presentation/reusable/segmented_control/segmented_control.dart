@@ -1,3 +1,4 @@
+import 'package:cengli/values/styles.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:kinetix/kinetix.dart';
@@ -10,23 +11,25 @@ class SegmentedControl extends StatefulWidget {
       required this.onSelected,
       required this.title,
       required this.segmentType,
+      required this.currentIndex,
       this.initialIndex = 0,
       this.sliderBackgroundColor = KxColors.neutral100,
       this.activeColor = KxColors.primary600,
-      this.padding = 60});
+      this.padding = 0});
   final Function(int index) onSelected;
   final List<String> title;
   final SegmentedControlEnum segmentType;
   final Color activeColor;
   final Color sliderBackgroundColor;
   final int initialIndex;
+  final ValueNotifier<int> currentIndex;
   final double padding;
+
   @override
   State<SegmentedControl> createState() => _SegmentAccountRolesState();
 }
 
 class _SegmentAccountRolesState extends State<SegmentedControl> {
-  ValueNotifier<int> currentIndex = ValueNotifier(0);
   final changeDuration = const Duration(milliseconds: 200);
   Map<int, Widget> segmentChildren = {};
 
@@ -34,7 +37,6 @@ class _SegmentAccountRolesState extends State<SegmentedControl> {
   void initState() {
     super.initState();
     fillSegmentControl();
-    currentIndex.value = widget.initialIndex;
   }
 
   @override
@@ -44,7 +46,7 @@ class _SegmentAccountRolesState extends State<SegmentedControl> {
 
   Widget segmentBody(SegmentedControlEnum type) {
     return type == SegmentedControlEnum.ghost
-        ? segmentFlatBody(widget.padding)
+        ? segmentFlatBody()
         : segmentSliderBody();
   }
 
@@ -52,59 +54,68 @@ class _SegmentAccountRolesState extends State<SegmentedControl> {
     return SizedBox(
       width: double.infinity,
       child: ValueListenableBuilder(
-          valueListenable: currentIndex,
+          valueListenable: widget.currentIndex,
           builder: (context, value, child) {
             return CupertinoSlidingSegmentedControl(
               children: segmentChildren,
               padding: const EdgeInsets.all(2),
-              groupValue: currentIndex.value,
+              groupValue: widget.currentIndex.value,
               backgroundColor: widget.sliderBackgroundColor,
               thumbColor: Colors.white,
               onValueChanged: (value) {
-                currentIndex.value = value ?? widget.initialIndex;
-                widget.onSelected(currentIndex.value);
+                widget.currentIndex.value = value ?? widget.initialIndex;
+                widget.onSelected(widget.currentIndex.value);
               },
             );
           }),
     );
   }
 
-  SizedBox segmentFlatBody(double padding) {
+  SizedBox segmentFlatBody() {
     bool valueChanged = false;
     return SizedBox(
-        height: 30,
+        height: 50,
         child: SingleChildScrollView(
           scrollDirection: Axis.horizontal,
           child: Row(
             children: List.generate(
                 widget.title.length,
                 (index) => GestureDetector(
-                    onTap: () {
-                      // *If value is changed
-                      if (index != widget.initialIndex) {
-                        valueChanged = true;
-                      }
-                      currentIndex.value = index;
+                      onTap: () {
+                        // *If value is changed
+                        if (index != widget.initialIndex) {
+                          valueChanged = true;
+                        }
+                        widget.currentIndex.value = index;
 
-                      // *If initial index isn't 0
-                      if (widget.initialIndex != 0 && (valueChanged == false)) {
-                        currentIndex.value = widget.initialIndex;
-                        valueChanged = true;
-                      }
-                      widget.onSelected(currentIndex.value);
-                    },
-                    child: Padding(
-                      padding: EdgeInsets.symmetric(horizontal: padding),
+                        // *If initial index isn't 0
+                        if (widget.initialIndex != 0 &&
+                            (valueChanged == false)) {
+                          widget.currentIndex.value = widget.initialIndex;
+                          valueChanged = true;
+                        }
+                        widget.onSelected(widget.currentIndex.value);
+                      },
                       child: ValueListenableBuilder(
-                          valueListenable: currentIndex,
-                          builder: (context, value, child) {
+                          valueListenable: widget.currentIndex,
+                          builder: (_, value, child) {
                             return AnimatedContainer(
                               curve: Curves.fastOutSlowIn,
+                              width: MediaQuery.of(context).size.width != 0
+                                  ? (MediaQuery.of(context).size.width /
+                                          widget.title.length) -
+                                      widget.padding
+                                  : null,
+                              padding: EdgeInsets.symmetric(
+                                  horizontal:
+                                      MediaQuery.of(context).size.width == 0
+                                          ? 35
+                                          : 2),
                               decoration: BoxDecoration(
                                 border: Border(
                                     bottom: BorderSide(
                                   width: 3,
-                                  color: index == currentIndex.value
+                                  color: index == widget.currentIndex.value
                                       ? widget.activeColor
                                       : Colors.transparent,
                                 )),
@@ -113,28 +124,22 @@ class _SegmentAccountRolesState extends State<SegmentedControl> {
                               child: Center(
                                 child: FittedBox(
                                   fit: BoxFit.fitWidth,
-                                  child: Padding(
-                                    padding: EdgeInsets.symmetric(
-                                        horizontal:
-                                            MediaQuery.of(context).size.width *
-                                                0.065),
-                                    child: Text(
-                                      textAlign: TextAlign.center,
-                                      widget.title[index],
-                                      style: index == currentIndex.value
-                                          ? KxTypography(
-                                              type: KxFontType.buttonMedium,
-                                              color: KxColors.neutral700)
-                                          : KxTypography(
-                                              type: KxFontType.buttonMedium,
-                                              color: KxColors.neutral500),
-                                    ),
-                                  ),
+                                  child: Text(
+                                    textAlign: TextAlign.center,
+                                    widget.title[index],
+                                    style: index == widget.currentIndex.value
+                                        ? CengliTypography(
+                                            type: CengliFontType.subtitle6,
+                                            color: KxColors.neutral700)
+                                        : CengliTypography(
+                                            type: CengliFontType.subtitle6,
+                                            color: KxColors.neutral500),
+                                  ).padding(const EdgeInsets.only(bottom: 5)),
                                 ),
                               ),
                             );
                           }),
-                    ))),
+                    )),
           ),
         ));
   }

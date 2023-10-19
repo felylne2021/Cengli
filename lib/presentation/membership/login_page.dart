@@ -1,4 +1,6 @@
+
 import 'package:cengli/presentation/reusable/appbar/custom_appbar.dart';
+import 'package:cengli/services/biometric_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kinetix/kinetix.dart';
@@ -40,7 +42,7 @@ class _LoginPageState extends State<LoginPage> {
                     errorMessage.value = "This username is taken";
                     isValid.value = false;
                   } else {
-                    errorMessage.value = "";
+                    errorMessage.value = "Username Available";
                     isValid.value = true;
                   }
                 } else if (state is CheckUsernameLoadingState) {
@@ -74,29 +76,35 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    KxFilledTextField(
+                      title: "Make your username for your Cengli Account",
+                      controller: controller,
+                      hint: "Username",
+                      suffix: InkWell(
+                          onTap: () => _checkUsername(),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 12, vertical: 10),
+                            margin: const EdgeInsets.only(right: 6),
+                            decoration: BoxDecoration(
+                                color: primaryGreen600,
+                                borderRadius: BorderRadius.circular(12)),
+                            child: Text("Check",
+                                style: KxTypography(
+                                    type: KxFontType.buttonMedium,
+                                    color: KxColors.neutral700)),
+                          )),
+                    ),
                     ValueListenableBuilder(
                       valueListenable: errorMessage,
                       builder: (context, value, child) {
-                        return KxFilledTextField(
-                          title: "Make your username for your Cengli Account",
-                          controller: controller,
-                          hint: "Username",
-                          errorMessage: value.isEmpty ? null : value,
-                          suffix: InkWell(
-                              onTap: () => _checkUsername(),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 10),
-                                margin: const EdgeInsets.only(right: 6),
-                                decoration: BoxDecoration(
-                                    color: primaryGreen600,
-                                    borderRadius: BorderRadius.circular(12)),
-                                child: Text("Check",
-                                    style: KxTypography(
-                                        type: KxFontType.buttonMedium,
-                                        color: KxColors.neutral700)),
-                              )),
-                        );
+                        return Text(value,
+                                style: KxTypography(
+                                    type: KxFontType.caption2,
+                                    color: value.contains("taken")
+                                        ? darkYellow
+                                        : successGreen))
+                            .padding(const EdgeInsets.only(top: 8));
                       },
                     ),
                     30.0.height,
@@ -107,7 +115,14 @@ class _LoginPageState extends State<LoginPage> {
                         return KxTextButton(
                                 isDisabled: !value,
                                 argument: KxTextButtonArgument(
-                                    onPressed: () => _login(),
+                                    onPressed: () async {
+                                      bool isApprove = await BiometricService
+                                          .authenticateWithBiometrics();
+                                      debugPrint(isApprove.toString());
+                                      if (isApprove) {
+                                        _login();
+                                      }
+                                    },
                                     buttonText: "Submit",
                                     buttonColor: primaryGreen600,
                                     buttonTextStyle: KxTypography(

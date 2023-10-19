@@ -1,4 +1,3 @@
-import 'package:cengli/data/modules/transfer/model/response/order_response.dart';
 import 'package:cengli/data/utils/collection_util.dart';
 import 'package:cengli/presentation/reusable/appbar/custom_appbar.dart';
 import 'package:cengli/presentation/reusable/modal/modal_confirmation.dart';
@@ -54,7 +53,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
               }, listener: (context, state) {
                 if (state is UpdateOrderStatusSuccessState) {
                   hideLoading();
-                  Navigator.of(context).pop(widget.argument.orderId);
+                  Navigator.of(context).pop(state.status);
                 } else if (state is UpdateOrderStatusLoadingState) {
                   showLoading();
                 } else if (state is UpdateOrderStatusErrorState) {

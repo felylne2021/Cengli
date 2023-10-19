@@ -1,6 +1,5 @@
 import 'package:cengli/bloc/auth/auth.dart';
 import 'package:cengli/bloc/auth/state/get_user_state.dart';
-import 'package:cengli/bloc/transactional/transactional.dart';
 import 'package:cengli/bloc/transfer/transfer.dart';
 import 'package:cengli/data/modules/auth/model/user_profile.dart';
 import 'package:cengli/data/modules/transactional/model/expense.dart';
@@ -13,11 +12,11 @@ import 'package:cengli/presentation/reusable/notifier/double_notifier.dart';
 import 'package:cengli/presentation/transfer/send_detail_page.dart';
 import 'package:cengli/presentation/transfer/send_page.dart';
 import 'package:cengli/services/services.dart';
+import 'package:cengli/values/styles.dart';
 import 'package:flutter/cupertino.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kinetix/kinetix.dart';
 import 'package:intl/intl.dart';
 
@@ -69,12 +68,6 @@ class _HomePageState extends State<HomePage> {
     _getUserData(username);
   }
 
-  _getExpenses() async {
-    // TODO: refactor dyanmic group ID
-    context.read<TransactionalBloc>().add(
-        const FetchExpensesStoreEvent("983abe5e-078d-4a82-8f14-cd88997992e1"));
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,8 +80,8 @@ class _HomePageState extends State<HomePage> {
                 state is GetChainsSuccessState;
           }, listener: ((context, state) {
             if (state is GetChainsSuccessState) {
-              _getAssets(state.chains.last.chainId ?? 0);
-              selectedChain.value = state.chains.last;
+              _getAssets(state.chains.first.chainId ?? 0);
+              selectedChain.value = state.chains.first;
               chains = state.chains;
               _getUserId();
             } else if (state is GetChainsErrorState) {
@@ -214,7 +207,7 @@ class _HomePageState extends State<HomePage> {
                     bgColor: softBlue,
                     iconPath: IC_BILLS,
                     onTap: () async {
-                      EthService().sendTransaction("receiverAddress");
+                      Navigator.of(context).pushNamed(BillsPage.routeName);
                     },
                   )
                 ],
@@ -233,8 +226,9 @@ class _HomePageState extends State<HomePage> {
               },
               title: segmentedTitles,
               initialIndex: currentIndex.value,
+              currentIndex: currentIndex,
               segmentType: SegmentedControlEnum.ghost,
-              padding: 50,
+              padding: 16,
             ),
             14.0.height,
             ValueListenableBuilder(
@@ -379,8 +373,8 @@ class _HomePageState extends State<HomePage> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text("Wallet",
-                          style: KxTypography(
-                              type: KxFontType.subtitle4,
+                          style: CengliTypography(
+                              type: CengliFontType.subtitle4,
                               color: KxColors.neutral700)),
                       InkWell(
                         onTap: () {

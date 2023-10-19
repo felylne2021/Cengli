@@ -10,7 +10,7 @@ class GroupChatAppbar extends StatelessWidget implements PreferredSizeWidget {
       required this.leadingCallBack,
       required this.trailingCallBack,
       required this.trailingWidget})
-      : preferredSize = const Size.fromHeight(64);
+      : preferredSize = const Size.fromHeight(90);
   final String appBarTitle;
   final String appBarSubtitle;
   final Widget? leadingWidget;
@@ -44,7 +44,6 @@ class GroupChatAppbar extends StatelessWidget implements PreferredSizeWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    //TODO: REFACTOR AS IT'S NOT ACCORDING TO FIGMA
                     Text(
                       appBarTitle,
                       style: KxTypography(

@@ -58,8 +58,9 @@ class _P2pPageState extends ConsumerState<P2pPage> {
               },
               title: segmentedTitles,
               initialIndex: currentIndex.value,
+              currentIndex: currentIndex,
               segmentType: SegmentedControlEnum.ghost,
-              padding: 50,
+              padding: 16,
             ),
             16.0.height,
             ValueListenableBuilder(
