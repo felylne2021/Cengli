@@ -36,7 +36,7 @@ const config: HardhatUserConfig = {
       accounts: [PRIVATE_KEY],
     },
     avax: {
-      url: "https://api.avax-test.network/ext/bc/C/rpc",
+      url: "https://api.zan.top/node/v1/avax/fuji/public/ext/bc/C/rp",
       accounts: [PRIVATE_KEY],
     },
     arbitrum: {
@@ -56,7 +56,7 @@ const config: HardhatUserConfig = {
     coinmarketcap: CMC_API_KEY,
   },
   etherscan: {
-    apiKey: OPSCAN_API_KEY
+    apiKey: AVAXSCAN_API_KEY
   },
 };
 
