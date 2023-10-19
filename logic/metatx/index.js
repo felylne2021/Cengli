@@ -10,7 +10,7 @@ const TestContractABI = require("../../build/contracts/TestContract.json").abi;
 const ForwarderContractABI = require("../../build/contracts/CengliForwarder.json").abi;
 
 exports.metaTxTest = async function () {
-  const provider = new ethers.JsonRpcProvider("https://goerli.infura.io/v3/0be86a45a4c3431398571a7c81165708");
+  const provider = new ethers.JsonRpcProvider("https://rpc.ankr.com/eth_goerli");
 
   // declare the wallet from private key
   const privateKey = process.env.TEST_PRIVATE_KEY;
@@ -24,6 +24,11 @@ exports.metaTxTest = async function () {
     runnerAddress: runnerWallet.address
   })
 
+  const balance = await provider.getBalance('0xF29ceaa619f5f231D96836206D903c26EF0CAe3d')
+  console.log("balance", balance.toString());
+
+  return
+
   // Call captureFlag on TestContract
   const contract = new ethers.Contract(TEST_CONTRACT_ADDRESS, TestContractABI, wallet);
 
@@ -34,19 +39,29 @@ exports.metaTxTest = async function () {
   const fee = await wallet.provider?.getFeeData()
 
   console.log("gasEstimate", gasEstimate.toString());
+
+  console.log("tx", {
+    from: wallet.address,
+    value: ethers.parseEther("0.01"),
+    nonce: await wallet.provider?.getTransactionCount(wallet.address),
+    gasLimit: Number(gasEstimate),
+    gasPrice: Number(fee?.gasPrice),
+    chainId: 5
+  })
+
   const captureFlagTransaction = await contract.captureFlag.populateTransaction({
     from: wallet.address,
     value: ethers.parseEther("0.01"),
     nonce: await wallet.provider?.getTransactionCount(wallet.address),
-    gasLimit: gasEstimate,
-    gasPrice: fee?.gasPrice,
+    gasLimit: Number(gasEstimate),
+    gasPrice: Number(fee?.gasPrice),
     chainId: 5
   })
   console.log("captureFlagTransaction", captureFlagTransaction);
 
   const signedTx = await wallet.signTransaction(captureFlagTransaction);
   console.log("signedTx", signedTx);
-  
-  const tx = await runnerWallet.provider?.broadcastTransaction(signedTx);
-  console.log("tx", tx);
+
+  // const tx = await runnerWallet.provider?.broadcastTransaction(signedTx);
+  // console.log("tx", tx);
 };
