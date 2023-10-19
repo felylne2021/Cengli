@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { ethers } from "ethers6";
 import { readFileSync } from "fs";
 import { prismaClient } from "../prisma.js";
 import { sleep } from '../miscUtils.js';

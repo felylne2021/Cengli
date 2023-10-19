@@ -1,4 +1,4 @@
-import { ethers } from "ethers";
+import { ethers } from "ethers6";
 import { readFileSync } from "fs";
 
 const GOERLI_API_KEY = process.env.GOERLI_API_KEY ?? "";
