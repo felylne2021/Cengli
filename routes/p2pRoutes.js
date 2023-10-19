@@ -61,6 +61,31 @@ export const p2pRoutes = async (server) => {
     }
   })
 
+  server.post('/change-partner-user-id', async (request, reply) => {
+    const { walletAddress, userId } = request.body;
+
+    const partner = await prismaClient.p2PPartner.findFirst({
+      where: {
+        address: walletAddress
+      }
+    })
+
+    if (!partner) {
+      return reply.code(400).send({ message: 'Partner address not found in database' });
+    }
+
+    const updatedPartner = await prismaClient.p2PPartner.update({
+      where: {
+        id: partner.id
+      },
+      data: {
+        userId: userId
+      }
+    })
+
+    return reply.send(updatedPartner);
+  })
+
   // Fetch all orders (for admin)
   server.get('/orders', async (request, reply) => {
     try {

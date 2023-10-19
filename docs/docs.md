@@ -337,6 +337,25 @@ GET {{baseUrl}}/orders?partnerId=ef0407e5-3088-4bf2-a5ec-4a8dcdc24657
 **Query Parameters:**
 - `callerUserId` (string): The ID of the user making the call.
 
+## 10 **Update Partner User ID**
+
+**Endpoint:** `POST /change-partner-user-id`
+
+This endpoint allows the updating of a partner's user ID in the database, using the provided wallet address to identify the partner.
+
+**Request Body:**
+
+- `walletAddress` (string): The wallet address of the partner whose user ID needs to be updated.
+- `userId` (string): The new user ID to be associated with the partner.
+
+**Request Example:**
+```json
+{
+  "walletAddress": "0x1234567890abcdef1234567890abcdef12345678",
+  "userId": "newUserID123"
+}
+```
+
 ---
 
 # 💖💖💖💖💖💖💖💖💖💖💖💖💖💖💖💖💖💖💖💖💖💖💖💖💖💖💖💖💖💖💖💖
