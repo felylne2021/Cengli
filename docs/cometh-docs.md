@@ -162,6 +162,70 @@ Approval of 10,000 USDC to a target address (mostly Febi's or P2PEscrow Contract
 
 ---
 ---
+
+#### Easier Flow
+
+Below is a simpler flow to call a contract's function. The data is prepared by the backend, and the frontend only needs to sign and send the transaction. Works for ERC20 tokens only.
+
+The function `approveTokenWithPrepared` demonstrates the process of preparing and sending an ERC-20 token transaction, with the transaction data being prepared by a backend service. Here are the steps elaborated based on the provided code snippet:
+
+---
+
+1. **Format the Amount**:
+   Convert the amount to the lowest denomination using the token's decimals.
+
+```javascript
+const formattedAmount = amount * 10 ** 6;
+```
+
+2. **Request Backend-Prepared Transaction Data**:
+   Send a request to the backend to prepare the ERC-20 transaction data.
+
+```javascript
+const toBeSignedData = await axios({
+  method: 'POST',
+  url: `${backendUrl}/cometh/prepare-erc20-tx`,
+  data: {
+    walletAddress: comethWalletAddress,
+    tokenAddress: TEST_TOKEN_ADDRESS,
+    functionName: "approve",
+    "args": ["0x3999032F30A9be2Fd2732B4cFe3e61ADe9531509", formattedAmount]
+  }
+})
+```
+
+3. **Initialize Provider and Wallet Instance**:
+   Setup the provider using the specified RPC URL, and create a wallet instance using the private key.
+
+```javascript
+const provider = new ethers.JsonRpcProvider(import.meta.env.VITE_COMETH_RPC_URL);
+const walletInstance = new ethers.Wallet(walletPrivateKey, provider);
+```
+
+4. **Sign the Prepared Transaction**:
+   The backend provides the prepared transaction data. Sign this data with the wallet instance using `signTypedData`.
+
+```javascript
+const signedTx = await walletInstance.signTypedData(toBeSignedData.data.domain, EIP712_SAFE_TX_TYPES, toBeSignedData.data.types);
+toBeSignedData.data.types.signatures = signedTx;
+```
+
+5. **Send the Prepared Transaction**:
+   Transmit the signed transaction data to Cometh’s relay API.
+
+```javascript
+const sendRelayTxRes = await axios({
+  method: 'POST',
+  url: `https://api.connect.cometh.io/wallets/${comethWalletAddress}/relay`,
+  headers: {
+    'apiKey': import.meta.env.VITE_COMETH_API_KEY
+  },
+  data: toBeSignedData.data.types
+});
+
+console.log('sendRelayTxRes', sendRelayTxRes.data);
+```
+
 ---
 
 # Cometh API
@@ -221,6 +285,8 @@ Approval of 10,000 USDC to a target address (mostly Febi's or P2PEscrow Contract
 }
 ```
 
+---
+
 **Response Example:**
 ```json
 {
@@ -242,3 +308,55 @@ Approval of 10,000 USDC to a target address (mostly Febi's or P2PEscrow Contract
     }
 }
 ```
+
+---
+
+## **4. Prepare ERC-20 Transaction**
+**Endpoint:** `POST /prepare-erc20-tx`
+
+Prepare a transaction for an ERC-20 token operation. This endpoint populates a transaction, checks if the recipient address is sponsored, and generates a transaction object to be signed.
+
+### **Request Body:**
+
+- `walletAddress` (string): The address of the wallet initiating the transaction.
+- `tokenAddress` (string): The address of the ERC-20 token contract.
+- `functionName` (string): The name of the function to call on the ERC-20 contract (e.g., "approve").
+- `args` (array): The arguments to pass to the function. The number of arguments and their types depend on the function being called.
+
+**Request Example:**
+```json
+{
+  "walletAddress": "0x1E1960b1528541fa85a331C8933521073D6d3682",
+  "tokenAddress": "0x7ee6eb942378f7082fc58ab09dafd5f7c33a98bd",
+  "functionName": "approve",
+  "args": ["0x1E1960b1528541fa85a331C8933521073D6d3682", "10000000"] // more params = more length
+}
+```
+
+### **Response:**
+
+The response contains the transaction data to be signed.
+
+**Response Example:**
+```json
+{
+    "domain": {
+        "chainId": "43113",
+        "verifyingContract": "0x1E1960b1528541fa85a331C8933521073D6d3682"
+    },
+    "types": {
+        "to": "0x7ee6eb942378f7082fc58ab09dafd5f7c33a98bd",
+        "value": "0",
+        "data": "0x095ea7b30000000000000000000000001e1960b1528541fa85a331c8933521073d6d36820000000000000000000000000000000000000000000000000000000000989680",
+        "operation": "0",
+        "safeTxGas": "0",
+        "baseGas": "0",
+        "gasPrice": "0",
+        "gasToken": "0x0000000000000000000000000000000000000000",
+        "refundReceiver": "0x0000000000000000000000000000000000000000",
+        "nonce": "10"
+    }
+}
+```
+
+---
