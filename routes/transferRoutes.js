@@ -14,8 +14,7 @@ export const transferRoutes = async (server) => {
         fromChainId,
         destinationChainId,
         amount,
-        note,
-        signer
+        note
       } = request.body;
 
       if (!request.body) {
@@ -23,25 +22,25 @@ export const transferRoutes = async (server) => {
       }
 
       // Validate the required body parameters
-      const fields = ['fromUserId', 'destinationUserId', 'fromAddress', 'destinationAddress', 'tokenAddress', 'fromChainId', 'destinationChainId', 'amount', 'signer'];
+      const fields = ['fromUserId', 'destinationUserId', 'fromAddress', 'destinationAddress', 'tokenAddress', 'fromChainId', 'destinationChainId', 'amount'];
       await validateRequiredFields(request.body, fields, reply)
       await validateAvailableChainId([fromChainId, destinationChainId], reply);
 
-      const contractByChain = getContractByChain(parseInt(fromChainId));
-      console.log(contractByChain);
-      let msgID;
-      // process txn
-      if (fromChainId == destinationChainId){
-        // process same chain
-        await contractByChain.transferSameChainUSDC(destinationAddress, amount);
-        console.log("Transaction in the same chain.");
-      }
-      else{
-        const byte32Address = "0x000000000000000000000000" + destinationAddress.substring(2);
-        // process cross chain
-        msgID = await contractByChain.transferXchainUSDC(destinationChainId, byte32Address, amount);
-        console.log("Transaction cross chain message ID.");
-      }
+      // const contractByChain = getContractByChain(parseInt(fromChainId));
+      // console.log(contractByChain);
+      // let msgID;
+      // // process txn
+      // if (fromChainId == destinationChainId){
+      //   // process same chain
+      //   await contractByChain.transferSameChainUSDC(destinationAddress, amount);
+      //   console.log("Transaction in the same chain.");
+      // }
+      // else{
+      //   const byte32Address = "0x000000000000000000000000" + destinationAddress.substring(2);
+      //   // process cross chain
+      //   msgID = await contractByChain.transferXchainUSDC(destinationChainId, byte32Address, amount);
+      //   console.log("Transaction cross chain message ID.");
+      // }
 
       const transaction = await prismaClient.transaction.create({
         data: {
