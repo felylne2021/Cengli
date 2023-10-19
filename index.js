@@ -18,6 +18,7 @@ import { p2pRoutes } from './routes/p2pRoutes.js';
 import { comethRoutes } from './routes/comethRoutes.js';
 
 import { docs } from './routes/docs.js';
+import { pushProtocolRoutes } from './routes/pushProtocolRoutes.js';
 
 
 const fastify = Fastify({ logger: false });
@@ -63,6 +64,10 @@ fastify.register(p2pRoutes, {
 
 fastify.register(comethRoutes, {
   prefix: '/cometh'
+})
+
+fastify.register(pushProtocolRoutes, {
+  prefix: '/push-protocol'
 })
 
 // Docs

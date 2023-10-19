@@ -1,4 +1,4 @@
-import { ethers } from 'ethers';
+import { ethers } from "ethers6";
 // console.log('-> gasService.estimateSafeTxGas()', {
 //   walletAddress,
 //   safeTransactionData,
