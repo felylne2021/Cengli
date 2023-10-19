@@ -1,5 +1,6 @@
 import 'package:cengli/presentation/launch_screen/onboarding_screen.dart';
 import 'package:cengli/presentation/membership/login_page.dart';
+import 'package:cengli/values/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:kinetix/kinetix.dart';
 
@@ -17,13 +18,14 @@ class OnboardingBottomSheetWidget extends StatelessWidget {
 
     return Container(
         padding: const EdgeInsets.only(top: 12, bottom: 60),
-        height: 0.4 * MediaQuery.of(context).size.height,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           mainAxisAlignment: MainAxisAlignment.center,
+          mainAxisSize: MainAxisSize.min,
           children: [
             40.0.height,
-            Expanded(
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.25,
               child: PageView(
                 controller: controller,
                 onPageChanged: ((value) {
@@ -35,12 +37,12 @@ class OnboardingBottomSheetWidget extends StatelessWidget {
                   (index) => Column(
                     mainAxisAlignment: MainAxisAlignment.start,
                     crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.max,
+                    mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
                         items[index].title,
-                        style: KxTypography(
-                            type: KxFontType.subtitle1,
+                        style: CengliTypography(
+                            type: CengliFontType.subtitle2,
                             color: KxColors.neutral700),
                         textAlign: TextAlign.start,
                       ).padding(const EdgeInsets.symmetric(horizontal: 16)),

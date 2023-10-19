@@ -1,8 +1,6 @@
 export 'auth_state.dart';
 export 'auth_event.dart';
 export 'auth_bloc.dart';
-export 'state/email_sign_in_state.dart';
-export 'state/email_sign_up_state.dart';
 export 'state/google_sign_in_state.dart';
 export 'state/sign_out_state.dart';
 export 'state/apple_sign_in_state.dart';
@@ -10,3 +8,4 @@ export 'state/create_wallet_state.dart';
 export 'state/predict_signer_state.dart';
 export 'state/check_wallet_state.dart';
 export 'state/check_username_state.dart';
+export 'state/relay_transaction_state.dart';

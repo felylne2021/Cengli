@@ -9,8 +9,6 @@ import 'package:cengli/services/push_protocol/push_restapi_dart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:velix/velix.dart';
 import 'package:ethers/signers/wallet.dart' as ethers;
-
-import '../../data/modules/transactional/model/charges.dart';
 import '../../services/services.dart';
 import 'transactional.dart';
 
@@ -44,7 +42,7 @@ class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
     emit(const CreateGroupStoreLoadingState());
     try {
       final walletAddress = await SessionService.getWalletAddress();
-      final privateKey = await SessionService.getSignerAddress(walletAddress);
+      final privateKey = await SessionService.getPrivateKey(walletAddress);
 
       final group = await createGroup(
           groupName: event.group.name ?? "",
@@ -105,7 +103,6 @@ class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
     emit(const FetchGroupsStoreLoadingState());
     try {
       final groups = await _transactionRepository.getExpenses(event.groupId);
-      print(groups);
       emit(FetchExpensesStoreSuccessState(groups));
     } on AppException catch (error) {
       emit(FetchExpensesStoreErrorState(error.message));
@@ -145,7 +142,7 @@ class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
     emit(const FetchChargesStoreLoadingState());
 
     try {
-      final Map<String, dynamic> charges =
+      final List<Map<String, dynamic>> charges =
           await _transactionRepository.getCharges(event.groupId, event.userId);
       emit(FetchChargesStoreSuccessState(charges));
     } on AppException catch (error) {

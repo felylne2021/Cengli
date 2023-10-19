@@ -33,6 +33,7 @@ class GroupMemberPage extends StatelessWidget {
                   username: members[index].userName ?? "",
                   address: WalletUtil.shortAddress(
                       members[index].walletAddress ?? ""),
+                  image: members[index].imageProfile ?? "",
                   isShowDivider: true,
                 ),
               ),

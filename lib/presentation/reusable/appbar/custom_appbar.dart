@@ -1,3 +1,4 @@
+import 'package:cengli/values/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:kinetix/kinetix.dart';
 
@@ -8,7 +9,7 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
       this.leadingWidget,
       this.leadingCallback,
       this.trailingWidgets})
-      : preferredSize = const Size.fromHeight(100);
+      : preferredSize = const Size.fromHeight(105);
 
   final String appbarTitle;
   final Widget? leadingWidget;
@@ -19,18 +20,22 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
   Size preferredSize;
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return SafeArea(
+        child: Stack(
+      alignment: Alignment.center,
       children: [
-        20.0.height,
         KxAppBarCenterTitle(
           elevationType: KxElevationAppBarEnum.ghost,
-          appBarTitle: appbarTitle,
+          appBarTitle: "",
           leadingWidget: leadingWidget ?? const SizedBox(),
           leadingCallback: leadingCallback ?? () {},
           trailingWidgets: trailingWidgets,
-        )
+        ),
+        Text(appbarTitle,
+            style: CengliTypography(
+                type: CengliFontType.subtitle4, color: KxColors.neutral700)),
       ],
-    );
+    ).padding(const EdgeInsets.only(top: 25)));
   }
 }
 
@@ -47,11 +52,13 @@ class CustomAppbarBackAndCenter extends StatelessWidget
   Size preferredSize;
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return SafeArea(
+        child: Stack(
+      alignment: Alignment.center,
       children: [
         KxAppBarCenterTitle(
           elevationType: KxElevationAppBarEnum.ghost,
-          appBarTitle: appbarTitle,
+          appBarTitle: "",
           leadingWidget: const CircleAvatar(
             radius: 15,
             backgroundColor: KxColors.neutral200,
@@ -59,12 +66,15 @@ class CustomAppbarBackAndCenter extends StatelessWidget
               Icons.chevron_left_rounded,
               color: KxColors.neutral700,
             ),
-          ),
+          ).padding(const EdgeInsets.only(right: 10)),
           leadingCallback: () => Navigator.of(context).pop(),
           trailingWidgets: trailingWidgets,
-        )
+        ),
+        Text(appbarTitle,
+            style: CengliTypography(
+                type: CengliFontType.subtitle4, color: KxColors.neutral700))
       ],
-    );
+    ));
   }
 }
 
@@ -80,11 +90,13 @@ class CustomAppbarWithBackButton extends StatelessWidget
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return SafeArea(
+        child: Stack(
+      alignment: Alignment.center,
       children: [
         KxAppBarCenterTitle(
           elevationType: KxElevationAppBarEnum.ghost,
-          appBarTitle: appbarTitle,
+          appBarTitle: "",
           leadingWidget: const CircleAvatar(
             radius: 15,
             backgroundColor: KxColors.neutral200,
@@ -97,8 +109,11 @@ class CustomAppbarWithBackButton extends StatelessWidget
               ? Navigator.of(context).pop()
               : null,
           trailingWidgets: trailingWidgets,
-        )
+        ),
+        Text(appbarTitle,
+            style: CengliTypography(
+                type: CengliFontType.subtitle4, color: KxColors.neutral700))
       ],
-    );
+    ));
   }
 }

@@ -1,9 +1,11 @@
 import 'package:cengli/data/modules/transfer/model/request/create_order_request.dart';
+import 'package:cengli/data/modules/transfer/model/request/prepare_erc20_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/transfer_request.dart';
 import 'package:cengli/data/modules/transfer/model/response/assets_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/chain_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/order_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/get_partners_response.dart';
+import 'package:cengli/data/modules/transfer/model/response/transaction_data_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/transfer_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/update_order_response.dart';
 import 'package:cengli/data/modules/transfer/remote/transfer_api.dart';
@@ -100,6 +102,13 @@ class TransferRemoteDataStore extends TransferRemoteRepository {
     return await _api
         .releaseFundOrder(orderId, callerUserId)
         .catchError((error) {
+      errorHandler(error);
+    });
+  }
+
+  @override
+  Future<TransactionDataResponse> prepareTx(PrepareErc20Request param) async {
+    return await _api.prepareTx(param).catchError((error) {
       errorHandler(error);
     });
   }

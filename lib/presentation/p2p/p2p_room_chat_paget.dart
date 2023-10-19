@@ -1,9 +1,12 @@
 import 'package:cengli/bloc/transfer/transfer.dart';
+import 'package:cengli/data/utils/collection_util.dart';
 import 'package:cengli/presentation/chat/components/chat_bubble_widget.dart';
 import 'package:cengli/presentation/p2p/components/order_item_widget.dart';
 import 'package:cengli/presentation/p2p/order_detail_page.dart';
 import 'package:cengli/provider/chat_room_provider.dart';
 import 'package:cengli/services/push_protocol/push_restapi_dart.dart' as push;
+import 'package:cengli/services/push_protocol/src/helpers/src/converters.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -110,8 +113,31 @@ class _P2pChatRoomPageState extends ConsumerState<P2pChatRoomPage> {
                                               widget.argument.user))
                                       .then((value) {
                                     if (value != null) {
-                                      String orderId = value as String;
-                                      _getOrder(orderId);
+                                      _getGroupOrder();
+                                      OrderStatusEventEnum status =
+                                          value as OrderStatusEventEnum;
+                                      switch (status) {
+                                        case OrderStatusEventEnum.accept:
+                                          roomVm.controller.text =
+                                              "alert:${widget.argument.user.name ?? ""} accepted the order";
+                                          break;
+                                        case OrderStatusEventEnum.cancel:
+                                          roomVm.controller.text =
+                                              "alert:${widget.argument.user.name ?? ""} canceled the order";
+                                          break;
+                                        case OrderStatusEventEnum.payment:
+                                          roomVm.controller.text =
+                                              "alert:${widget.argument.user.name ?? ""} completed the payment";
+                                          break;
+                                        case OrderStatusEventEnum.fund:
+                                          roomVm.controller.text =
+                                              "alert:${widget.argument.user.name ?? ""} confirm recieved the cash and complete order";
+                                          break;
+                                      }
+
+                                      if (!roomVm.isSending) {
+                                        roomVm.onSendMessage();
+                                      }
                                     }
                                   }));
                         } else {
@@ -142,16 +168,67 @@ class _P2pChatRoomPageState extends ConsumerState<P2pChatRoomPage> {
                                         vertical: 16),
                                     itemBuilder: (context, index) {
                                       final item = messageList[index];
+                                      Stream<DocumentSnapshot> userStream =
+                                          FirebaseFirestore.instance
+                                              .collection(
+                                                  CollectionEnum.users.name)
+                                              .doc(
+                                                  pCAIP10ToWallet(item.fromDID))
+                                              .snapshots();
+                                      return StreamBuilder<DocumentSnapshot>(
+                                        stream: userStream,
+                                        builder: (context, snapshot) {
+                                          if (snapshot.hasError) {
+                                            return Text(
+                                                'Error: ${snapshot.error}');
+                                          }
+                                          if (!snapshot.hasData) {
+                                            return const CupertinoActivityIndicator(); // Loading indicator
+                                          }
 
-                                      return ChatBubbleWidget(
-                                              name: push.pCAIP10ToWallet(
-                                                  item.fromDID),
+                                          String username =
+                                              snapshot.data?['userName'] ?? "";
+                                          String profileIcon =
+                                              snapshot.data?['imageProfile'] ??
+                                                  "";
+
+                                          if (item.messageContent
+                                              .contains("alert")) {
+                                            return Container(
+                                              padding: const EdgeInsets.all(12),
+                                              margin:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 16),
+                                              decoration: BoxDecoration(
+                                                  color: KxColors.neutral100,
+                                                  borderRadius:
+                                                      BorderRadius.circular(
+                                                          40.5)),
+                                              child: Text(
+                                                item.messageContent
+                                                    .split(":")
+                                                    .last,
+                                                style: KxTypography(
+                                                    type:
+                                                        KxFontType.buttonSmall,
+                                                    color: KxColors.neutral500),
+                                              ),
+                                            );
+                                          } else {
+                                            return ChatBubbleWidget(
+                                              name: username,
                                               message: item.messageContent,
                                               date: DateTime
                                                   .fromMillisecondsSinceEpoch(
-                                                      item.timestamp ?? 0))
-                                          .padding(const EdgeInsets.symmetric(
-                                              horizontal: 16));
+                                                      item.timestamp ?? 0),
+                                              image: profileIcon,
+                                            ).padding(
+                                                const EdgeInsets.symmetric(
+                                                    horizontal: 16,
+                                                    vertical: 8));
+                                          }
+                                        },
+                                      );
                                     },
                                   )),
                     BlocBuilder<TransferBloc, TransferState>(

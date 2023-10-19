@@ -1,8 +1,9 @@
+import 'package:cengli/data/utils/collection_util.dart';
 import 'package:cengli/presentation/chat/components/chat_bubble_widget.dart';
-import 'package:cengli/presentation/chat/expense/add_expense_page.dart';
 import 'package:cengli/presentation/group/group_detail_page.dart';
 import 'package:cengli/provider/chat_room_provider.dart';
 import 'package:cengli/services/push_protocol/push_restapi_dart.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -83,16 +84,17 @@ class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
                               ? Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
+                                    Image.asset(IMG_EMPTY_GROUP, width: 200),
                                     Text(
                                       "You create a group",
                                       textAlign: TextAlign.center,
                                       style: KxTypography(
-                                          type: KxFontType.body2,
-                                          color: KxColors.neutral500),
+                                          type: KxFontType.buttonMedium,
+                                          color: KxColors.neutral700),
                                     ),
                                     8.0.height,
                                     Text(
-                                      "Start a conversation",
+                                      "Start a conversation or add shared expenses",
                                       textAlign: TextAlign.center,
                                       style: KxTypography(
                                           type: KxFontType.fieldText3,
@@ -111,14 +113,65 @@ class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
                                   itemBuilder: (context, index) {
                                     final item = messageList[index];
 
-                                    return ChatBubbleWidget(
-                                            name: pCAIP10ToWallet(item.fromDID),
+                                    Stream<DocumentSnapshot> userStream =
+                                        FirebaseFirestore.instance
+                                            .collection(
+                                                CollectionEnum.users.name)
+                                            .doc(pCAIP10ToWallet(item.fromDID))
+                                            .snapshots();
+
+                                    return StreamBuilder<DocumentSnapshot>(
+                                      stream: userStream,
+                                      builder: (context, snapshot) {
+                                        if (snapshot.hasError) {
+                                          return Text(
+                                              'Error: ${snapshot.error}');
+                                        }
+                                        if (!snapshot.hasData) {
+                                          return const CupertinoActivityIndicator(); // Loading indicator
+                                        }
+
+                                        String username =
+                                            snapshot.data?['userName'] ?? "";
+                                        String profileIcon =
+                                            snapshot.data?['imageProfile'] ??
+                                                "";
+
+                                        debugPrint(item.messageType.toString());
+
+                                        if (item.messageContent
+                                            .contains("alert")) {
+                                          return Container(
+                                            padding: const EdgeInsets.all(12),
+                                            margin: const EdgeInsets.symmetric(
+                                                horizontal: 16),
+                                            decoration: BoxDecoration(
+                                                color: KxColors.neutral100,
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                        40.5)),
+                                            child: Text(
+                                              item.messageContent
+                                                  .split(":")
+                                                  .last,
+                                              style: KxTypography(
+                                                  type: KxFontType.buttonSmall,
+                                                  color: KxColors.neutral500),
+                                            ),
+                                          );
+                                        } else {
+                                          return ChatBubbleWidget(
+                                            name: username,
                                             message: item.messageContent,
                                             date: DateTime
                                                 .fromMillisecondsSinceEpoch(
-                                                    item.timestamp ?? 0))
-                                        .padding(const EdgeInsets.symmetric(
-                                            horizontal: 16));
+                                                    item.timestamp ?? 0),
+                                            image: profileIcon,
+                                          ).padding(const EdgeInsets.symmetric(
+                                              horizontal: 16, vertical: 8));
+                                        }
+                                      },
+                                    );
                                   },
                                 )),
                   Container(

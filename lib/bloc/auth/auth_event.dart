@@ -1,5 +1,7 @@
 import 'package:velix/base/bloc/base_event.dart';
 
+import '../../data/modules/transfer/model/response/transaction_data_response.dart';
+
 abstract class AuthEvent extends BaseEvent {
   const AuthEvent();
 }
@@ -77,4 +79,13 @@ class GetUserDataEvent extends AuthEvent {
 
   @override
   List<Object?> get props => [username];
+}
+
+class RelayTransactionEvent extends AuthEvent {
+  final TransactionDataResponse response;
+
+  const RelayTransactionEvent(this.response);
+
+  @override
+  List<Object?> get props => [response];
 }

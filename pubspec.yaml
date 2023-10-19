@@ -19,6 +19,7 @@ dependencies:
   fluttertoast: ^8.2.2
   flutter_svg: ^1.1.6
   flutter_svg_provider: ^1.0.3
+  flutter_local_notifications: ^12.0.3
 
   #Date, Time
   intl: ^0.18.1
@@ -33,12 +34,15 @@ dependencies:
   # Injector
   get_it: ^7.2.0
 
+  #Image picker
+  image_picker: ^0.8.7+2
+
   # Firebase
-  firebase_auth: ^4.10.0
   cloud_firestore: ^4.9.2
   firebase_remote_config: ^4.2.6
   firebase_core: ^2.16.0
   firebase_dynamic_links: ^5.3.7
+  firebase_messaging: ^14.1.0
 
   # Auth
   google_sign_in: ^6.1.5
@@ -93,6 +97,7 @@ dependencies:
     git:
       url: git@github.com:TNT-BOOM-Studio/Velix.git
       ref: main
+  dartx: ^1.2.0
 
 dev_dependencies:
   flutter_test:
@@ -114,29 +119,16 @@ flutter:
   assets:
     - assets/icons/
     - assets/images/
+    - assets/fonts/
 
-  # An image asset can refer to one or more resolution-specific "variants", see
-  # https://flutter.dev/assets-and-images/#resolution-aware
-
-  # For details regarding adding assets from package dependencies, see
-  # https://flutter.dev/assets-and-images/#from-packages
-
-  # To add custom fonts to your application, add a fonts section here,
-  # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
-  # list giving the asset and other descriptors for the font. For
-  # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
-  # For details regarding fonts from package dependencies,
-  # see https://flutter.dev/custom-fonts/#from-packages
+  fonts:
+    - family: Unbounded
+      fonts:
+        - asset: assets/fonts/Unbounded-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Unbounded-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Unbounded-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Unbounded-Bold.ttf
+          weight: 700

@@ -8,7 +8,6 @@ import 'package:cengli/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kinetix/kinetix.dart';
 
 import '../../values/values.dart';
@@ -143,10 +142,12 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
           return Container(
             margin: const EdgeInsets.symmetric(vertical: 6),
             child: UserItemWidget(
-                isShowDivider: true,
-                name: widget.members[index].name ?? "",
-                username: widget.members[index].userName ?? "",
-                address: widget.members[index].walletAddress ?? ""),
+              isShowDivider: true,
+              name: widget.members[index].name ?? "",
+              username: widget.members[index].userName ?? "",
+              address: widget.members[index].walletAddress ?? "",
+              image: widget.members[index].imageProfile ?? "",
+            ),
           );
         })).padding(const EdgeInsets.symmetric(horizontal: 16)),
       ],

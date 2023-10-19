@@ -6,6 +6,8 @@ import 'package:cengli/data/modules/transfer/model/response/order_response.dart'
 import 'package:cengli/data/modules/transfer/model/response/get_partners_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/transfer_response.dart';
 
+import 'model/request/prepare_erc20_request.dart';
+import 'model/response/transaction_data_response.dart';
 import 'model/response/transaction_response.dart';
 import 'model/response/update_order_response.dart';
 
@@ -21,4 +23,5 @@ abstract class TransferRemoteRepository {
   Future<UpdateOrderResponse> cancelOrder(String orderId, String callerUserId);
   Future<UpdateOrderResponse> payOrder(String orderId, String callerUserId);
   Future<UpdateOrderResponse> fundOrder(String orderId, String callerUserId);
+  Future<TransactionDataResponse> prepareTx(PrepareErc20Request param);
 }

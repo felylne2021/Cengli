@@ -74,7 +74,8 @@ class _CreateGroupMemberPageState extends State<CreateGroupMemberPage> {
                 }
               })),
             ],
-            child: Column(
+            child: SingleChildScrollView(
+                child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 KxFilledTextField(
@@ -114,12 +115,12 @@ class _CreateGroupMemberPageState extends State<CreateGroupMemberPage> {
                                   name: value.name ?? "",
                                   username: value.userName ?? "",
                                   address: value.walletAddress ?? "",
+                                  image: value.imageProfile ?? "",
                                 ))
                             .padding(
                                 const EdgeInsets.symmetric(horizontal: 16)));
                   },
                 ),
-                16.0.height,
                 const Divider(
                   color: KxColors.neutral200,
                   thickness: 4,
@@ -128,32 +129,53 @@ class _CreateGroupMemberPageState extends State<CreateGroupMemberPage> {
                 ValueListenableBuilder(
                   valueListenable: members,
                   builder: (context, value, child) {
-                    return Container(
-                        width: double.infinity,
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 16, vertical: 8),
-                        margin: const EdgeInsets.symmetric(horizontal: 16),
-                        decoration: BoxDecoration(
-                            color: KxColors.neutral100,
-                            borderRadius: BorderRadius.circular(8)),
-                        child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Row(
-                                mainAxisAlignment: MainAxisAlignment.start,
-                                children: List.generate(
-                                    value.length,
-                                    (index) => imageAndSmallCloseButton(
-                                            "icon", value[index].userName ?? "",
-                                            () {
-                                          List<UserProfile> updatedList =
-                                              List.from(members.value)
-                                                ..remove(value[index]);
-                                          members.value = updatedList;
-                                        }))))).visibility(value.isNotEmpty);
+                    return Text(
+                      "Members ${value.length} of 10",
+                      style: KxTypography(
+                          type: KxFontType.fieldText3,
+                          color: KxColors.neutral500),
+                    ).padding(const EdgeInsets.symmetric(horizontal: 16));
+                  },
+                ),
+                ValueListenableBuilder(
+                  valueListenable: members,
+                  builder: (context, value, child) {
+                    return Column(
+                        mainAxisAlignment: MainAxisAlignment.start,
+                        children: List.generate(
+                            value.length,
+                            (index) => Dismissible(
+                                key: Key(value[index].id ?? ""),
+                                direction: DismissDirection.endToStart,
+                                background: slideLeftBackground(),
+                                onDismissed: (direction) {
+                                  List<UserProfile> updatedList =
+                                      List.from(members.value)
+                                        ..remove(value[index]);
+                                  members.value = updatedList;
+                                },
+                                child: UserItemWidget(
+                                  name: value[index].name ?? "",
+                                  username: value[index].userName ?? "",
+                                  address: value[index].walletAddress ?? "",
+                                  image: value[index].imageProfile ?? "",
+                                  isShowDivider: true,
+                                )))).visibility(value.isNotEmpty);
                   },
                 )
               ],
-            ).padding(const EdgeInsets.only(bottom: 24))));
+            ).padding(const EdgeInsets.only(bottom: 24)))));
+  }
+
+  Widget slideLeftBackground() {
+    return Container(
+      color: KxColors.danger600,
+      child: Text(
+        "Remove",
+        style: KxTypography(color: Colors.white, type: KxFontType.buttonMedium),
+        textAlign: TextAlign.center,
+      ).center(),
+    );
   }
 
   Widget imageAndSmallCloseButton(
@@ -164,22 +186,27 @@ class _CreateGroupMemberPageState extends State<CreateGroupMemberPage> {
         children: [
           Column(
             children: [
-              //TODO: adjust after icon ready
-              // SvgPicture.asset(
-              //   icon,
-              //   height: 48,
-              //   width: 48,
-              // ),
-              Container(
-                height: 56,
-                width: 56,
-                decoration: const BoxDecoration(
-                    shape: BoxShape.circle, color: KxColors.neutral200),
-                child: const Icon(
-                  CupertinoIcons.person_fill,
-                  color: KxColors.neutral400,
+              if (icon.isNotEmpty)
+                Container(
+                  width: 56,
+                  height: 56,
+                  decoration: const BoxDecoration(shape: BoxShape.circle),
+                  child: Image.network(
+                    icon,
+                    fit: BoxFit.fitHeight,
+                  ),
+                )
+              else
+                Container(
+                  height: 56,
+                  width: 56,
+                  decoration: const BoxDecoration(
+                      shape: BoxShape.circle, color: KxColors.neutral200),
+                  child: const Icon(
+                    CupertinoIcons.person_fill,
+                    color: KxColors.neutral400,
+                  ),
                 ),
-              ),
               8.0.height,
               Text(
                 username,

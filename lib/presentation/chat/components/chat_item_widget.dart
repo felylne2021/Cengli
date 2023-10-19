@@ -1,7 +1,5 @@
 import 'package:cengli/presentation/chat/components/chat_profile_image_widget.dart';
-import 'package:cengli/values/assets.dart';
 import 'package:cengli/values/values.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kinetix/kinetix.dart';

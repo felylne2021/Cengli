@@ -1,6 +1,7 @@
 import 'package:cengli/presentation/reusable/modal/qr_modal_page.dart';
 import 'package:cengli/utils/utils.dart';
 import 'package:cengli/utils/wallet_util.dart';
+import 'package:cengli/values/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
@@ -28,7 +29,7 @@ class CardWidget extends StatelessWidget {
     return Container(
       decoration: KxShadowDecoration(
           style: KxShadowStyleEnum.elevationOne,
-          radiusBorder: 10,
+          radiusBorder: 16,
           backgroundColor: Colors.white),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
@@ -75,8 +76,9 @@ class CardWidget extends StatelessWidget {
                   40.0.height,
                   Text(
                     balance,
-                    style: KxTypography(
-                        type: KxFontType.headline4, color: KxColors.neutral700),
+                    style: CengliTypography(
+                        type: CengliFontType.headline4,
+                        color: KxColors.neutral700),
                   ),
                   20.0.height,
                   Row(

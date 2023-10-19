@@ -70,10 +70,9 @@ class SessionService {
     return prefs.getString(PrefKey.walletAddress.key) ?? "";
   }
 
-  static Future<String> getSignerAddress(String walletAddress) async {
+  static Future<String> getPrivateKey(String walletAddress) async {
     final prefs = await SharedPreferences.getInstance();
-    final storedData = prefs.getString('${PrefKey.commeth.key}$walletAddress');
-    return jsonDecode(storedData ?? "")["signerAddress"];
+    return prefs.getString('${PrefKey.commeth.key}$walletAddress') ?? "";
   }
 
   static void setEncryptedPrivateKey(String value) async {
@@ -89,13 +88,13 @@ class SessionService {
   static Future<String> getPgpPrivateKey() async {
     final walletAddress = await getWalletAddress();
     final encryptedPrivateKey = await getEncryptedPrivateKey();
-    final signerAddress = await getSignerAddress(walletAddress);
+    final privateKey = await getPrivateKey(walletAddress);
 
     return await decryptPGPKey(
       encryptedPGPPrivateKey: encryptedPrivateKey,
       wallet: getWallet(
         signer: EthersSigner(
-            ethersWallet: ethers.Wallet.fromPrivateKey(signerAddress),
+            ethersWallet: ethers.Wallet.fromPrivateKey(privateKey),
             address: walletAddress),
       ),
     );
@@ -104,7 +103,7 @@ class SessionService {
   static Future<String> getPublicKeyId() async {
     final walletAddress = await getWalletAddress();
     final prefs = await SharedPreferences.getInstance();
-    return jsonDecode(
-        prefs.getString(PrefKey.commeth.key + walletAddress) ?? "")['publicKeyId'];
+    return jsonDecode(prefs.getString(PrefKey.commeth.key + walletAddress) ??
+        "")['publicKeyId'];
   }
 }

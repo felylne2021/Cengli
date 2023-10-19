@@ -119,10 +119,12 @@ class ChatRoomProvider extends ChangeNotifier {
             encryptedSecret: '',
             timestamp: DateTime.now().microsecondsSinceEpoch),
       );
+
       controller.clear();
 
       updateSending(true);
       final message = await send(options);
+      //*TODO: send notification
       updateSending(false);
 
       if (message != null) {

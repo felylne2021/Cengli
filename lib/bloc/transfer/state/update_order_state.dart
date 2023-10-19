@@ -1,4 +1,5 @@
 import 'package:cengli/bloc/transfer/transfer.dart';
+import 'package:cengli/presentation/p2p/order_detail_page.dart';
 
 class UpdateOrderStatusLoadingState extends TransferState {
   const UpdateOrderStatusLoadingState() : super();
@@ -17,8 +18,9 @@ class UpdateOrderStatusErrorState extends TransferState {
 }
 
 class UpdateOrderStatusSuccessState extends TransferState {
-  const UpdateOrderStatusSuccessState() : super();
+  final OrderStatusEventEnum status;
+  const UpdateOrderStatusSuccessState(this.status) : super();
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [status];
 }

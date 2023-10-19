@@ -30,7 +30,6 @@ Future<List<Feeds>?> chats({
 
   if (!isValidETHAddress(accountAddress)) {
     //TODO: unhide
-
     // throw Exception('Invalid address!');
   }
 
@@ -59,7 +58,7 @@ Future<List<Feeds>?> chats({
     return feedWithInbox;
   } catch (e) {
     log(e);
-//TODO: unhide
+    //TODO: unhide
     // throw Exception('[Push SDK] - API chats: $e');
   }
 }

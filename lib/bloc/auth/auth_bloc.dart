@@ -1,23 +1,20 @@
-import 'dart:convert';
-import 'dart:io';
-import 'dart:typed_data';
+import 'dart:math';
 
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:cengli/bloc/auth/auth.dart';
 import 'package:cengli/bloc/auth/state/get_user_state.dart';
 import 'package:cengli/data/modules/auth/auth_remote_repository.dart';
-import 'package:cengli/data/modules/auth/model/device_data.dart';
 import 'package:cengli/data/modules/auth/model/request/create_wallet_request.dart';
-import 'package:cengli/data/modules/auth/model/request/predict_signer_address_request.dart';
+import 'package:cengli/data/modules/auth/model/request/relay_transaction_request.dart';
 import 'package:cengli/data/utils/collection_util.dart';
+import 'package:cengli/services/biometric_service.dart';
+import 'package:cengli/services/eth_service.dart';
 import 'package:cengli/utils/signer.dart';
 import 'package:cengli/services/session_service.dart';
-import 'package:cengli/utils/utils.dart';
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cengli/values/values.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:velix/velix.dart';
-import 'package:webauthn/webauthn.dart';
 import 'package:cengli/services/push_protocol/push_restapi_dart.dart' as push;
 import 'package:ethers/signers/wallet.dart' as ethers;
 
@@ -27,193 +24,54 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRemoteRepository _authRepository;
 
   AuthBloc(this._authRepository) : super(const AuthInitiateState()) {
-    on<SignInWithEmailEvent>(_onEmailSignIn, transformer: sequential());
-    on<SignInWithGoogleEvent>(_onGoogleSignIn, transformer: sequential());
-    on<SignInWithAppleEvent>(_onAppleSignIn, transformer: sequential());
-    on<SignUpWithEmailEvent>(_onEmailSignUp, transformer: sequential());
-    on<SignOutEvent>(_onSignOut, transformer: sequential());
     on<CreateWalletEvent>(_onCreateWallet, transformer: sequential());
     on<CheckWalletEvent>(_onCheckWallet, transformer: sequential());
     on<CheckUsernameEvent>(_onCheckUsername, transformer: sequential());
     on<GetUserDataEvent>(_onGetUserData, transformer: sequential());
-  }
-
-  Future<void> _onEmailSignIn(
-      SignInWithEmailEvent event, Emitter<AuthState> emit) async {
-    emit(const EmailSignInLoadingState());
-    try {
-      final userCred =
-          await _authRepository.signInWithEmail(event.email, event.password);
-      emit(EmailSignInSuccessState(userCred));
-    } on AppException catch (error) {
-      emit(EmailSignInErrorState(error.message));
-    } catch (error) {
-      emit(EmailSignInErrorState(error.toString()));
-    }
-  }
-
-  Future<void> _onGoogleSignIn(
-      SignInWithGoogleEvent event, Emitter<AuthState> emit) async {
-    emit(const GoogleSignInLoadingState());
-    try {
-      UserCredential userCredential = await _authRepository.signInWithGoogle();
-      bool userExist = await _authRepository
-          .checkUserExist(userCredential.user?.email ?? "");
-
-      if (userExist) {
-        emit(const GoogleSignInSuccessState());
-      } else {
-        await _authRepository.createUser(UserProfile(
-            id: userCredential.user?.uid,
-            name: userCredential.user?.displayName,
-            email: userCredential.user?.email,
-            userName: ''));
-        emit(const GoogleSignInSuccessState());
-      }
-    } on AppException catch (error) {
-      emit(GoogleSignInErrorState(error.message));
-    } catch (error) {
-      emit(GoogleSignInErrorState(error.toString()));
-    }
-  }
-
-  Future<void> _onAppleSignIn(
-      SignInWithAppleEvent event, Emitter<AuthState> emit) async {
-    emit(const AppleSignInLoadingState());
-    try {
-      UserCredential userCredential = await _authRepository.signInWithApple();
-      bool userExist = await _authRepository
-          .checkUserExist(userCredential.user?.email ?? "");
-
-      if (userExist) {
-        emit(const AppleSignInSuccessState());
-      } else {
-        await _authRepository.createUser(UserProfile(
-            id: userCredential.user?.uid,
-            name: userCredential.user?.displayName,
-            email: userCredential.user?.email,
-            userName: ''));
-        emit(const AppleSignInSuccessState());
-      }
-    } on AppException catch (error) {
-      emit(AppleSignInErrorState(error.message));
-    } catch (error) {
-      emit(AppleSignInErrorState(error.toString()));
-    }
-  }
-
-  Future<void> _onEmailSignUp(
-      SignUpWithEmailEvent event, Emitter<AuthState> emit) async {
-    emit(const EmailSignUpLoadingState());
-    try {
-      await _authRepository.signUpWithEmail(event.email, event.password);
-      emit(const EmailSignUpSuccessState());
-    } on AppException catch (error) {
-      emit(EmailSignUpErrorState(error.message));
-    } catch (error) {
-      emit(EmailSignUpErrorState(error.toString()));
-    }
-  }
-
-  Future<void> _onSignOut(SignOutEvent event, Emitter<AuthState> emit) async {
-    emit(const SignOutLoadingState());
-    try {
-      await _authRepository.singOut();
-      emit(const SignOutSuccessState());
-    } on AppException catch (error) {
-      emit(SignOutErrorState(error.message));
-    } catch (error) {
-      emit(SignOutErrorState(error.toString()));
-    }
+    on<RelayTransactionEvent>(_onRelayTransaction, transformer: sequential());
   }
 
   Future<void> _onCreateWallet(
       CreateWalletEvent event, Emitter<AuthState> emit) async {
     emit(const CreateWalletLoadingState());
     try {
-      final userId = Uint8List(64);
-      final MakeCredentialOptions options = MakeCredentialOptions(
-          clientDataHash: Uint8List(32),
-          rpEntity: RpEntity(
-            id: 'cengli',
-            name: 'cengli',
-          ),
-          userEntity: UserEntity(
-            id: userId,
-            name: event.userName,
-            displayName: event.userName,
-          ),
-          requireResidentKey: false,
-          requireUserPresence: true,
-          requireUserVerification: false,
-          credTypesAndPubKeyAlgs: [
-            const CredTypePubKeyAlgoPair(
-                credType: PublicKeyCredentialType.publicKey, pubKeyAlgo: -7),
-          ],
-          excludeCredentialDescriptorList: null);
-
-      final auth = Authenticator(true, false);
-      final Attestation attestation = await auth.makeCredential(options);
-
-      List<int> xCoordinates = [];
-      List<int> yCoordinates = [];
-
-      for (int i = 0; i < attestation.getCredentialId().length; i += 2) {
-        xCoordinates.add(attestation.getCredentialId()[i]);
-        if (i + 1 < attestation.getCredentialId().length) {
-          yCoordinates.add(attestation.getCredentialId()[i + 1]);
-        }
-      }
-
-      final publicKeyX = '0x${HexUtil().toHexString(xCoordinates)}';
-      final publicKeyY = '0x${HexUtil().toHexString(yCoordinates)}';
-      final publicKeyId = HexUtil().hexArrayStr(attestation.getCredentialId());
-
-      final response = await _authRepository.predictSignerAddress(
-          PredictSignerAddressRequest(
-              publicKeyX: publicKeyX, publicKeyY: publicKeyY));
-      final walletAddress =
-          await _authRepository.getWalletAddress(response.signerAddress ?? "");
-      final localStorageWebauthnCredentials = jsonEncode({
-        'publicKeyId': publicKeyId,
-        'signerAddress': response.signerAddress,
-      });
-
-      final prefs = await SharedPreferences.getInstance();
-      await prefs.setString(
-          '${PrefKey.commeth.key}${walletAddress.walletAddress}',
-          localStorageWebauthnCredentials);
-
-      await prefs.setString(
-          PrefKey.walletAddress.key, walletAddress.walletAddress ?? "");
+      //Create burner wallet
+      List<String> wallet = EthService.crateRandom();
+      String privateKey = wallet.first;
+      String ownerAddress = wallet.last;
 
       //Create wallet on cometh
-       await _authRepository.createWallet(CreateWalletRequest(
-          walletAddress: walletAddress.walletAddress ?? "",
-          publicKeyId: publicKeyId,
-          publicKeyX: publicKeyX,
-          publicKeyY: publicKeyY,
-          deviceData: DeviceData(
-              browser: "-",
-              os: Platform.isAndroid ? "android" : "ios",
-              platform: 'Mobile')));
+      final walletAddress = await _authRepository
+          .createWallet(CreateWalletRequest(ownerAddress: ownerAddress));
+
+      //Save credential
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(
+          '${PrefKey.commeth.key}${walletAddress.walletAddress}', privateKey);
+      await prefs.setString(
+          PrefKey.walletAddress.key, walletAddress.walletAddress ?? "");
 
       //Create push protocol account
       final user = await push.createUser(
           signer: EthersSigner(
-              ethersWallet:
-                  ethers.Wallet.fromPrivateKey(response.signerAddress ?? ""),
+              ethersWallet: ethers.Wallet.fromPrivateKey(privateKey),
               address: walletAddress.walletAddress ?? ""),
           progressHook: (push.ProgressHookType progress) {});
 
+      //*TODO: subscribe channel
+
       //Create user on firebase
+      String imageUrl = Constant
+          .profileImages[Random().nextInt(Constant.profileImages.length)];
+
       await _authRepository.createUser(UserProfile(
           id: walletAddress.walletAddress,
           userName: event.userName,
           name: event.userName,
           email: "",
           walletAddress: walletAddress.walletAddress,
-          userRole: UserRoleEnum.user.name));
+          userRole: UserRoleEnum.user.name,
+          imageProfile: imageUrl));
 
       SessionService.setLogin(true);
       SessionService.setEncryptedPrivateKey(user?.encryptedPrivateKey ?? "");
@@ -270,6 +128,40 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(GetUserDataErrorState(error.message));
     } catch (error) {
       emit(GetUserDataErrorState(error.toString()));
+    }
+  }
+
+  Future<void> _onRelayTransaction(
+      RelayTransactionEvent event, Emitter<AuthState> emit) async {
+    emit(const RelayTransactionLoadingState());
+
+    try {
+      final walletAddress = await SessionService.getWalletAddress();
+      final isApprove = await BiometricService.authenticateWithBiometrics();
+      if (isApprove) {
+        String signatures = await EthService().signTransaction(event.response);
+        await _authRepository.relayTransaction(
+            walletAddress,
+            RelayTransactionRequest(
+                to: event.response.types?.to,
+                value: event.response.types?.value,
+                data: event.response.types?.data,
+                operation: event.response.types?.operation,
+                safeTxGas: event.response.types?.safeTxGas,
+                baseGas: event.response.types?.baseGas,
+                gasPrice: event.response.types?.gasPrice,
+                gasToken: event.response.types?.gasToken,
+                refundReceiver: event.response.types?.refundReceiver,
+                nonce: event.response.types?.nonce,
+                signatures: signatures));
+        emit(const RelayTransactionSuccessState());
+      } else {
+        emit(const RelayTransactionErrorState("Canceled"));
+      }
+    } on AppException catch (error) {
+      emit(RelayTransactionErrorState(error.message));
+    } catch (error) {
+      emit(RelayTransactionErrorState(error.toString()));
     }
   }
 }

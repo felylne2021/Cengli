@@ -14,3 +14,4 @@ Color purplePolygon = Color(getColorHexFromStr("#8345E6"));
 Color darkYellow = Color(getColorHexFromStr("#8F6C11"));
 Color primaryYellow = Color(getColorHexFromStr("#F2FE79"));
 Color primaryGreen100 = Color(getColorHexFromStr("#F5FEEB"));
+Color successGreen = Color(getColorHexFromStr("#57C03C"));

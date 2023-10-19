@@ -35,14 +35,20 @@ class _ChatePageState extends ConsumerState<ChatPage> {
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: CustomAppbar(
+          leadingWidget: 50.0.width,
           appbarTitle: 'Chats',
           trailingWidgets: [
             InkWell(
               onTap: () => Navigator.of(context)
                   .pushNamed(CreateGroupMemberPage.routeName),
-              child: CircleAvatar(
-                  backgroundColor: KxColors.neutral200,
-                  child: SvgPicture.asset(IC_CREATE_CHAT)),
+              child: Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: const BoxDecoration(
+                      color: KxColors.neutral200, shape: BoxShape.circle),
+                  child: SvgPicture.asset(
+                    IC_CREATE_CHAT,
+                    width: 20,
+                  )),
             )
           ],
         ),
@@ -148,7 +154,7 @@ class _ChatePageState extends ConsumerState<ChatPage> {
                   Text(
                     "Start a new conversation and connect with friends, family, or colleagues!",
                     style: KxTypography(
-                        type: KxFontType.buttonMedium,
+                        type: KxFontType.fieldText3,
                         color: KxColors.neutral500),
                     textAlign: TextAlign.center,
                   )

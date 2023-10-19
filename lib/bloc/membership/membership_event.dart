@@ -56,3 +56,14 @@ class GetGroupOrderEvent extends MembershipEvent {
   @override
   List<Object?> get props => [groupId];
 }
+
+class UpdateUserNameEvent extends MembershipEvent {
+  final String fullname;
+  final String userName;
+  final String userId;
+
+  const UpdateUserNameEvent(this.fullname, this.userName, this.userId);
+
+  @override
+  List<Object?> get props => [fullname, userName, userId];
+}

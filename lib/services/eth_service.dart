@@ -1,13 +1,30 @@
-import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:cengli/services/services.dart';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart';
+import 'package:ethers/crypto/keccak.dart';
+import 'package:hex/hex.dart';
 import 'package:web3dart/web3dart.dart';
-import 'package:webauthn/webauthn.dart';
+import 'package:bip39/bip39.dart' as bip39;
+import 'package:bip32/bip32.dart' as bip32;
+
+import 'package:eth_sig_util/util/utils.dart';
+
+import '../data/modules/transfer/model/response/transaction_data_response.dart';
 
 class EthService {
+  static List<String> crateRandom() {
+    final mnemonic = bip39.generateMnemonic();
+
+    final seed = bip39.mnemonicToSeed(mnemonic);
+    final root = bip32.BIP32.fromSeed(seed);
+
+    final child1 = root.derivePath("m/44'/60'/0'/0/0");
+    final privateKey = HEX.encode(child1.privateKey!);
+    final address = EthPrivateKey.fromHex(privateKey).address.hex;
+
+    return [privateKey, address];
+  }
+
   String normalizeEthereumAddress(String address) {
     if (!address.startsWith('0x')) {
       throw ArgumentError('Invalid Ethereum address format');
@@ -19,83 +36,274 @@ class EthService {
     return '0x$paddedAddress';
   }
 
-  void sendTransaction(String receiverAddress) async {
-    try {
-      String walletAddress = await SessionService.getWalletAddress();
-      String signerAddress =
-          await SessionService.getSignerAddress(walletAddress);
+  Future<String> signTransaction(TransactionDataResponse response) async {
+    String walletAddress = await SessionService.getWalletAddress();
+    String privateKey = await SessionService.getPrivateKey(walletAddress);
 
-      const String rpcUrl = 'https://rpc.ankr.com/eth_goerli';
+    final credentials = EthPrivateKey.fromHex(privateKey);
 
-      final client = Web3Client(rpcUrl, Client());
+    final typedDataHash = _hashTypedData(response);
+    final signature = credentials.signPersonalMessageToUint8List(typedDataHash);
 
-      final credentials = EthPrivateKey.fromHex(signerAddress);
-      final address = credentials.address;
+    // final signatureDua =
+    //     SignatureUtil.sign(message: typedDataHash, privateKey: privateKey);
 
-      final publicKeyId = await SessionService.getPublicKeyId();
-
-      final auth = Authenticator(true, false);
-      final attestation = await auth.getAssertion(GetAssertionOptions(
-          allowCredentialDescriptorList: [
-            PublicKeyCredentialDescriptor(
-                type: PublicKeyCredentialType.publicKey,
-                id: parseHex(publicKeyId))
-          ],
-          rpId: "cengli",
-          clientDataHash: Uint8List(32),
-          requireUserPresence: true,
-          requireUserVerification: false));
-      debugPrint(base64Encode(attestation.signature));
-
-      // final tx = Transaction(
-      //   to: EthereumAddress.fromHex(walletAddress),
-      //   value: EtherAmount.fromInt(EtherUnit.gwei, 10),
-      //   gasPrice: EtherAmount.inWei(BigInt.parse("30000")),
-      //   maxGas: 22000,
-      // );
-      // final rpl = Rlp.encode(tx.data);
-      // final txBytes = Uint8List.fromList(Rlp.encode(tx));
-
-      // final signedTx =
-      //     Uint8List.fromList([...txBytes, ...attestation.signature]);
-
-      // final safeTxDataTye = await prepareTransaction();
-      
-
-      //signature
-
-      // final balance = await client.getBalance(EthereumAddress.fromHex(
-      //     "0xD3d103Bb6064FA4642470d1b3a950F0652E1ec36"));
-      // debugPrint(balance.toString());
-
-      // debugPrint(signedTx.toString());
-
-      debugPrint(EtherAmount.inWei(BigInt.parse("30000")).toString());
-
-      // debugPrint(EtherAmount.fromInt(EtherUnit.gwei, 1).toString());
-
-      // final send = await client.sendTransaction(
-      //     credentials,
-      //     Transaction(
-      //       from: EthereumAddress.fromHex(walletAddress),
-      //       to: EthereumAddress.fromHex(receiverAddress),
-      //       gasPrice: EtherAmount.inWei(BigInt.parse("30000")),
-      //       maxGas: 22000,
-      //       value: EtherAmount.fromInt(EtherUnit.gwei, 10),
-      //     ),
-      //     chainId: 5);
-      // debugPrint(balance.toString());
-    } catch (e) {
-      debugPrint("duarr mmk ${e.toString()}");
-    }
-  }
-
-  Uint8List parseHex(String str) {
-    return Uint8List.fromList(
-      RegExp(r'[\da-f]{2}', caseSensitive: false)
-          .allMatches(str)
-          .map((match) => int.parse(match.group(0)!, radix: 16))
-          .toList(),
-    );
+    return bytesToHex(signature, include0x: true);
   }
 }
+
+Uint8List _hashTypedData(TransactionDataResponse response) {
+  final domain = response.domain;
+
+  final chainId =
+      int.parse(domain?.chainId ?? "").toRadixString(16).padLeft(64, '0');
+  final verifyingContract =
+      domain?.verifyingContract?.substring(2).padLeft(64, '0');
+
+  final domainSeparator = keccak256(Uint8List.fromList([
+    ...hexToBytes('0x$chainId'),
+    ...hexToBytes(verifyingContract ?? ""),
+  ]));
+
+  final typeData = response.types;
+  final typeDataStr = '${typeData?.to}'
+      '${typeData?.value}'
+      '${typeData?.data}'
+      '${typeData?.operation}'
+      '${typeData?.safeTxGas}'
+      '${typeData?.baseGas}'
+      '${typeData?.gasPrice}'
+      '${typeData?.gasToken}'
+      '${typeData?.refundReceiver}'
+      '${typeData?.nonce}';
+
+  final hashedTypeData = keccak256(Uint8List.fromList(typeDataStr.codeUnits));
+
+  final combined = '0x1901$domainSeparator$hashedTypeData';
+  return keccak256(Uint8List.fromList(combined.codeUnits));
+}
+
+const ERC_20_ABI = '''
+[
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "name",
+        "outputs": [
+            {
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_spender",
+                "type": "address"
+            },
+            {
+                "name": "_value",
+                "type": "uint256"
+            }
+        ],
+        "name": "approve",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "totalSupply",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_from",
+                "type": "address"
+            },
+            {
+                "name": "_to",
+                "type": "address"
+            },
+            {
+                "name": "_value",
+                "type": "uint256"
+            }
+        ],
+        "name": "transferFrom",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "decimals",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint8"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_owner",
+                "type": "address"
+            }
+        ],
+        "name": "balanceOf",
+        "outputs": [
+            {
+                "name": "balance",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [],
+        "name": "symbol",
+        "outputs": [
+            {
+                "name": "",
+                "type": "string"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "constant": false,
+        "inputs": [
+            {
+                "name": "_to",
+                "type": "address"
+            },
+            {
+                "name": "_value",
+                "type": "uint256"
+            }
+        ],
+        "name": "transfer",
+        "outputs": [
+            {
+                "name": "",
+                "type": "bool"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "constant": true,
+        "inputs": [
+            {
+                "name": "_owner",
+                "type": "address"
+            },
+            {
+                "name": "_spender",
+                "type": "address"
+            }
+        ],
+        "name": "allowance",
+        "outputs": [
+            {
+                "name": "",
+                "type": "uint256"
+            }
+        ],
+        "payable": false,
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "payable": true,
+        "stateMutability": "payable",
+        "type": "fallback"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "name": "owner",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "name": "spender",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "value",
+                "type": "uint256"
+            }
+        ],
+        "name": "Approval",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "name": "from",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "name": "to",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "name": "value",
+                "type": "uint256"
+            }
+        ],
+        "name": "Transfer",
+        "type": "event"
+    }
+]
+''';

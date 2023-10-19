@@ -1,4 +1,5 @@
 import 'package:cengli/data/modules/transfer/model/request/create_order_request.dart';
+import 'package:cengli/data/modules/transfer/model/request/prepare_erc20_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/transfer_request.dart';
 import 'package:velix/velix.dart';
 
@@ -82,7 +83,6 @@ class PostTransferEvent extends TransferEvent {
   List<Object?> get props => [param];
 }
 
-
 class GetPartnersEvent extends TransferEvent {
   const GetPartnersEvent();
 
@@ -90,3 +90,11 @@ class GetPartnersEvent extends TransferEvent {
   List<Object?> get props => [];
 }
 
+class PrepareTransactionEvent extends TransferEvent {
+  final PrepareErc20Request param;
+
+  const PrepareTransactionEvent(this.param);
+
+  @override
+  List<Object?> get props => [param];
+}

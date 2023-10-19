@@ -1,6 +1,6 @@
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:cengli/bloc/membership/membership.dart';
-import 'package:cengli/data/modules/auth/model/user_profile.dart';
+import 'package:cengli/bloc/membership/state/update_username_state.dart';
 import 'package:cengli/data/modules/membership/membership_remote_repository.dart';
 import 'package:cengli/services/push_protocol/push_restapi_dart.dart';
 import 'package:cengli/services/services.dart';
@@ -20,6 +20,7 @@ class MembershipBloc extends Bloc<MembershipEvent, MembershipState> {
     on<GetChatRequestEvent>(_onGetChatRequest, transformer: sequential());
     on<ApproveEvent>(_onApproveChat, transformer: sequential());
     on<GetGroupOrderEvent>(_onGetGroupOrder, transformer: sequential());
+    on<UpdateUserNameEvent>(_onUpdateUsername, transformer: sequential());
   }
 
   Future<void> _onSearchUser(
@@ -117,7 +118,7 @@ class MembershipBloc extends Bloc<MembershipEvent, MembershipState> {
     try {
       final walletAddress = await SessionService.getWalletAddress();
       final pgpPrivateKey = await SessionService.getPgpPrivateKey();
-      final privateKey = await SessionService.getSignerAddress(walletAddress);
+      final privateKey = await SessionService.getPrivateKey(walletAddress);
 
       await approve(
         senderAddress: event.senderAddress,
@@ -150,6 +151,20 @@ class MembershipBloc extends Bloc<MembershipEvent, MembershipState> {
       emit(GetGroupOrderErrorState(error.message));
     } catch (error) {
       emit(GetGroupOrderErrorState(error.toString()));
+    }
+  }
+
+  Future<void> _onUpdateUsername(
+      UpdateUserNameEvent event, Emitter<MembershipState> emit) async {
+    try {
+      await _membershipRemoteRepository.updateUsername(
+          event.fullname, event.userName, event.userId);
+
+      emit(const UpdateUserNameSuccessState());
+    } on AppException catch (error) {
+      emit(UpdateUserNameErrorState(error.message));
+    } catch (error) {
+      emit(UpdateUserNameErrorState(error.toString()));
     }
   }
 }

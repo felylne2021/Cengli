@@ -25,6 +25,7 @@ abstract class Signer {
 
   /// Returns the signed-message.
   Future<String> signMessage(String message);
+  String signTypedData(String privateKey, String jsonData);
 }
 
 class ConnectedUser extends User {

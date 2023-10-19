@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:typed_data';
 
 import 'package:cengli/services/push_protocol/src/models/src/user_model.dart';
+import 'package:eth_sig_util/eth_sig_util.dart';
 import 'package:ethers/signers/wallet.dart' as ethers;
 import 'package:eth_sig_util/eth_sig_util.dart' as eth_sig;
 import 'package:web3dart/web3dart.dart' as web3;
@@ -34,7 +35,15 @@ class EthersSigner extends Signer {
 
   @override
   Future<String> getEip712Signature(String message) async {
-    throw UnimplementedError();
+    try {
+      String signature = eth_sig.EthSigUtil.signTypedData(
+          privateKey: ethersWallet.privateKey,
+          jsonData: message,
+          version: TypedDataVersion.V1);
+      return signature;
+    } catch (e) {
+      return "";
+    }
   }
 
   @override
@@ -57,9 +66,12 @@ class EthersSigner extends Signer {
   }
 
   @override
-  Future<String> signTypedData({domain, types, value}) {
-    // TODO: implement signTypedData
-    throw UnimplementedError();
+  String signTypedData(String privateKey, String jsonData) {
+    String signature = eth_sig.EthSigUtil.signTypedData(
+        privateKey: privateKey,
+        jsonData: jsonData,
+        version: TypedDataVersion.V3);
+    return signature;
   }
 }
 
@@ -100,7 +112,8 @@ class Web3Signer extends Signer {
   }
 
   @override
-  Future<String> signTypedData({domain, types, value}) {
+  String signTypedData(String privateKey, String jsonData) {
+    // TODO: implement signTypedData
     throw UnimplementedError();
   }
 }

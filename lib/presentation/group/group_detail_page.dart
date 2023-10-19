@@ -1,5 +1,6 @@
 import 'package:cengli/bloc/transactional/transactional.dart';
 import 'package:cengli/presentation/chat/expense/add_expense_page.dart';
+import 'package:cengli/presentation/group/components/balance_expense_item_widget.dart';
 import 'package:cengli/presentation/group/components/expense_item_widget.dart';
 import 'package:cengli/presentation/group/group_member_page.dart';
 import 'package:cengli/presentation/reusable/menu/custom_menu_item_widget.dart';
@@ -10,10 +11,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kinetix/kinetix.dart';
 
+import '../../bloc/auth/auth.dart';
 import '../../bloc/membership/membership.dart';
 import '../../bloc/transactional/state_remote/fetch_charges_store_state.dart';
 import '../../data/modules/auth/model/user_profile.dart';
 import '../../data/modules/transactional/model/expense.dart';
+import '../../services/services.dart';
 import '../../values/values.dart';
 import '../reusable/appbar/custom_appbar.dart';
 import '../reusable/segmented_control/segmented_control.dart';
@@ -34,13 +37,21 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
   ValueNotifier<List<UserProfile>> totalMembers = ValueNotifier([]);
   ValueNotifier<String> memberPayName = ValueNotifier('');
   String groupId = '';
-  List<Map<String, dynamic>> chargesFromGroup = [];
+  List<List<Map<String, dynamic>>> chargesFromGroup = [];
+  ValueNotifier<UserProfile> userData = ValueNotifier(UserProfile());
+  ValueNotifier<List<Expense>> listOfExpenses = ValueNotifier([]);
 
   @override
   void initState() {
     super.initState();
+    _initiateData();
     _getGroup();
     chargesFromGroup.clear();
+  }
+
+  _initiateData() async {
+    String name = await SessionService.getUsername().then((value) => value);
+    _getUserData(name);
   }
 
   @override
@@ -76,8 +87,6 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
             if (state is GetGroupSuccessState) {
               groupId = state.group.id ?? "";
               _getMembers(state.group.members ?? []);
-              _getExpenses(groupId);
-              //TODO: refactor
             } else if (state is GetGroupErrorState) {
               showToast(state.message);
             }
@@ -90,10 +99,24 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
           }, listener: ((context, state) {
             if (state is GetMembersInfoSuccessState) {
               totalMembers.value = state.membersInfo;
+              _getExpenses(groupId);
             } else if (state is GetGroupErrorState) {
               showToast(state.message);
             }
           })),
+          BlocListener<TransactionalBloc, TransactionalState>(
+              listenWhen: (previous, state) {
+            return state is FetchExpensesStoreErrorState ||
+                state is FetchExpensesStoreLoadingState ||
+                state is FetchExpensesStoreSuccessState;
+          }, listener: (context, state) {
+            if (state is FetchExpensesStoreSuccessState) {
+              hideLoading();
+              listOfExpenses.value = state.expenses;
+            } else if (state is FetchExpensesLoadingState) {
+              showLoading();
+            }
+          })
         ],
         child: _body(),
       ),
@@ -140,56 +163,79 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                           color: KxColors.neutral500),
                     ),
                     17.0.height,
+                    ValueListenableBuilder(
+                        valueListenable: totalMembers,
+                        builder: (context, members, child) {
+                          return InkWell(
+                              onTap: () => Navigator.of(context).pushNamed(
+                                  GroupMemberPage.routeName,
+                                  arguments: members.reversed.toList()),
+                              child: Container(
+                                width: MediaQuery.of(context).size.width * 0.3,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 8, vertical: 12),
+                                decoration: const BoxDecoration(
+                                    color: KxColors.neutral100,
+                                    borderRadius:
+                                        BorderRadius.all(Radius.circular(20))),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Text(
+                                      "${totalMembers.value.length} Members",
+                                      style: KxTypography(
+                                          type: KxFontType.buttonSmall,
+                                          color: KxColors.neutral700),
+                                    ),
+                                    4.0.width,
+                                    const Icon(
+                                      Icons.chevron_right_rounded,
+                                      size: 14,
+                                    )
+                                  ],
+                                ),
+                              ));
+                        }),
+                    20.0.height,
+                    SegmentedControl(
+                        activeColor: primaryGreen600,
+                        onSelected: (index) {
+                          selectedTab.value = index;
+
+                          switch (selectedTab.value) {
+                            case 1:
+                              chargesFromGroup.clear();
+                              _getCharges(
+                                  groupId, totalMembers.value[0].id ?? "");
+                              break;
+                            case 2:
+                              chargesFromGroup.clear();
+                              _getCharges(
+                                  groupId, totalMembers.value[0].id ?? "");
+
+                              break;
+                            default:
+                              listOfExpenses.value.clear();
+                              _getExpenses(groupId);
+                              break;
+                          }
+                        },
+                        title: segmentedTitles,
+                        padding: 16,
+                        initialIndex: 0,
+                        currentIndex: selectedTab,
+                        segmentType: SegmentedControlEnum.ghost),
                   ],
                 );
               } else {
                 return const SizedBox(
-                    height: 40, width: 40, child: CupertinoActivityIndicator());
+                  height: 40,
+                  width: 40,
+                  child: CupertinoActivityIndicator(),
+                );
               }
             },
           ),
-          ValueListenableBuilder(
-              valueListenable: totalMembers,
-              builder: (context, members, child) {
-                return InkWell(
-                    onTap: () => Navigator.of(context).pushNamed(
-                        GroupMemberPage.routeName,
-                        arguments: members.reversed.toList()),
-                    child: Container(
-                      width: MediaQuery.of(context).size.width * 0.3,
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 12),
-                      decoration: const BoxDecoration(
-                          color: KxColors.neutral100,
-                          borderRadius: BorderRadius.all(Radius.circular(20))),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "${totalMembers.value.length} Members",
-                            style: KxTypography(
-                                type: KxFontType.buttonSmall,
-                                color: KxColors.neutral700),
-                          ),
-                          4.0.width,
-                          const Icon(
-                            Icons.chevron_right_rounded,
-                            size: 14,
-                          )
-                        ],
-                      ),
-                    ));
-              }),
-          20.0.height,
-          SegmentedControl(
-              activeColor: primaryGreen600,
-              onSelected: (index) {
-                selectedTab.value = index;
-              },
-              title: segmentedTitles,
-              padding: MediaQuery.of(context).size.width / 30,
-              initialIndex: 0,
-              segmentType: SegmentedControlEnum.ghost),
           16.0.height,
           ValueListenableBuilder(
             valueListenable: selectedTab,
@@ -199,75 +245,63 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                 case 1:
                   return Column(
                     children: [
-                      //* TOTAL EXPENSES
-                      BlocBuilder<TransactionalBloc, TransactionalState>(
-                        buildWhen: (previous, state) {
-                          return state is FetchExpensesStoreErrorState ||
-                              state is FetchExpensesStoreLoadingState ||
-                              state is FetchExpensesStoreSuccessState;
-                        },
-                        builder: (context, state) {
-                          if (state is FetchExpensesStoreSuccessState) {
-                            final listOfExpenses = state.expenses;
+                      // *TOTAL EXPENSE
 
-                            //TODO: refactor
-                            // for (var user in totalMembers.value) {
-                            //   _getCharges(groupId, user.id ?? "");
-                            // }
-
-                            return Padding(
-                              padding: const EdgeInsets.all(16.0),
-                              child: Container(
-                                padding:
-                                    const EdgeInsets.only(top: 8, bottom: 10),
-                                decoration: const BoxDecoration(
-                                    color: KxColors.neutral100,
-                                    borderRadius:
-                                        BorderRadius.all(Radius.circular(8))),
-                                child: Column(
-                                  children: [
-                                    Text(
-                                      'Total Expense',
-                                      style: KxTypography(
-                                          type: KxFontType.body2,
-                                          color: KxColors.neutral500),
-                                    ),
-                                    8.0.height,
-                                    Row(
-                                      mainAxisAlignment:
-                                          MainAxisAlignment.center,
+                      ValueListenableBuilder(
+                          valueListenable: listOfExpenses,
+                          builder: (context, expenses, child) {
+                            return Column(
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.all(16.0),
+                                  child: Container(
+                                    padding: const EdgeInsets.only(
+                                        top: 8, bottom: 10),
+                                    decoration: const BoxDecoration(
+                                        color: KxColors.neutral100,
+                                        borderRadius: BorderRadius.all(
+                                            Radius.circular(8))),
+                                    child: Column(
                                       children: [
                                         Text(
-                                          listOfExpenses[0].tokenUnit ?? "",
+                                          'Total Expense',
                                           style: KxTypography(
-                                              type: KxFontType.subtitle4,
-                                              color: KxColors.neutral700),
+                                              type: KxFontType.body2,
+                                              color: KxColors.neutral500),
                                         ),
-                                        8.0.width,
-                                        Text(
-                                          "${_getTotalExpense(listOfExpenses)}0",
-                                          style: KxTypography(
-                                              type: KxFontType.subtitle4,
-                                              color: KxColors.neutral700),
-                                        ),
+                                        8.0.height,
+                                        Row(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            Text(
+                                              "USDC",
+                                              style: KxTypography(
+                                                  type: KxFontType.subtitle4,
+                                                  color: KxColors.neutral700),
+                                            ),
+                                            8.0.width,
+                                            Text(
+                                              "${_getTotalExpense(expenses)}0",
+                                              style: KxTypography(
+                                                  type: KxFontType.subtitle4,
+                                                  color: KxColors.neutral700),
+                                            ),
+                                          ],
+                                        )
                                       ],
-                                    )
-                                  ],
-                                ).center(),
-                              ),
+                                    ).center(),
+                                  ),
+                                ),
+                                const Divider(
+                                  color: KxColors.neutral200,
+                                  thickness: 4,
+                                ),
+                              ],
                             );
-                          } else {
-                            return Center(
-                              child: CircularProgressIndicator(
-                                color: primaryGreen600,
-                              ),
-                            );
-                          }
-                        },
-                      ),
-
+                          }),
                       20.0.height,
-
+                      // * LIST OF BALANCES
                       BlocBuilder<TransactionalBloc, TransactionalState>(
                           buildWhen: (previous, state) {
                         return state is FetchChargesStoreSuccessState ||
@@ -275,9 +309,28 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                             state is FetchChargesStoreLoadingState;
                       }, builder: (context, state) {
                         if (state is FetchChargesStoreSuccessState) {
-                          chargesFromGroup.add(state.charges);
-                          print(chargesFromGroup);
-                          return const SizedBox();
+                          _getListOfCharges(chargesFromGroup, state.charges);
+                          return Column(
+                            children:
+                                List.generate(chargesFromGroup.length, (index) {
+                              final chargeParent = chargesFromGroup[index];
+                              double totalCharge = 0;
+                              String userId = '';
+
+                              userId =
+                                  _getChargeDetailsOnBalance(chargeParent)[0];
+                              totalCharge =
+                                  _getChargeDetailsOnBalance(chargeParent)[1];
+                              return BalanceExpenseItemWidget(
+                                isShowDivider: true,
+                                title: _findMemberName(userId),
+                                description:
+                                    "Expense: ${totalCharge.toString()}0",
+                                onTap: () {},
+                                money: '-USDC${totalCharge}0',
+                              );
+                            }),
+                          );
                         } else {
                           return const SizedBox();
                         }
@@ -286,73 +339,67 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                   );
 
                 case 2:
-                  return Container();
+                  return BlocBuilder<TransactionalBloc, TransactionalState>(
+                      buildWhen: (previous, state) {
+                    return state is FetchChargesStoreSuccessState ||
+                        state is FetchChargesStoreErrorState ||
+                        state is FetchChargesStoreLoadingState;
+                  }, builder: (context, state) {
+                    if (state is FetchChargesStoreSuccessState) {
+                      _getListOfCharges(chargesFromGroup, state.charges);
+                      return Column(children: _getBillsData(chargesFromGroup));
+                    } else {
+                      return const SizedBox();
+                    }
+                  });
                 default:
-                  return BlocBuilder<MembershipBloc, MembershipState>(
-                    buildWhen: (context, state) {
-                      return state is GetMembersInfoLoadingState ||
-                          state is GetMembersInfoSuccessState ||
-                          state is GetMembersInfoErrorState;
-                    },
-                    builder: (context, state) {
-                      if (state is GetMembersInfoSuccessState) {
-                        return Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            InkWell(
-                              onTap: () => Navigator.of(context).pushNamed(
-                                  AddExpensePage.routeName,
-                                  arguments: widget.chatId),
-                              child: const CustomMenuItemWidget(
-                                  icon: CircleIconWidget(
-                                    circleColor: KxColors.neutral50,
-                                    iconPath: IC_CREATE_EXPENSES,
-                                    iconPadding: 8,
-                                  ),
-                                  title: "Add New Expense"),
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      InkWell(
+                        onTap: () => Navigator.of(context).pushNamed(
+                            AddExpensePage.routeName,
+                            arguments: widget.chatId),
+                        child: const CustomMenuItemWidget(
+                            icon: CircleIconWidget(
+                              circleColor: KxColors.neutral50,
+                              iconPath: IC_CREATE_EXPENSES,
+                              iconPadding: 8,
                             ),
-                            BlocBuilder<TransactionalBloc, TransactionalState>(
-                              buildWhen: (previous, state) {
-                                return state is FetchExpensesStoreErrorState ||
-                                    state is FetchExpensesStoreLoadingState ||
-                                    state is FetchExpensesStoreSuccessState;
-                              },
-                              builder: (context, state) {
-                                if (state is FetchExpensesStoreSuccessState) {
-                                  return Column(
-                                    children: List.generate(
-                                        state.expenses.length,
-                                        (index) => ExpenseItemWidget(
-                                            amount: state.expenses[index].amount ??
-                                                "",
-                                            tokenUnit:
-                                                state.expenses[index].tokenUnit ??
-                                                    "",
-                                            isShowDivider: true,
-                                            name: state.expenses[index].title ??
-                                                "",
-                                            memberPayName:
-                                                _getNameByWalletAddress(state
-                                                        .expenses[index]
-                                                        .memberPayId ??
-                                                    ""),
-                                            date: state.expenses[index].date ??
-                                                "",
-                                            expenseType:
-                                                state.expenses[index].category ??
-                                                    "default")),
-                                  );
-                                } else {
-                                  return const SizedBox();
-                                }
-                              },
-                            )
-                          ],
-                        );
-                      } else {
-                        return const CupertinoActivityIndicator();
-                      }
-                    },
+                            title: "Add New Expense"),
+                      ),
+                      BlocBuilder<TransactionalBloc, TransactionalState>(
+                        buildWhen: (previous, state) {
+                          return state is FetchExpensesStoreErrorState ||
+                              state is FetchExpensesStoreLoadingState ||
+                              state is FetchExpensesStoreSuccessState;
+                        },
+                        builder: (context, state) {
+                          if (state is FetchExpensesStoreSuccessState) {
+                            return Column(
+                              children: List.generate(
+                                  state.expenses.length,
+                                  (index) => ExpenseItemWidget(
+                                      amount:
+                                          state.expenses[index].amount ?? "",
+                                      tokenUnit:
+                                          state.expenses[index].tokenUnit ?? "",
+                                      isShowDivider: true,
+                                      name: state.expenses[index].title ?? "",
+                                      memberPayName: _getNameByWalletAddress(
+                                          state.expenses[index].memberPayId ??
+                                              ""),
+                                      date: state.expenses[index].date ?? "",
+                                      expenseType:
+                                          state.expenses[index].category ??
+                                              "default")),
+                            );
+                          } else {
+                            return const SizedBox();
+                          }
+                        },
+                      )
+                    ],
                   );
               }
             },
@@ -374,7 +421,48 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
     context.read<TransactionalBloc>().add(FetchExpensesStoreEvent(groupId));
   }
 
-  _getCharges(String groupId, String userId) {
+  _getListOfCharges(List<List<Map<String, dynamic>>> chargesFromGroup,
+      List<Map<String, dynamic>> charges) {
+    chargesFromGroup.add(charges);
+
+    if (chargesFromGroup.length == totalMembers.value.length) {
+    } else {
+      _getCharges(
+          groupId, totalMembers.value[chargesFromGroup.length].id ?? "");
+    }
+  }
+
+  Future<void> _getUserData(String name) async {
+    context.read<AuthBloc>().add(GetUserDataEvent(name));
+  }
+
+  List _getChargeDetailsOnBalance(List<Map<String, dynamic>> chargeParent) {
+    String id = '';
+    double amount = 0;
+    List result = [];
+    for (var data in chargeParent) {
+      id = data["userId"];
+
+      for (var detail in data["data"]) {
+        amount += detail["amount"];
+      }
+    }
+    result.add(id);
+    result.add(amount);
+    return result;
+  }
+
+  String _findMemberName(String id) {
+    String name = '';
+    for (UserProfile member in totalMembers.value) {
+      if (id == member.id) {
+        name = member.name ?? "";
+      }
+    }
+    return name;
+  }
+
+  Future<void> _getCharges(String groupId, String userId) async {
     context
         .read<TransactionalBloc>()
         .add(FetchChargesStoreEvent(userId, groupId));
@@ -396,5 +484,28 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
       }
     }
     return membersPaidName;
+  }
+
+  List<Widget> _getBillsData(
+      List<List<Map<String, dynamic>>> chargesFromGroup) {
+    List<Widget> datas = [];
+    for (List<Map<String, dynamic>> element in chargesFromGroup) {
+      for (Map<String, dynamic> data in element) {
+        String userId = data["userId"];
+        for (var detail in data["data"]) {
+          String payToId = detail["payTo"];
+          double amount = detail["amount"];
+
+          BalanceExpenseItemWidget billsWidget = BalanceExpenseItemWidget(
+              title: _findMemberName(userId),
+              description: "Should pay to ${_findMemberName(payToId)}",
+              isShowDivider: true,
+              onTap: () {},
+              money: 'USDC ${amount}0');
+          datas.add(billsWidget);
+        }
+      }
+    }
+    return datas;
   }
 }

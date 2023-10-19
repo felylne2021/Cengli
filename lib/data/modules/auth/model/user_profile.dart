@@ -23,17 +23,21 @@ class UserProfile extends Equatable {
   @JsonKey(name: 'userRole')
   final String? userRole;
 
+  @JsonKey(name: 'imageProfile')
+  final String? imageProfile;
+
   const UserProfile(
       {this.id,
       this.userName,
       this.name,
       this.email,
       this.walletAddress,
-      this.userRole});
+      this.userRole,
+      this.imageProfile});
 
   @override
   List<Object?> get props =>
-      [id, userName, name, email, walletAddress, userRole];
+      [id, userName, name, email, walletAddress, userRole, imageProfile];
 
   Map<String, dynamic> toJson() => _$UserProfileToJson(this);
 
