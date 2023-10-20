@@ -85,6 +85,7 @@ export const CHAINS_CONFIGS = [
         symbol: "USDC",
         decimals: 6,
         logoURI: "https://s2.coinmarketcap.com/static/img/coins/128x128/3408.png",
+        // logoURI: "https://uploads-ssl.webflow.com/64b8238e1907a37bba76fe16/64e5ae34b58617f63ed0db10_Ricksen%404x.png",
         priceUsd: 1
       },
       {

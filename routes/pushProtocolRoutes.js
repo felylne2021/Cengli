@@ -115,6 +115,67 @@ export const pushProtocolRoutes = async (server) => {
     }
   })
 
+  server.post('/connect-chat', async (request, reply) => {
+    try {
+      const { pkpg } = request.body;
+
+      const adminWallet = new ethers.Wallet(process.env.PUSH_PROTOCOL_SECRET_KEY);
+      const admin = await PushAPI.initialize(adminWallet, {
+        env: 'prod'
+      });
+
+      const userWallet = new ethers.Wallet(pkpg);
+      const user = await PushAPI.initialize(userWallet, {
+        env: 'prod'
+      });
+
+      let chatId = null;
+      try {
+        // admin send message to user
+        const createChat = await admin.chat.send(userWallet.address, {
+          content: "Cengli P2P KYC Session started"
+        })
+        console.log('createChat', createChat.chatId)
+
+        // user accept chat
+        const acceptChat = await user.chat.accept(createChat.chatId).catch((err) => {
+          console.log('err', err)
+        })
+        console.log('acceptChat', acceptChat)
+
+        chatId = createChat.chatId;
+      } catch (err) {
+        console.log('err, chat is already exist', err)
+      }
+
+      if (!chatId) {
+        const history = await user.chat.list("CHATS", {
+          page: 1,
+          limit: 20
+        })
+
+        console.log('history', history)
+      }
+
+      // user send message to admin
+      const sendMessage = await user.chat.send(adminWallet.address, {
+        content: "Cengli P2P KYC Session accepted"
+      })
+      console.log('sendMessage', sendMessage.chatId)
+
+      const data = {
+        admin: adminWallet.address,
+        user: userWallet.address,
+        chatId: sendMessage.chatId
+      }
+
+      return reply.code(200).send(data);
+    } catch (error) {
+      console.error('An error occurred:', error);
+      return reply.code(500).send({ message: error });
+    }
+  })
+
   // let channelAdmin = null;
   // const getChannelAdmin = async () => {
   //   if (channelAdmin) {

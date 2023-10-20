@@ -1,0 +1,144 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sign</title>
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.8.0/ethers.umd.min.js"
+      integrity="sha512-R7ASZgpXeoiujgi/4yoTErsG7ZWVq57+vLtQmFZV1LKap0Gmgbc/QeafAmOz1n66/iKfp+w5mSKabl/6Mi6UKg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.5.1/axios.min.js"
+      integrity="sha512-emSwuKiMyYedRwflbZB2ghzX8Cw8fmNVgZ6yQNNXXagFzFOaQmbvQ1vmDkddHjm5AITcBIZfC7k4ShQSjgPAmQ=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+  </head>
+
+  <body>
+    <script>
+      // const ERC_20_ABI = [
+      //   "function approve(address spender, uint256 amount) external returns (bool)",
+      //   "function transfer(address recipient, uint256 amount) external returns (bool)",
+      //   "function balanceOf(address account) external view returns (uint256)",
+      //   "function decimals() external view returns (uint8)",
+      //   "function symbol() external view returns (string)",
+      //   "function allowance(address owner, address spender) external view returns (uint256)",
+      // ];
+
+      const EIP712_SAFE_TX_TYPES = {
+        SafeTx: [
+          { type: "address", name: "to" },
+          { type: "uint256", name: "value" },
+          { type: "bytes", name: "data" },
+          { type: "uint8", name: "operation" },
+          { type: "uint256", name: "safeTxGas" },
+          { type: "uint256", name: "baseGas" },
+          { type: "uint256", name: "gasPrice" },
+          { type: "address", name: "gasToken" },
+          { type: "address", name: "refundReceiver" },
+          { type: "uint256", name: "nonce" },
+        ],
+      };
+
+      async function prepareTransaction(
+        tokenAddress,
+        amount,
+        walletAddress,
+        privateKey,
+        rpcUrl
+      ) {
+        const formattedAmount = amount * 10 ** 6;
+
+        // Setup provider and wallet instance
+        const provider = new ethers.JsonRpcProvider(rpcUrl);
+        const walletInstance = new ethers.Wallet(privateKey, provider);
+
+        // Create an instance of the token contract
+        const tokenContract = new ethers.Contract(
+          tokenAddress,
+          ERC_20_ABI,
+          walletInstance
+        );
+
+        console.log("Preparing", tokenContract);
+
+        // Prepare the approve transaction
+        try {
+          const approveTransaction =
+            await tokenContract.approve.populateTransaction(
+              walletAddress,
+              formattedAmount,
+              {
+                from: walletAddress,
+                value: 0,
+                chainId: 43113,
+              }
+            );
+
+          console.log("Benar", approveTransaction);
+          window.flutter_inappwebview.callHandler("benar", approveTransaction);
+        } catch (e) {
+          console.log("Salah", e);
+
+          window.flutter_inappwebview.callHandler("salah", e);
+        }
+      }
+
+      prepareTransaction(
+        tokenAddress,
+        amount,
+        walletAddress,
+        privateKey,
+        rpcUrl
+      );
+
+      async function signTransaction(
+        comethWalletAddress,
+        walletPrivateKey,
+        preparedTx,
+        rpcUrl
+      ) {
+        const preparedTxData = JSON.parse(preparedTx);
+        console.log("preparedTxData", preparedTxData);
+
+        // Setup provider and wallet instance
+        const provider = new ethers.JsonRpcProvider(rpcUrl);
+        const walletInstance = new ethers.Wallet(walletPrivateKey, provider);
+        try {
+          console.log("walletInstance", walletInstance);
+          const signedTx = await walletInstance.signTypedData(
+            preparedTxData.domain,
+            EIP712_SAFE_TX_TYPES,
+            preparedTxData.types
+          );
+          preparedTxData.types.signatures = signedTx;
+
+          console.log("preparedTxData.types", preparedTxData.types);
+
+          console.log("signedTx", signedTx);
+
+          window.flutter_inappwebview.callHandler(
+            "signedTx",
+            preparedTxData.types
+          );
+
+          return preparedTxData.types;
+        } catch (e) {
+          console.log("error", e);
+        }
+      }
+
+      signTransaction(
+        comethWalletAddress,
+        walletPrivateKey,
+        preparedTx,
+        rpcUrl
+      );
+    </script>
+  </body>
+</html>
