@@ -1,0 +1,27 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Unbounded", sans-serif;
+}
+
+.button-primary-light {
+  @apply btn bg-primary-300 text-primary-950 font-semibold border-0 capitalize;
+  @apply hover:bg-primary-400;
+}
+
+.button-primary {
+  @apply btn bg-primary-500 text-white font-semibold border-0 capitalize;
+  @apply hover:bg-primary-600;
+}
+
+.button-primary-soft {
+  @apply btn bg-primary-100 text-primary-950 font-semibold border-0 capitalize;
+  @apply hover:bg-primary-200;
+}

@@ -1,0 +1,42 @@
+{
+  "name": "pp-webview",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview",
+    "start": "vite build && vite preview --host"
+  },
+  "dependencies": {
+    "@pushprotocol/restapi": "^1.4.28",
+    "@pushprotocol/socket": "^0.5.2",
+    "axios": "^1.5.1",
+    "ethers": "^5.7.2",
+    "immer": "^10.0.3",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.17.0",
+    "rollup-plugin-node-builtins": "^2.1.2",
+    "rollup-plugin-node-globals": "^1.4.0",
+    "tailwindcss-animated": "^1.0.1",
+    "vite-plugin-node-polyfills": "^0.15.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.15",
+    "@types/react-dom": "^18.2.7",
+    "@vitejs/plugin-react-swc": "^3.3.2",
+    "autoprefixer": "^10.4.16",
+    "daisyui": "^3.9.3",
+    "eslint": "^8.45.0",
+    "eslint-plugin-react": "^7.32.2",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.3",
+    "postcss": "^8.4.31",
+    "sass": "^1.69.4",
+    "tailwindcss": "^3.3.3",
+    "vite": "^4.4.5"
+  }
+}
