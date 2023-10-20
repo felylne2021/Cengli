@@ -85,39 +85,35 @@ export const pushProtocolRoutes = async (server) => {
         channel: PUSH_PROTOCOL_CHANNEL.caip
       })
 
-      for (let i = 0; i < users.length; i++) {
-        await sendFirebaseNotification(users[i].fcmToken, notificationPayload);
-      }
-
-      return reply.code(200).send("Notification sent");
-    } catch (error) {
-      console.error('An error occurred:', error);
-      return reply.code(500).send({ message: error });
-    }
-  })
-
-
-  // TODO: Send notification to user with Firebase, using fcmToken
-  const sendFirebaseNotification = async (fcmToken, notificationPayload) => {
-    try {
-      console.log({
-        fcmToken,
-        notificationPayload
-      })
+      const tokens = users.map(user => user.fcmToken);
 
       const res = await axios({
         method: 'POST',
         url: 'https://fcm.googleapis.com/fcm/send',
         headers: {
           Authorization: `key=${process.env.FIREBASE_AUTH}`,
+        },
+        data: {
+          registration_ids: users.map(user => user.fcmToken),
+          notification: {
+            title: notificationPayload.title,
+            body: notificationPayload.body,
+          },
+          data: {
+            screen: notificationPayload.screen,
+          }
         }
       })
 
-      console.log('res', res.data)
+      return reply.code(200).send({
+        pushProtocolStatus: true,
+        firebaseStatus: res.data
+      });
     } catch (error) {
-      console.error('sendFirebaseNotification', error);
+      console.error('An error occurred:', error);
+      return reply.code(500).send({ message: error });
     }
-  }
+  })
 
   // let channelAdmin = null;
   // const getChannelAdmin = async () => {
