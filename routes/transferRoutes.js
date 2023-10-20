@@ -1,6 +1,9 @@
 import { prismaClient } from "../utils/prisma.js";
 import { getContractByChain } from "../utils/web3/assetContracts.js";
 import { validateAvailableChainId, validateRequiredFields } from "../utils/validator.js";
+import { readFileSync } from "fs";
+
+const SafeFactoryABI = JSON.parse(readFileSync("utils/web3/abi/SafeFactory.json", "utf8"))
 
 export const transferRoutes = async (server) => {
   server.post('/send', async (request, reply) => {
@@ -62,7 +65,7 @@ export const transferRoutes = async (server) => {
       return reply.code(500).send({ message: error });
     }
   })
-
+  
   // TODO: Get Hyperlane bridge address by its fromChainId and destinationChainId. params: fromChainId, destinationChainId
   server.get('/bridge', async (request, reply) => {
     const { fromChainId, destinationChainId } = request.query;

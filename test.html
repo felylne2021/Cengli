@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -18,127 +19,99 @@
       referrerpolicy="no-referrer"
     ></script>
   </head>
+  <body></body>
 
-  <body>
-    <script>
-      // const ERC_20_ABI = [
-      //   "function approve(address spender, uint256 amount) external returns (bool)",
-      //   "function transfer(address recipient, uint256 amount) external returns (bool)",
-      //   "function balanceOf(address account) external view returns (uint256)",
-      //   "function decimals() external view returns (uint8)",
-      //   "function symbol() external view returns (string)",
-      //   "function allowance(address owner, address spender) external view returns (uint256)",
-      // ];
+  <script>
+    const EIP712_SAFE_TX_TYPES = {
+      SafeTx: [
+        { type: "address", name: "to" },
+        { type: "uint256", name: "value" },
+        { type: "bytes", name: "data" },
+        { type: "uint8", name: "operation" },
+        { type: "uint256", name: "safeTxGas" },
+        { type: "uint256", name: "baseGas" },
+        { type: "uint256", name: "gasPrice" },
+        { type: "address", name: "gasToken" },
+        { type: "address", name: "refundReceiver" },
+        { type: "uint256", name: "nonce" },
+      ],
+    };
 
-      const EIP712_SAFE_TX_TYPES = {
-        SafeTx: [
-          { type: "address", name: "to" },
-          { type: "uint256", name: "value" },
-          { type: "bytes", name: "data" },
-          { type: "uint8", name: "operation" },
-          { type: "uint256", name: "safeTxGas" },
-          { type: "uint256", name: "baseGas" },
-          { type: "uint256", name: "gasPrice" },
-          { type: "address", name: "gasToken" },
-          { type: "address", name: "refundReceiver" },
-          { type: "uint256", name: "nonce" },
-        ],
+    const signTransaction = async () => {
+      // approve
+      // const toBeSignedData = {
+      //   domain: {
+      //     chainId: "43113",
+      //     verifyingContract: "0x1E1960b1528541fa85a331C8933521073D6d3682",
+      //   },
+      //   types: {
+      //     to: "0x5425890298aed601595a70AB815c96711a31Bc65",
+      //     value: "0",
+      //     data: "0x095ea7b300000000000000000000000089e2139c21254d799595051e0f3f1f5ba34ac2c20000000000000000000000000000000000000000000000000000000005f5e100",
+      //     operation: "0",
+      //     safeTxGas: "0",
+      //     baseGas: "0",
+      //     gasPrice: "0",
+      //     gasToken: "0x0000000000000000000000000000000000000000",
+      //     refundReceiver: "0x0000000000000000000000000000000000000000",
+      //     nonce: "16",
+      //   },
+      // };
+
+      // transfer usdc bridge
+      const toBeSignedData = {
+        domain: {
+          chainId: "43113",
+          verifyingContract: "0x1E1960b1528541fa85a331C8933521073D6d3682",
+        },
+        types: {
+          to: "0x89e2139c21254d799595051E0F3F1F5bA34Ac2c2",
+          value: "0",
+          data: "0x017e46da0000000000000000000000000000000000000000000000000000000000013881000000000000000000000000278a2d5b5c8696882d1d2002ce107efc74704ecf0000000000000000000000000000000000000000000000000000000000002710",
+          operation: "0",
+          safeTxGas: "0",
+          baseGas: "0",
+          gasPrice: "0",
+          gasToken: "0x0000000000000000000000000000000000000000",
+          refundReceiver: "0x0000000000000000000000000000000000000000",
+          nonce: "16",
+        },
       };
 
-      async function prepareTransaction(
-        tokenAddress,
-        amount,
-        walletAddress,
-        privateKey,
-        rpcUrl
-      ) {
-        const formattedAmount = amount * 10 ** 6;
+      console.log("toBeSignedData", toBeSignedData);
 
-        // Setup provider and wallet instance
-        const provider = new ethers.JsonRpcProvider(rpcUrl);
-        const walletInstance = new ethers.Wallet(privateKey, provider);
+      const comethWalletAddress = "0x1E1960b1528541fa85a331C8933521073D6d3682";
+      const walletPrivateKey =
+        "0x09913785ce30baabcead5164541216f1e07150fb0f23620ac9d58de284521699";
 
-        // Create an instance of the token contract
-        const tokenContract = new ethers.Contract(
-          tokenAddress,
-          ERC_20_ABI,
-          walletInstance
-        );
-
-        console.log("Preparing", tokenContract);
-
-        // Prepare the approve transaction
-        try {
-          const approveTransaction =
-            await tokenContract.approve.populateTransaction(
-              walletAddress,
-              formattedAmount,
-              {
-                from: walletAddress,
-                value: 0,
-                chainId: 43113,
-              }
-            );
-
-          console.log("Benar", approveTransaction);
-          window.flutter_inappwebview.callHandler("benar", approveTransaction);
-        } catch (e) {
-          console.log("Salah", e);
-
-          window.flutter_inappwebview.callHandler("salah", e);
-        }
-      }
-
-      prepareTransaction(
-        tokenAddress,
-        amount,
-        walletAddress,
-        privateKey,
-        rpcUrl
+      // Setup provider and wallet instance
+      const provider = new ethers.JsonRpcProvider(
+        "https://avalanche-fuji.infura.io/v3/0be86a45a4c3431398571a7c81165708"
       );
+      const walletInstance = new ethers.Wallet(walletPrivateKey, provider);
 
-      async function signTransaction(
-        comethWalletAddress,
-        walletPrivateKey,
-        preparedTx,
-        rpcUrl
-      ) {
-        const preparedTxData = JSON.parse(preparedTx);
-        console.log("preparedTxData", preparedTxData);
-
-        // Setup provider and wallet instance
-        const provider = new ethers.JsonRpcProvider(rpcUrl);
-        const walletInstance = new ethers.Wallet(walletPrivateKey, provider);
-        try {
-          console.log("walletInstance", walletInstance);
-          const signedTx = await walletInstance.signTypedData(
-            preparedTxData.domain,
-            EIP712_SAFE_TX_TYPES,
-            preparedTxData.types
-          );
-          preparedTxData.types.signatures = signedTx;
-
-          console.log("preparedTxData.types", preparedTxData.types);
-
-          console.log("signedTx", signedTx);
-
-          window.flutter_inappwebview.callHandler(
-            "signedTx",
-            preparedTxData.types
-          );
-
-          return preparedTxData.types;
-        } catch (e) {
-          console.log("error", e);
-        }
-      }
-
-      signTransaction(
-        comethWalletAddress,
-        walletPrivateKey,
-        preparedTx,
-        rpcUrl
+      console.log("walletInstance", walletInstance);
+      const signedTx = await walletInstance.signTypedData(
+        toBeSignedData.domain,
+        EIP712_SAFE_TX_TYPES,
+        toBeSignedData.types
       );
-    </script>
-  </body>
+      toBeSignedData.types.signatures = signedTx;
+
+      console.log("signedTx", signedTx);
+
+      const sendRelayTxRes = await axios({
+        method: "POST",
+        url: `https://api.connect.cometh.io/wallets/${comethWalletAddress}/relay`,
+        headers: {
+          apiKey: "a83131c6-6c56-48d2-bacd-09ad4c24428b",
+        },
+        data: toBeSignedData.types,
+      });
+
+      console.log("sendRelayTxRes", sendRelayTxRes.data);
+    };
+
+    signTransaction();
+  </script>
 </html>

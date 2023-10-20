@@ -359,6 +359,51 @@ The response contains the transaction data to be signed.
 }
 ```
 
+---
+
+## **5. Prepare USDC Bridge Transfer Transaction**
+**Endpoint:** `POST {{baseUrl}}/cometh/prepare-usdc-bridge-transfer-tx`
+
+Prepares a transaction for a USDC bridge transfer. This endpoint validates the chain information, checks if the recipient address is sponsored, and generates a transaction object to be signed.
+
+### **Request Body:**
+
+- `walletAddress` (string): The address of the wallet initiating the transaction.
+- `recipientAddress` (string): The address of the wallet receiving the funds.
+- `fromChainId` (number): The chain ID of the originating blockchain.
+- `destinationChainId` (number): The chain ID of the destination blockchain.
+- `amount` (number): The amount to transfer, in USDC.
+
+**Request Example:**
+```json
+{
+  "walletAddress": "0x1E1960b1528541fa85a331C8933521073D6d3682",
+  "recipientAddress": "0x278A2d5B5C8696882d1D2002cE107efc74704ECf",
+  "fromChainId": 43113,
+  "destinationChainId": 80001,
+  "amount": 0.01
+}
+```
+
+### **Response Body:**
+
+- `domain`: Object containing metadata about the transaction, such as chain ID and verifying contract.
+- `types`: Object containing various transaction parameters, like gas fees and data payload.
+
+**Response Example:**
+```json
+{
+  "domain": {
+    "chainId": "43113",
+    "verifyingContract": "0x1E1960b1528541fa85a331C8933521073D6d3682"
+  },
+  "types": {
+    "to": "0x89e2139c21254d799595051E0F3F1F5bA34Ac2c2",
+    // ...other fields
+  }
+}
+```
+
 --- 
 
 ### ERC20 Token Transfer Flow (Same Chain)
@@ -418,7 +463,8 @@ Then send the signed transaction to the Cometh Relay API.
 const toBeSignedData = await axios.post(`${backendUrl}/cometh/prepare-transfer-tx`, {
   walletAddress: comethWalletAddress,
   recipientAddress: "0x....",
-  destinationChainId: "5",
+  fromChainId: 43313,
+  destinationChainId: 5,
   amount: 10000,
   tokenAddress: ""
 });
