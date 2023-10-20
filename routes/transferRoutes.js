@@ -62,4 +62,11 @@ export const transferRoutes = async (server) => {
       return reply.code(500).send({ message: error });
     }
   })
+
+  // TODO: Get Hyperlane bridge address by its fromChainId and destinationChainId. params: fromChainId, destinationChainId
+  server.get('/bridge', async (request, reply) => {
+    const { fromChainId, destinationChainId } = request.query;
+
+    return reply.code(404).send({ message: 'Not implemented yet' });
+  })
 }

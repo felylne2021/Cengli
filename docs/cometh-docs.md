@@ -359,4 +359,82 @@ The response contains the transaction data to be signed.
 }
 ```
 
+--- 
+
+### ERC20 Token Transfer Flow (Same Chain)
+
+#### 1. Approve ERC20 Token
+
+```javascript
+const toBeSignedData_approve = await axios.post(`${backendUrl}/cometh/prepare-erc20-tx`, {
+  walletAddress: comethWalletAddress,
+  tokenAddress: TEST_TOKEN_ADDRESS,
+  functionName: "approve",
+  args: ["0x3999032F30A9be2Fd2732B4cFe3e61ADe9531509", formattedAmount]
+});
+```
+
+**Sign**: Use HTML interface to sign `toBeSignedData_approve`.
+
+---
+
+#### 2. Transfer ERC20 Token
+
+```javascript
+const toBeSignedData_transfer = await axios.post(`${backendUrl}/cometh/prepare-erc20-tx`, {
+  walletAddress: comethWalletAddress,
+  tokenAddress: TEST_TOKEN_ADDRESS,
+  functionName: "transfer",
+  args: ["0x3999032F30A9be2Fd2732B4cFe3e61ADe9531509", formattedAmount]
+});
+```
+
+**Sign**: Use HTML interface to sign `toBeSignedData_transfer`.
+
+### Different Chain Transfer Flow
+
+#### 1. Get Hyperlane Bridge Contract Address
+
+```javascript
+const getHyperlaneBridge = await axios.get(`${backendUrl}/transfer/bridge?fromChainId=43313&destinationChainId=5`);
+```
+
+**Example Response:**
+
+```json
+{
+  "fromBridgeAddress": "0x...",
+  "destinationBridgeAddress": "0x..."
+}
+```
+
+---
+
+#### 2. Approve ERC20 to Hyperlane Bridge Address
+
+```javascript
+const toBeSignedData_approve = await axios.post(`${backendUrl}/cometh/prepare-erc20-tx`, {
+  walletAddress: comethWalletAddress,
+  tokenAddress: TEST_TOKEN_ADDRESS,
+  functionName: "approve",
+  args: [fromBridgeAddress, formattedAmount]
+});
+```
+
+**Sign**: Use HTML interface to sign `toBeSignedData_approve`.
+
+---
+
+#### 3. Prepare Transaction for Different Chain Transfer
+
+```javascript
+const toBeSignedData = await axios.post(`${backendUrl}/cometh/prepare-transfer-tx`, {
+  walletAddress: comethWalletAddress,
+  recipientAddress: "0x....",
+  destinationChainId: "5",
+  amount: 10000,
+  tokenAddress: ""
+});
+```
+
 ---
