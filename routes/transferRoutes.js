@@ -67,6 +67,33 @@ export const transferRoutes = async (server) => {
   server.get('/bridge', async (request, reply) => {
     const { fromChainId, destinationChainId } = request.query;
 
-    return reply.code(404).send({ message: 'Not implemented yet' });
+    const fromBridgeAddress = await prismaClient.chain.findFirst({
+      where: {
+        chainId: parseInt(fromChainId)
+      },
+      select: {
+        chainId: true,
+        hyperlaneBridgeAddress: true
+      }
+    })
+
+    const destinationBridgeAddress = await prismaClient.chain.findFirst({
+      where: {
+        chainId: parseInt(destinationChainId)
+      },
+      select: {
+        chainId: true,
+        hyperlaneBridgeAddress: true
+      }
+    })
+
+    if (!fromBridgeAddress || !destinationBridgeAddress) {
+      return reply.code(404).send({ message: 'Bridge address not found' });
+    }
+
+    return reply.code(404).send({
+      fromBridgeAddress: fromBridgeAddress.hyperlaneBridgeAddress,
+      destinationBridgeAddress: destinationBridgeAddress.hyperlaneBridgeAddress
+    });
   })
 }

@@ -11,14 +11,15 @@ datasource db {
 }
 
 model Chain {
-  chainId        Int    @id
-  chainName      String
-  rpcUrl         String
-  nativeCurrency Json
-  blockExplorer  String
-  logoURI        String
+  chainId                Int    @id
+  chainName              String
+  rpcUrl                 String
+  nativeCurrency         Json
+  blockExplorer          String
+  logoURI                String
+  hyperlaneBridgeAddress String @default("0x0")
 
-  tokens Token[]
+  tokens                   Token[]
   comethSponsoredAddresses ComethSponsoredAddress[]
 
   createdAt DateTime @default(now())
@@ -140,10 +141,10 @@ model OrderChat {
 }
 
 model ComethSponsoredAddress {
-  chainId Int
+  chainId       Int
   targetAddress String
-  chain   Chain @relation(fields: [chainId], references: [chainId], onDelete: Cascade)
-  
+  chain         Chain  @relation(fields: [chainId], references: [chainId], onDelete: Cascade)
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
@@ -152,7 +153,7 @@ model ComethSponsoredAddress {
 
 model UserNotification {
   walletAddress String @id
-  fcmToken     String
+  fcmToken      String
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

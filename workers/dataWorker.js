@@ -16,7 +16,8 @@ export const dataWorker = async (server) => {
             rpcUrl: chainConfig.rpcUrl,
             nativeCurrency: chainConfig.nativeCurrency,
             blockExplorer: chainConfig.blockExplorerUrls,
-            logoURI: chainConfig.logoURI
+            logoURI: chainConfig.logoURI,
+            hyperlaneBridgeAddress: chainConfig.hyperlaneBridgeAddress
           },
           create: {
             chainId: chainConfig.chainId,
@@ -24,7 +25,8 @@ export const dataWorker = async (server) => {
             rpcUrl: chainConfig.rpcUrl,
             nativeCurrency: chainConfig.nativeCurrency,
             blockExplorer: chainConfig.blockExplorerUrls,
-            logoURI: chainConfig.logoURI
+            logoURI: chainConfig.logoURI,
+            hyperlaneBridgeAddress: chainConfig.hyperlaneBridgeAddress
           },
         });
 
