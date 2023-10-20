@@ -14,7 +14,7 @@ export default defineConfig({
     react(), 
     nodePolyfills(), 
     builtinsPlugin,
-    mkcert()
+    // mkcert()
   ],
   // resolve: {
   //   alias: {
