@@ -5,7 +5,7 @@ import {
   SupportedNetworks,
 } from "@cometh/connect-sdk"
 import axios from "axios"
-import { ethers } from "ethers"
+import { ethers } from "ethers6"
 
 import { estimateSafeTxGas } from "../utils/web3/comethHelpers.js"
 
@@ -221,8 +221,15 @@ export const comethRoutes = async (server) => {
 
       await validateRequiredFields(request.body, ['walletAddress', 'tokenAddress', 'functionName'], reply)
 
-      const provider = avaxProvider;
+      const provider = avaxProvider
       const contract = new ethers.Contract(tokenAddress, ERC20ABI, provider);
+
+      console.log({
+        walletAddress,
+        tokenAddress,
+        functionName,
+        args
+      })
 
       const approveTx = await contract[functionName].populateTransaction(...args, {
         from: walletAddress,

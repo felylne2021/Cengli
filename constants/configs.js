@@ -86,6 +86,14 @@ export const CHAINS_CONFIGS = [
         decimals: 6,
         logoURI: "https://s2.coinmarketcap.com/static/img/coins/128x128/3408.png",
         priceUsd: 1
+      },
+      {
+        address: "0x7ee6eb942378f7082fc58ab09dafd5f7c33a98bd",
+        name: "Fuji Testing Token",
+        symbol: "FTT",
+        decimals: 18,
+        logoURI: "https://media.licdn.com/dms/image/D5603AQEmOw2RKECI_g/profile-displayphoto-shrink_200_200/0/1640780311757?e=1703116800&v=beta&t=cth5S__Qnkca8bvuVg2bLPURZmNgKkEh2yPErd3EofY",
+        priceUsd: 1
       }
     ]
   },
