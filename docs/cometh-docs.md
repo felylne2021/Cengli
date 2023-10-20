@@ -423,6 +423,8 @@ const toBeSignedData_approve = await axios.post(`${backendUrl}/cometh/prepare-er
 
 **Sign**: Use HTML interface to sign `toBeSignedData_approve`.
 
+Then send the signed transaction to the Cometh Relay API.
+
 ---
 
 #### 3. Prepare Transaction for Different Chain Transfer
@@ -436,5 +438,9 @@ const toBeSignedData = await axios.post(`${backendUrl}/cometh/prepare-transfer-t
   tokenAddress: ""
 });
 ```
+
+**Sign**: Use HTML interface to sign `toBeSignedData_approve`.
+
+Then send the signed transaction to the Cometh Relay API.
 
 ---
