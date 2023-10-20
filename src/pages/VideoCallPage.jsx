@@ -1,29 +1,69 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import * as PushAPI from '@pushprotocol/restapi'
 import { useSearchParams } from 'react-router-dom';
 
 import VideoPlayer from '../components/VideoPlayer';
 import useVideoCall from '../hooks/useVideoCall';
+import { ethers } from 'ethers';
+import axios from 'axios';
 
 export default function VideoCallPage() {
   const [params] = useSearchParams()
   const pkpg = params.get('pkpg')
-  const recipientAddress = params.get('recipientAddress')
-  const chatId = params.get('chatId')
-  const isAdminSide = params.get('isAdminSide') || 'false'
 
-  if ((!pkpg || !recipientAddress || !chatId) && isAdminSide === 'false') {
-    return 'User side: params are not complete, please add pkpg, recipientAddress, chatId'
+  // connect user and admin chat through backend, then use the chatId for the rest of the code
+  const [chatId, setChatId] = useState('')
+  const [adminAddress, setAdminAddress] = useState('')
+  const [userAddress, setUserAddress] = useState('')
+
+  const connectChat = async () => {
+    const connectChatRes = await axios({
+      method: 'POST',
+      url: `${import.meta.env.VITE_BACKEND_URL}/push-protocol/connect-chat`,
+      data: {
+        pkpg: pkpg
+      }
+    })
+
+    console.log('connectChatRes', connectChatRes)
+    setChatId(connectChatRes.data.chatId)
+    setAdminAddress(connectChatRes.data.admin)
+    setUserAddress(connectChatRes.data.user)
   }
 
-  if ((!pkpg) && isAdminSide === 'true') {
-    return 'Admin side: params are not complete, please add pkpg'
+  useEffect(() => {
+    connectChat()
+  }, [])
+
+  if (chatId && adminAddress && userAddress) {
+    return <VideoCall pkpg={pkpg} chatId={chatId} adminAddress={adminAddress} />
   }
 
-  const { wallet, data, setRequestVideoCall, acceptVideoCallRequest, videoObjectRef, isLoading } = useVideoCall({
+  return (
+    <div className='bg-white w-screen h-screen flex flex-col justify-center items-center'>
+      <div className='flex flex-col max-w-[20rem] text-center break-all text-xs animate-fade-up'>
+        <div>
+          <span className="loading loading-spinner bg-primary loading-lg"></span>
+        </div>
+
+        <h2 className='mt-5 text-lg animate-bounce'>
+          Initializing KYC Session...
+        </h2>
+      </div>
+    </div>
+  )
+}
+
+
+export const VideoCall = ({
+  pkpg,
+  chatId,
+  adminAddress,
+}) => {
+  const { wallet, data, setRequestVideoCall, acceptVideoCallRequest, videoObjectRef, isLoading, isPushSocketConnected } = useVideoCall({
     chatId: chatId,
     pkpg: pkpg,
-    recipientAddress: recipientAddress,
+    recipientAddress: adminAddress
   })
 
   if (!data.local.stream && !data.incoming[0].stream) {
@@ -33,12 +73,12 @@ export default function VideoCallPage() {
           onClick={setRequestVideoCall}
           disabled={isLoading}
         >
-          Start Video Call
+          Start KYC Session
         </button>
 
         <div className='flex flex-col max-w-[12rem] text-center break-all text-xs mt-10'>
           <p>
-            recipientAddress:<br /> {recipientAddress}
+            recipientAddress:<br /> {adminAddress}
           </p>
           <br />
           <p>
@@ -102,109 +142,6 @@ export default function VideoCallPage() {
           </div>
         </div>
       </div>
-
-      {/* <div>
-        <div className='text-black text-2xl'>VideoCallPage</div>
-
-        <div className='mt-2'>
-          Connected address: {wallet.address}
-        </div>
-
-        <div className='flex flex-col gap-4 my-4 border border-black/10 p-4'>
-          <div className='flex flex-col'>
-            <label htmlFor='recipientAddress'>Recipient Address</label>
-            <div>
-              {recipientAddress}
-            </div>
-          </div>
-
-          <div className='flex flex-col'>
-            <label htmlFor='chatId'>Chat id</label>
-            <div>
-              {chatId}
-            </div>
-          </div>
-        </div>
-
-        <div className='flex flex-row flex-wrap gap-2 mt-2'>
-          <button className='btn btn-primary'
-            disabled={data.incoming[0].status !== PushAPI.VideoCallStatus.UNINITIALIZED}
-            onClick={setRequestVideoCall}
-          >
-            Request
-          </button>
-
-          <button className='btn btn-primary'
-            disabled={data.incoming[0].status !== PushAPI.VideoCallStatus.RECEIVED}
-            onClick={acceptVideoCallRequest}
-          >
-            Accept Request
-          </button>
-
-          <button className='btn btn-error'
-            disabled={data.incoming[0].status === PushAPI.VideoCallStatus.UNINITIALIZED}
-            onClick={() => videoObjectRef.current?.disconnect()}
-          >
-            Disconnect
-          </button>
-
-          <button className='btn btn-primary'
-            disabled={data.incoming[0].status === PushAPI.VideoCallStatus.UNINITIALIZED}
-            onClick={() => {
-              videoObjectRef.current?.enableVideo({
-                state: !data.local.video
-              })
-            }}
-          >
-            Toggle Video
-          </button>
-
-
-          <button className='btn btn-primary'
-            disabled={data.incoming[0].status === PushAPI.VideoCallStatus.UNINITIALIZED}
-            onClick={() => {
-              videoObjectRef.current?.enableAudio({
-                state: !data.local.audio
-              })
-            }}
-          >
-            Toggle Audio
-          </button>
-        </div>
-
-        <div className='flex flex-col'>
-          <p>
-            LOCAL VIDEO: {data.local.video ? 'ON' : 'OFF'}
-          </p>
-          <p>
-            LOCAL AUDIO: {data.local.audio ? 'ON' : 'OFF'}
-          </p>
-          <p>
-            INCOMING VIDEO: {data.incoming[0].video ? 'ON' : 'OFF'}
-          </p>
-          <p>
-            INCOMING AUDIO: {data.incoming[0].audio ? 'ON' : 'OFF'}
-          </p>
-        </div>
-
-        <div className='mt-8'>
-          <div className='bg-white p-2 shadow-md border border-black/10 rounded-md flex flex-col divide-y-2 divide-black'>
-            <div className='py-2'>
-              <h2>
-                Local Video
-              </h2>
-              <VideoPlayer stream={data.local.stream} />
-            </div>
-
-            <div className='py-2'>
-              <h2>
-                Incoming Video
-              </h2>
-              <VideoPlayer stream={data.incoming[0].stream} />
-            </div>
-          </div>
-        </div>
-      </div> */}
     </div>
   )
 }

@@ -42,7 +42,7 @@ export default function useVideoCall({
 
   // Accept the video call
   const acceptVideoCallRequest = async () => {
-    if(isLoading) return;
+    if (isLoading) return;
 
     setIsLoading(true)
 
@@ -56,33 +56,42 @@ export default function useVideoCall({
     })
 
     setIsLoading(false)
+
+    console.log('acceptVideoCallRequest', data)
   }
 
   const [isLoading, setIsLoading] = useState(false)
 
   const setRequestVideoCall = async () => {
-    if (isLoading) return;
+    try {
+      if (isLoading) {
+        console.log('isLoading', isLoading)
+        return;
+      }
 
-    setIsLoading(true)
-    videoObjectRef.current?.setData((oldData) => {
-      return produce(oldData, (draft) => {
-        if (!recipientAddress) return;
-        if (!chatId) return;
+      setIsLoading(true)
+      videoObjectRef.current?.setData((oldData) => {
+        return produce(oldData, (draft) => {
+          if (!recipientAddress) return;
+          if (!chatId) return;
 
-        draft.local.address = wallet.address;
-        draft.incoming[0].address = recipientAddress;
-        draft.incoming[0].status = PushAPI.VideoCallStatus.INITIALIZED;
-        draft.meta.chatId = chatId;
+          draft.local.address = wallet.address;
+          draft.incoming[0].address = recipientAddress;
+          draft.incoming[0].status = PushAPI.VideoCallStatus.INITIALIZED;
+          draft.meta.chatId = chatId;
+        })
       })
-    })
 
-    // Start the local media stream
-    await videoObjectRef.current?.create({
-      video: true,
-      audio: true,
-    })
+      // Start the local media stream
+      await videoObjectRef.current?.create({
+        video: true,
+        audio: true,
+      })
 
-    setIsLoading(false)
+      setIsLoading(false)
+    } catch (error) {
+      console.log('error', error)
+    }
   }
 
   const setIncomingVideoCall = async (videoCallMetaData) => {

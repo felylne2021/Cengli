@@ -41,6 +41,10 @@ export default function AdminVideoCallPage() {
           </span>
         </div>
 
+        <div className='mt-2 text-xs'>
+          Connected Address: {wallet.address}
+        </div>
+
         <button className={`btn btn-primary mt-4 ${isLoading ? 'animate-pulse' : ''}`}
           disabled={data.incoming[0].status !== PushAPI.VideoCallStatus.RECEIVED || isLoading}
           onClick={acceptVideoCallRequest}
