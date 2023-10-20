@@ -94,7 +94,10 @@ export default function AdminVideoCallPage() {
               </button>
 
               <button
-                onClick={() => videoObjectRef.current?.disconnect()}
+                onClick={async () => {
+                  await videoObjectRef.current?.disconnect()
+                  window.flutter_inappwebview.callHandler('callHandler', 'completed');
+                }}
                 className='btn btn-error aspect-square w-[4rem] h-[4rem] p-2 rounded-full'
               >
                 <img src={"/icon_hang_up.svg"} alt="DC" />
