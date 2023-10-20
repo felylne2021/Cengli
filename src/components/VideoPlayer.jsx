@@ -3,6 +3,7 @@ import React, { useEffect, useRef } from 'react'
 export default function VideoPlayer({
   stream,
   className = '',
+  muted = false,
 }) {
   const videoRef = useRef()
 
@@ -19,6 +20,7 @@ export default function VideoPlayer({
       className={`w-full h-full object-cover ${className}`}
       autoPlay
       playsInline
+      muted={muted}
     />
   )
 }

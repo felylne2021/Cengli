@@ -47,7 +47,6 @@ export default function AdminVideoCallPage() {
         >
           Accept Request
         </button>
-
       </div>
     )
   }
@@ -58,7 +57,7 @@ export default function AdminVideoCallPage() {
         <div className='w-full h-full relative'>
           {/* Self */}
           <div className='bg-white w-full h-full z-0'>
-            <VideoPlayer stream={data.local.stream} />
+            <VideoPlayer stream={data.local.stream} muted />
           </div>
 
           {/* Caller */}
