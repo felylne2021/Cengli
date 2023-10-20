@@ -460,13 +460,12 @@ Then send the signed transaction to the Cometh Relay API.
 #### 3. Prepare Transaction for Different Chain Transfer
 
 ```javascript
-const toBeSignedData = await axios.post(`${backendUrl}/cometh/prepare-transfer-tx`, {
+const toBeSignedData = await axios.post(`${backendUrl}/cometh/prepare-usdc-bridge-transfer-tx`, {
   walletAddress: comethWalletAddress,
   recipientAddress: "0x....",
   fromChainId: 43313,
   destinationChainId: 5,
-  amount: 10000,
-  tokenAddress: ""
+  amount: 10000
 });
 ```
 
