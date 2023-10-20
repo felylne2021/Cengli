@@ -39,6 +39,37 @@ class CustomAppbar extends StatelessWidget implements PreferredSizeWidget {
   }
 }
 
+class CustomCenterAppbar extends StatelessWidget
+    implements PreferredSizeWidget {
+  CustomCenterAppbar({
+    super.key,
+    required this.appbarTitle,
+  }) : preferredSize = const Size.fromHeight(50);
+
+  final String appbarTitle;
+
+  @override
+  Size preferredSize;
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+        child: Stack(
+      alignment: Alignment.center,
+      children: [
+        KxAppBarCenterTitle(
+          elevationType: KxElevationAppBarEnum.ghost,
+          appBarTitle: "",
+          leadingWidget: const SizedBox(),
+          leadingCallback: () {},
+        ),
+        Text(appbarTitle,
+            style: CengliTypography(
+                type: CengliFontType.subtitle4, color: KxColors.neutral700)),
+      ],
+    ));
+  }
+}
+
 class CustomAppbarBackAndCenter extends StatelessWidget
     implements PreferredSizeWidget {
   CustomAppbarBackAndCenter(
@@ -115,5 +146,34 @@ class CustomAppbarWithBackButton extends StatelessWidget
                 type: CengliFontType.subtitle4, color: KxColors.neutral700))
       ],
     ));
+  }
+}
+
+class CustomAppBarLeftTitle extends StatelessWidget
+    implements PreferredSizeWidget {
+  CustomAppBarLeftTitle(
+      {super.key, required this.appbarTitle, this.trailingWidgets})
+      : preferredSize = const Size.fromHeight(120);
+  final String appbarTitle;
+  final List<Widget>? trailingWidgets;
+  @override
+  Size preferredSize;
+
+  @override
+  Widget build(BuildContext context) {
+    return SafeArea(
+        child: Stack(
+      alignment: Alignment.centerLeft,
+      children: [
+        KxAppBarLeftTitle(
+          elevationType: KxElevationAppBarEnum.ghost,
+          appBarTitle: '',
+          trailingWidgets: trailingWidgets,
+        ),
+        Text(appbarTitle,
+            style: CengliTypography(
+                type: CengliFontType.headline4, color: KxColors.neutral700))
+      ],
+    ).padding(const EdgeInsets.fromLTRB(24, 35, 0, 18)));
   }
 }

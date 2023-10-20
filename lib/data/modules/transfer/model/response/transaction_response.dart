@@ -31,6 +31,7 @@ class TransactionResponse extends Equatable {
 
   @JsonKey(name: 'note')
   final String? note;
+  
   @JsonKey(name: 'createdAt')
   final String? createdAt;
 

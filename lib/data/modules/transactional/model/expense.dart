@@ -32,6 +32,9 @@ class Expense extends Equatable {
   @JsonKey(name: 'charges')
   final List<Charges>? charges;
 
+  @JsonKey(name: 'status')
+  final String? status;
+
   const Expense(
       {this.id,
       this.title,
@@ -41,7 +44,8 @@ class Expense extends Equatable {
       this.memberPayId,
       this.tokenUnit,
       this.charges,
-      this.date});
+      this.date,
+      this.status});
 
   @override
   List<Object?> get props => [
@@ -53,7 +57,8 @@ class Expense extends Equatable {
         date,
         memberPayId,
         tokenUnit,
-        charges
+        charges,
+        status
       ];
 
   Map<String, dynamic> toJson() => _$ExpenseToJson(this);

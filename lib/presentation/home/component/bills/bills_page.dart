@@ -1,8 +1,8 @@
-import 'package:cengli/data/dummy_data/transaction/transaction_dummy_data.dart';
 import 'package:cengli/values/values.dart';
 import 'package:flutter/material.dart';
 import 'package:kinetix/kinetix.dart';
 
+import '../../../../data/modules/transactional/model/bill.dart';
 import '../../../reusable/appbar/custom_appbar.dart';
 import 'component/bill_status_container.dart';
 import 'detail/bills_detail_page.dart';
@@ -10,9 +10,9 @@ import 'detail/bills_detail_page.dart';
 enum BillStatusEnum { settled, notPaid }
 
 class BillsPage extends StatelessWidget {
-  const BillsPage({super.key});
+  const BillsPage({super.key, required this.bills});
   static const String routeName = '/bills_page';
-
+  final List<Bill> bills;
   @override
   Widget build(BuildContext context) {
     return Scaffold(

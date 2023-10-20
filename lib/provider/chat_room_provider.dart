@@ -1,7 +1,12 @@
+import 'package:cengli/data/modules/membership/model/request/notification_payload_request.dart';
+import 'package:cengli/data/modules/membership/model/request/send_notif_request.dart';
+import 'package:cengli/di/injector.dart';
 import 'package:cengli/services/push_protocol/push_restapi_dart.dart';
 import 'package:cengli/services/session_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+
+import '../data/modules/membership/membership_remote_repository.dart';
 
 final chatRoomProvider = ChangeNotifierProvider((ref) => ChatRoomProvider(ref));
 
@@ -21,11 +26,29 @@ class ChatRoomProvider extends ChangeNotifier {
   Map<String, List<Message>> _localMessagesCache = {};
 
   String _currentChatid = '';
+  List<String> _members = [];
+  String _groupName = '';
 
   String get currentChatId => _currentChatid;
+  List<String> get members => _members;
+  String get groupName => _groupName;
+
   setCurrentChatId(String chatId) {
     _messageList = _localMessagesCache[chatId] ?? [];
     _currentChatid = chatId;
+    notifyListeners();
+    getRoomMessages();
+  }
+
+  setMembers(List<String> members) {
+    _members = members;
+
+    notifyListeners();
+    getRoomMessages();
+  }
+
+  setGroupName(String name) {
+    _groupName = name;
     notifyListeners();
     getRoomMessages();
   }
@@ -124,11 +147,20 @@ class ChatRoomProvider extends ChangeNotifier {
 
       updateSending(true);
       final message = await send(options);
-      //*TODO: send notification
       updateSending(false);
 
       if (message != null) {
         getRoomMessages();
+        if (members.contains(walletAddress)) {
+          members.remove(walletAddress);
+        }
+        final targetedMembers = members;
+        locator<MembershipRemoteRepository>().sendNotification(SendNotifRequest(
+            walletAddresses: targetedMembers,
+            notificationPayload: NotificationPayloadRequest(
+                title: groupName,
+                body: options.messageContent,
+                screen: "chat")));
       }
     } catch (e) {
       updateSending(false);

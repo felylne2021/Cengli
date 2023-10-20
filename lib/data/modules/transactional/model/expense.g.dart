@@ -18,6 +18,7 @@ Expense _$ExpenseFromJson(Map<String, dynamic> json) => Expense(
           ?.map((e) => Charges.fromJson(e as Map<String, dynamic>))
           .toList(),
       date: json['date'] as String?,
+      status: json['status'] as String?,
     );
 
 Map<String, dynamic> _$ExpenseToJson(Expense instance) => <String, dynamic>{
@@ -30,4 +31,5 @@ Map<String, dynamic> _$ExpenseToJson(Expense instance) => <String, dynamic>{
       'memberPayId': instance.memberPayId,
       'tokenUnit': instance.tokenUnit,
       'charges': instance.charges,
+      'status': instance.status,
     };

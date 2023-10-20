@@ -300,7 +300,30 @@ class _TransferApiClient implements TransferApiClient {
   }
 
   @override
-  Future<TransactionDataResponse> prepareTx(param) async {
+  Future<String> prepareTx(param) async {
+    const _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    final _data = <String, dynamic>{};
+    _data.addAll(param.toJson());
+    final _result = await _dio.fetch<String>(_setStreamType<String>(Options(
+      method: 'POST',
+      headers: _headers,
+      extra: _extra,
+    )
+        .compose(
+          _dio.options,
+          'cometh/prepare-erc20-tx',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
+    final value = _result.data!;
+    return value;
+  }
+
+  @override
+  Future<TransactionDataResponse> prepareComethTx(param) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -314,7 +337,7 @@ class _TransferApiClient implements TransferApiClient {
     )
             .compose(
               _dio.options,
-              'cometh/prepare-erc20-tx',
+              'cometh/prepare-tx',
               queryParameters: queryParameters,
               data: _data,
             )

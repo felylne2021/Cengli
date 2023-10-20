@@ -5,10 +5,13 @@ import 'package:cengli/bloc/auth/auth.dart';
 import 'package:cengli/bloc/auth/state/get_user_state.dart';
 import 'package:cengli/data/modules/auth/auth_remote_repository.dart';
 import 'package:cengli/data/modules/auth/model/request/create_wallet_request.dart';
-import 'package:cengli/data/modules/auth/model/request/relay_transaction_request.dart';
+import 'package:cengli/data/modules/membership/membership_remote_repository.dart';
+import 'package:cengli/data/modules/membership/model/request/subscribe_channel_request.dart';
+import 'package:cengli/data/modules/membership/model/request/upsert_fcm_token_request.dart';
 import 'package:cengli/data/utils/collection_util.dart';
 import 'package:cengli/services/biometric_service.dart';
 import 'package:cengli/services/eth_service.dart';
+import 'package:cengli/utils/fcm_util.dart';
 import 'package:cengli/utils/signer.dart';
 import 'package:cengli/services/session_service.dart';
 import 'package:cengli/values/values.dart';
@@ -22,8 +25,10 @@ import '../../data/modules/auth/model/user_profile.dart';
 
 class AuthBloc extends Bloc<AuthEvent, AuthState> {
   final AuthRemoteRepository _authRepository;
+  final MembershipRemoteRepository _membershipRemoteRepository;
 
-  AuthBloc(this._authRepository) : super(const AuthInitiateState()) {
+  AuthBloc(this._authRepository, this._membershipRemoteRepository)
+      : super(const AuthInitiateState()) {
     on<CreateWalletEvent>(_onCreateWallet, transformer: sequential());
     on<CheckWalletEvent>(_onCheckWallet, transformer: sequential());
     on<CheckUsernameEvent>(_onCheckUsername, transformer: sequential());
@@ -58,8 +63,6 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
               address: walletAddress.walletAddress ?? ""),
           progressHook: (push.ProgressHookType progress) {});
 
-      //*TODO: subscribe channel
-
       //Create user on firebase
       String imageUrl = Constant
           .profileImages[Random().nextInt(Constant.profileImages.length)];
@@ -72,6 +75,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           walletAddress: walletAddress.walletAddress,
           userRole: UserRoleEnum.user.name,
           imageProfile: imageUrl));
+
+      // Subscibe channel
+      await _membershipRemoteRepository.subscribeChannel(
+          SubscribeChannelRequest(
+              walletAddress: walletAddress.walletAddress, pgpk: privateKey));
+
+      // Save fcm token
+      final String fcmToken = await FcmUtil.getFcmToken();
+      await _membershipRemoteRepository
+          .upsertFcmToken(UpsertFcmTokenRequest(fcmToken: fcmToken));
 
       SessionService.setLogin(true);
       SessionService.setEncryptedPrivateKey(user?.encryptedPrivateKey ?? "");
@@ -139,21 +152,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       final walletAddress = await SessionService.getWalletAddress();
       final isApprove = await BiometricService.authenticateWithBiometrics();
       if (isApprove) {
-        String signatures = await EthService().signTransaction(event.response);
-        await _authRepository.relayTransaction(
-            walletAddress,
-            RelayTransactionRequest(
-                to: event.response.types?.to,
-                value: event.response.types?.value,
-                data: event.response.types?.data,
-                operation: event.response.types?.operation,
-                safeTxGas: event.response.types?.safeTxGas,
-                baseGas: event.response.types?.baseGas,
-                gasPrice: event.response.types?.gasPrice,
-                gasToken: event.response.types?.gasToken,
-                refundReceiver: event.response.types?.refundReceiver,
-                nonce: event.response.types?.nonce,
-                signatures: signatures));
+        await _authRepository.relayTransaction(walletAddress, event.param);
         emit(const RelayTransactionSuccessState());
       } else {
         emit(const RelayTransactionErrorState("Canceled"));

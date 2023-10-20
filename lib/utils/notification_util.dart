@@ -24,7 +24,8 @@ class NotificationUtil {
 
   static void initPlatformNotification(
       {required String androidIconLauncher,
-      required DidReceiveNotificationResponseCallback? onSelectNotification}) {
+      required DidReceiveNotificationResponseCallback? onSelectNotification,
+      required DidReceiveBackgroundNotificationResponseCallback? onSelectNotificationBackground}) {
     AndroidInitializationSettings initializationSettingsAndroid =
         AndroidInitializationSettings(androidIconLauncher);
     DarwinInitializationSettings initializationSettingsIOs =
@@ -32,7 +33,8 @@ class NotificationUtil {
     InitializationSettings initSettings = InitializationSettings(
         android: initializationSettingsAndroid, iOS: initializationSettingsIOs);
     flutterLocalNotificationsPlugin.initialize(initSettings,
-        onDidReceiveNotificationResponse: onSelectNotification);
+        onDidReceiveNotificationResponse: onSelectNotification,
+         onDidReceiveBackgroundNotificationResponse: onSelectNotificationBackground);
   }
 
   static void showNotification(

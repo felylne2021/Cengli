@@ -1,10 +1,14 @@
 import 'package:cengli/bloc/membership/membership.dart';
 import 'package:cengli/bloc/transfer/transfer.dart';
+import 'package:cengli/data/modules/transfer/model/response/get_partners_response.dart';
+import 'package:cengli/data/utils/collection_util.dart';
 import 'package:cengli/presentation/chat/components/chat_item_widget.dart';
 import 'package:cengli/presentation/chat/components/chat_profile_image_widget.dart';
 import 'package:cengli/presentation/p2p/components/p2p_item_widget.dart';
 import 'package:cengli/presentation/p2p/p2p_request_page.dart';
 import 'package:cengli/presentation/p2p/p2p_room_chat_paget.dart';
+import 'package:cengli/presentation/p2p/p2p_user_chat_page.dart';
+import 'package:cengli/presentation/p2p/partner_registration_page.dart';
 import 'package:cengli/presentation/reusable/appbar/custom_appbar.dart';
 import 'package:cengli/utils/utils.dart';
 import 'package:cengli/values/values.dart';
@@ -12,11 +16,13 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kinetix/kinetix.dart';
 import 'package:intl/intl.dart';
 
 import '../../provider/chat_room_provider.dart';
 import '../../provider/conversations_provider.dart';
+import '../../services/push_protocol/src/helpers/helpers.dart';
 import '../reusable/segmented_control/segmented_control.dart';
 
 class P2pPage extends ConsumerStatefulWidget {
@@ -32,136 +38,250 @@ class P2pPage extends ConsumerStatefulWidget {
 class _P2pPageState extends ConsumerState<P2pPage> {
   List<String> segmentedTitles = ['Buy', 'Order'];
   ValueNotifier<int> currentIndex = ValueNotifier(0);
+  ValueNotifier<bool> isRegistProceed = ValueNotifier(false);
 
   @override
   void initState() {
     super.initState();
     _fetchPartners();
+    if (widget.argument.user.userRole == UserRoleEnum.user.name) {
+      _getRegistration(widget.argument.user.walletAddress ?? "");
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: CustomAppbarWithBackButton(appbarTitle: 'P2P'),
-        body: SingleChildScrollView(
-            child: Column(
-          children: [
-            SegmentedControl(
-              activeColor: primaryGreen600,
-              onSelected: (index) {
-                currentIndex.value = index;
-                if (index == 0) {
-                  _fetchPartners();
+        appBar: CustomAppbarBackAndCenter(
+          appbarTitle: "P2P",
+          trailingWidgets: [
+            InkWell(
+              onTap: () => Navigator.of(context).pushNamed(
+                  P2pUserChatPage.routeName,
+                  arguments: P2pArgument(const GetPartnersResponse(),
+                      widget.argument.user, widget.argument.chainId)),
+              child: SvgPicture.asset(IC_TRANSACTION, width: 40, height: 40),
+            ).visibility(
+                widget.argument.user.userRole == UserRoleEnum.user.name)
+          ],
+        ),
+        body: BlocListener<MembershipBloc, MembershipState>(
+            listenWhen: (previous, state) {
+              return state is GetRegistrationErrorState ||
+                  state is GetRegistrationLoadingState ||
+                  state is GetRegistrationSuccessState;
+            },
+            listener: (context, state) {
+              if (state is GetRegistrationSuccessState) {
+                hideLoading();
+                if (state.registration != null) {
+                  isRegistProceed.value = state.registration?.status ==
+                      RegistrationStatusEnum.onproses.name;
                 } else {
-                  _fetchChatRequest();
+                  isRegistProceed.value = false;
                 }
-              },
-              title: segmentedTitles,
-              initialIndex: currentIndex.value,
-              currentIndex: currentIndex,
-              segmentType: SegmentedControlEnum.ghost,
-              padding: 16,
-            ),
-            16.0.height,
-            ValueListenableBuilder(
-              valueListenable: currentIndex,
-              builder: (context, value, child) {
-                switch (value) {
-                  case 0:
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                            padding: const EdgeInsets.fromLTRB(5, 12, 12, 12),
-                            margin: const EdgeInsets.symmetric(horizontal: 16),
-                            decoration: BoxDecoration(
-                                color: primaryGreen100,
-                                borderRadius: BorderRadius.circular(8)),
-                            child: Row(
-                              children: [
-                                Image.asset(
-                                  IMG_TOPUP,
-                                  width: 83,
-                                  height: 83,
-                                ),
-                                10.0.width,
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      "Turn cash into crypto instantly",
-                                      style: KxTypography(
-                                          type: KxFontType.subtitle4,
-                                          color: KxColors.neutral700),
-                                    ),
-                                    8.0.height,
-                                    Text(
-                                      "Easily Transform your physical cash into digital currency through Cengli Partners",
-                                      style: KxTypography(
-                                          type: KxFontType.caption4,
-                                          color: KxColors.neutral600),
-                                    ),
-                                  ],
-                                ).flexible()
-                              ],
-                            )),
-                        24.0.height,
-                        Text(
-                          "Buy From",
-                          style: KxTypography(
-                              type: KxFontType.fieldText3,
-                              color: KxColors.neutral500),
-                        ).padding(const EdgeInsets.symmetric(horizontal: 16)),
-                        BlocBuilder<TransferBloc, TransferState>(
-                          buildWhen: (previous, state) {
-                            return state is GetPartnersSuccessState ||
-                                state is GetPartnersLoadingState ||
-                                state is GetPartnersErrorState;
-                          },
-                          builder: (context, state) {
-                            if (state is GetPartnersSuccessState) {
-                              return Column(
-                                  children: List.generate(
-                                      state.partners.length,
-                                      (index) => InkWell(
-                                          onTap: () => Navigator.of(context)
-                                                  .pushNamed(
-                                                      P2pRequestPage.routeName,
-                                                      arguments: P2pArgument(
-                                                          state.partners[index],
-                                                          widget.argument.user,
-                                                          widget.argument
-                                                              .chainId))
-                                                  .then((value) {
-                                                if (value != null) {
-                                                  currentIndex.value = 1;
-                                                }
-                                              }),
-                                          child: P2pItemWidget(
-                                            name: state.partners[index].name ??
-                                                "",
-                                            quantity: state.partners[index]
-                                                        .balances !=
-                                                    null
-                                                ? "${NumberFormat.currency(locale: 'en_US', symbol: '').format(state.partners[index].balances?.first.amount ?? 0)} ${state.partners[index].balances?.first.token?.symbol ?? ""}"
-                                                : "Loading ...",
-                                          ))));
+              } else if (state is GetRegistrationLoadingState) {
+                showLoading();
+              } else if (state is GetChatRequestErrorState) {
+                debugPrint("failed");
+                hideLoading();
+                showToast(state.message);
+              }
+            },
+            child: SingleChildScrollView(
+                child: Column(
+              children: [
+                Padding(
+                        padding: const EdgeInsets.only(bottom: 16),
+                        child: SegmentedControl(
+                          activeColor: primaryGreen600,
+                          onSelected: (index) {
+                            currentIndex.value = index;
+                            if (index == 0) {
+                              _fetchPartners();
                             } else {
-                              return const CupertinoActivityIndicator()
-                                  .padding(const EdgeInsets.only(top: 40))
-                                  .center();
+                              _fetchChatRequest();
                             }
                           },
-                        )
-                      ],
-                    );
-                  default:
-                    return _orderChats();
-                }
-              },
-            )
-          ],
-        )));
+                          title: segmentedTitles,
+                          initialIndex: currentIndex.value,
+                          currentIndex: currentIndex,
+                          segmentType: SegmentedControlEnum.ghost,
+                          padding: 16,
+                        ))
+                    .visibility(widget.argument.user.userRole ==
+                        UserRoleEnum.partner.name),
+                ValueListenableBuilder(
+                  valueListenable: currentIndex,
+                  builder: (context, value, child) {
+                    switch (value) {
+                      case 0:
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Container(
+                                padding:
+                                    const EdgeInsets.fromLTRB(5, 12, 12, 12),
+                                margin:
+                                    const EdgeInsets.symmetric(horizontal: 16),
+                                decoration: BoxDecoration(
+                                    color: primaryGreen100,
+                                    borderRadius: BorderRadius.circular(8)),
+                                child: Row(
+                                  children: [
+                                    Image.asset(
+                                      IMG_TOPUP,
+                                      width: 83,
+                                      height: 83,
+                                    ),
+                                    10.0.width,
+                                    Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          "Turn cash into crypto instantly",
+                                          style: KxTypography(
+                                              type: KxFontType.subtitle4,
+                                              color: KxColors.neutral700),
+                                        ),
+                                        8.0.height,
+                                        Text(
+                                          "Easily Transform your physical cash into digital currency through Cengli Partners",
+                                          style: KxTypography(
+                                              type: KxFontType.caption4,
+                                              color: KxColors.neutral600),
+                                        ),
+                                      ],
+                                    ).flexible()
+                                  ],
+                                )),
+                            ValueListenableBuilder(
+                                    valueListenable: isRegistProceed,
+                                    builder: (context, value, child) {
+                                      if (value) {
+                                        return Container(
+                                          padding: const EdgeInsets.all(16),
+                                          width: double.maxFinite,
+                                          decoration: BoxDecoration(
+                                              color: Colors.white,
+                                              boxShadow: KxShadowStyleEnum
+                                                  .elevationTwo
+                                                  .getShadows(),
+                                              borderRadius:
+                                                  BorderRadius.circular(12)),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text("Registration Status",
+                                                  style: KxTypography(
+                                                      type: KxFontType.caption2,
+                                                      color:
+                                                          KxColors.neutral500)),
+                                              4.0.height,
+                                              Text("On Process",
+                                                  style: KxTypography(
+                                                      type:
+                                                          KxFontType.subtitle4,
+                                                      color:
+                                                          KxColors.neutral700)),
+                                            ],
+                                          ),
+                                        );
+                                      } else {
+                                        return KxTextButton(
+                                            argument: KxTextButtonArgument(
+                                                onPressed: () => Navigator.of(
+                                                        context)
+                                                    .pushNamed(
+                                                        PartnerRegistrationPage
+                                                            .routeName,
+                                                        arguments: widget
+                                                            .argument.user),
+                                                buttonText:
+                                                    "Register as Cengli Partner",
+                                                buttonColor: primaryGreen600,
+                                                buttonTextStyle: KxTypography(
+                                                    type:
+                                                        KxFontType.buttonMedium,
+                                                    color: KxColors.neutral700),
+                                                buttonSize:
+                                                    KxButtonSizeEnum.medium,
+                                                buttonType:
+                                                    KxButtonTypeEnum.primary,
+                                                buttonShape:
+                                                    KxButtonShapeEnum.square,
+                                                buttonContent:
+                                                    KxButtonContentEnum.text));
+                                      }
+                                    })
+                                .padding(
+                                    const EdgeInsets.fromLTRB(16, 12, 16, 0))
+                                .visibility(widget.argument.user.userRole ==
+                                    UserRoleEnum.user.name),
+                            24.0.height,
+                            Text(
+                              "Buy From",
+                              style: KxTypography(
+                                  type: KxFontType.fieldText3,
+                                  color: KxColors.neutral500),
+                            ).padding(
+                                const EdgeInsets.symmetric(horizontal: 16)),
+                            BlocBuilder<TransferBloc, TransferState>(
+                              buildWhen: (previous, state) {
+                                return state is GetPartnersSuccessState ||
+                                    state is GetPartnersLoadingState ||
+                                    state is GetPartnersErrorState;
+                              },
+                              builder: (context, state) {
+                                if (state is GetPartnersSuccessState) {
+                                  return Column(
+                                      children: List.generate(
+                                          state.partners.length,
+                                          (index) => InkWell(
+                                              onTap: () => Navigator.of(context)
+                                                      .pushNamed(
+                                                          P2pRequestPage
+                                                              .routeName,
+                                                          arguments: P2pArgument(
+                                                              state.partners[
+                                                                  index],
+                                                              widget.argument
+                                                                  .user,
+                                                              widget.argument
+                                                                  .chainId))
+                                                      .then((value) {
+                                                    if (value != null) {
+                                                      currentIndex.value = 1;
+                                                    }
+                                                  }),
+                                              child: P2pItemWidget(
+                                                name: state
+                                                        .partners[index].name ??
+                                                    "",
+                                                quantity: state.partners[index]
+                                                            .balances !=
+                                                        null
+                                                    ? "${NumberFormat.currency(locale: 'en_US', symbol: '').format(state.partners[index].balances?.first.amount ?? 0)} ${state.partners[index].balances?.first.token?.symbol ?? ""}"
+                                                    : "Loading ...",
+                                              ))));
+                                } else {
+                                  return const CupertinoActivityIndicator()
+                                      .padding(const EdgeInsets.only(top: 40))
+                                      .center();
+                                }
+                              },
+                            )
+                          ],
+                        );
+                      default:
+                        return _orderChats();
+                    }
+                  },
+                )
+              ],
+            ))));
   }
 
   _orderChats() {
@@ -285,6 +405,16 @@ class _P2pPageState extends ConsumerState<P2pPage> {
                         ref
                             .read(chatRoomProvider)
                             .setCurrentChatId(item.chatId!);
+                        ref
+                            .read(chatRoomProvider)
+                            .setCurrentChatId(item.chatId!);
+                        ref.read(chatRoomProvider).setGroupName(
+                            item.groupInformation?.groupName ?? "");
+                        ref.read(chatRoomProvider).setMembers(item
+                                .groupInformation?.members
+                                .map((value) => pCAIP10ToWallet(value.wallet))
+                                .toList() ??
+                            []);
                         Navigator.of(context).pushNamed(
                             P2pChatRoomPage.routeName,
                             arguments: P2pChatRoomArgument(
@@ -307,7 +437,9 @@ class _P2pPageState extends ConsumerState<P2pPage> {
               },
             ),
           ],
-        ));
+        )).visibility(widget
+            .argument.user.userRole ==
+        UserRoleEnum.partner.name);
   }
 
   _fetchChatRequest() async {
@@ -320,5 +452,9 @@ class _P2pPageState extends ConsumerState<P2pPage> {
 
   _approve(String senderAddress) {
     context.read<MembershipBloc>().add(ApproveEvent(senderAddress));
+  }
+
+  _getRegistration(String walletAddress) {
+    context.read<MembershipBloc>().add(GetRegistrationEvent(walletAddress));
   }
 }

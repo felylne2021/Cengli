@@ -28,4 +28,5 @@ abstract class AuthApiClient {
   Future<RelayTransactionResponse> relayTransaction(
       @Path("walletAddress") String walletAddress,
       @Body() RelayTransactionRequest param);
+  
 }

@@ -58,16 +58,24 @@ class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
             ),
             trailingCallBack: () => Navigator.of(context).pushNamed(
                 GroupDetailPage.routeName,
-                arguments: widget.argument.room.chatId),
+                arguments: widget.argument.room),
             leadingWidget: Container(
               height: 48,
               width: 48,
               decoration: const BoxDecoration(
                   color: KxColors.neutral200, shape: BoxShape.circle),
-              child: const Icon(
-                CupertinoIcons.person_2_fill,
-                color: KxColors.neutral400,
-              ),
+              child: room.profilePicture == null
+                  ? const Icon(
+                      CupertinoIcons.person_2_fill,
+                      color: KxColors.neutral400,
+                    )
+                  : CircleAvatar(
+                      child: Image.network(
+                        room.profilePicture ?? "",
+                        height: 40,
+                        width: 40,
+                      ),
+                    ),
             )),
         body: GestureDetector(
             onTap: () {
@@ -136,8 +144,6 @@ class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
                                         String profileIcon =
                                             snapshot.data?['imageProfile'] ??
                                                 "";
-
-                                        debugPrint(item.messageType.toString());
 
                                         if (item.messageContent
                                             .contains("alert")) {

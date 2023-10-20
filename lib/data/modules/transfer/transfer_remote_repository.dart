@@ -1,4 +1,5 @@
 import 'package:cengli/data/modules/transfer/model/request/create_order_request.dart';
+import 'package:cengli/data/modules/transfer/model/request/prepare_tx_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/transfer_request.dart';
 import 'package:cengli/data/modules/transfer/model/response/assets_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/chain_response.dart';
@@ -23,5 +24,6 @@ abstract class TransferRemoteRepository {
   Future<UpdateOrderResponse> cancelOrder(String orderId, String callerUserId);
   Future<UpdateOrderResponse> payOrder(String orderId, String callerUserId);
   Future<UpdateOrderResponse> fundOrder(String orderId, String callerUserId);
-  Future<TransactionDataResponse> prepareTx(PrepareErc20Request param);
+  Future<String> prepareTx(PrepareErc20Request param);
+  Future<TransactionDataResponse> prepareComethTx(PrepareTxRequest param);
 }

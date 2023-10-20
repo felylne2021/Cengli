@@ -15,7 +15,7 @@ TransferRequest _$TransferRequestFromJson(Map<String, dynamic> json) =>
       tokenAddress: json['tokenAddress'] as String?,
       fromChainId: json['fromChainId'] as int?,
       destinationChainId: json['destinationChainId'] as int?,
-      amount: (json['amount'] as num?)?.toDouble(),
+      amount: json['amount'] as int?,
       note: json['note'] as String?,
       signer: json['signer'] as String?,
     );

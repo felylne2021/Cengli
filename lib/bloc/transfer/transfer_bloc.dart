@@ -29,7 +29,9 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
     on<UpdateOrderStatusEvent>(_onUpdateOrder, transformer: sequential());
     on<PostTransferEvent>(_onPostTransfer, transformer: sequential());
     on<GetPartnersEvent>(_onGetPartners, transformer: sequential());
-    on<PrepareTransactionEvent>(_onPrepareTransaction, transformer: sequential());
+    on<PrepareTransactionEvent>(_onPrepareTransaction,
+        transformer: sequential());
+    on<SaveTransactionEvent>(_onSaveTransaction, transformer: sequential());
   }
 
   Future<void> _onGetAssets(
@@ -116,7 +118,9 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
 
       await _transactionalRemoteRepository.createGroup(storeGroup);
 
-      emit(CreateGroupP2pSuccessState(storeGroup));
+      emit(CreateGroupP2pSuccessState(
+          Feeds(chatId: group?.chatId ?? "", groupInformation: group),
+          storeGroup));
     } on AppException catch (error) {
       emit(CreateGroupP2pErrorState(error.message));
     } catch (error) {
@@ -201,7 +205,7 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
     }
   }
 
-   Future<void> _onPrepareTransaction(
+  Future<void> _onPrepareTransaction(
       PrepareTransactionEvent event, Emitter<TransferState> emit) async {
     emit(const PrepareTransactionLoadingState());
     try {
@@ -213,6 +217,20 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
       emit(PrepareTransactionErrorState(error.message));
     } catch (error) {
       emit(PrepareTransactionErrorState(error.toString()));
+    }
+  }
+
+  Future<void> _onSaveTransaction(
+      SaveTransactionEvent event, Emitter<TransferState> emit) async {
+    emit(const PostTransferLoadingState());
+    try {
+      emit(const SaveTransactionSuccessState());
+    } on AppException catch (error) {
+      emit(SaveTransactionErrorState(error.message));
+    } on ApiException catch (error) {
+      emit(SaveTransactionErrorState(error.message));
+    } catch (error) {
+      emit(SaveTransactionErrorState(error.toString()));
     }
   }
 }

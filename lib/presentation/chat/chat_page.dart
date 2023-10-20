@@ -4,6 +4,7 @@ import 'package:cengli/presentation/group/create_group_member_page.dart';
 import 'package:cengli/presentation/reusable/appbar/custom_appbar.dart';
 import 'package:cengli/provider/chat_room_provider.dart';
 import 'package:cengli/provider/conversations_provider.dart';
+import 'package:cengli/services/push_protocol/push_restapi_dart.dart';
 import 'package:cengli/values/assets.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -174,6 +175,13 @@ class _ChatePageState extends ConsumerState<ChatPage> {
                 return InkWell(
                   onTap: () {
                     ref.read(chatRoomProvider).setCurrentChatId(item.chatId!);
+                    ref.read(chatRoomProvider).setGroupName(
+                        item.groupInformation?.groupName ?? "Group");
+                    ref.read(chatRoomProvider).setMembers(item
+                            .groupInformation?.members
+                            .map((value) => pCAIP10ToWallet(value.wallet))
+                            .toList() ??
+                        []);
                     Navigator.of(context).pushNamed(ChatRoomPage.routeName,
                         arguments: ChatRoomArgument(item));
                   },

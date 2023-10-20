@@ -42,8 +42,8 @@ void injectModules() async {
 
   locator.registerSingleton(db);
 
+  injectMembershipModule();
   injectAuthModule();
   injectTransactionModule();
-  injectMembershipModule();
   injectTransferModule();
 }

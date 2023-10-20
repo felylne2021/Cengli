@@ -2,8 +2,11 @@ import 'package:cengli/bloc/auth/auth.dart';
 import 'package:cengli/bloc/membership/membership.dart';
 import 'package:cengli/bloc/transactional/transactional.dart';
 import 'package:cengli/bloc/transfer/transfer.dart';
+import 'package:cengli/data/modules/membership/membership_remote_repository.dart';
+import 'package:cengli/data/modules/membership/model/request/upsert_fcm_token_request.dart';
 import 'package:cengli/presentation/home/home_tab_bar.dart';
 import 'package:cengli/presentation/launch_screen/launch_screen.dart';
+import 'package:cengli/services/services.dart';
 import 'package:cengli/utils/fcm_util.dart';
 import 'package:cengli/utils/notification_util.dart';
 import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
@@ -16,7 +19,6 @@ import 'package:velix/velix.dart';
 
 import '../di/injector.dart';
 import '../routes/routes.dart';
-import '../services/dynamic_link_service.dart';
 
 AndroidNotificationChannel channel = const AndroidNotificationChannel(
   'CENGLI-GENERAL', // id
@@ -54,7 +56,6 @@ class _AppState extends State<App> {
     if (uri != null) {
       var path = uri.path;
       if (path.contains('group')) {
-        String? groupId = uri.queryParameters['id'];
         //*TODO: handle join group
         // return HomePage(groupId: groupId);
         return const LaunchScreenPage();
@@ -95,12 +96,24 @@ class _AppState extends State<App> {
     }
   }
 
-  _handleNotificationClick(NotificationResponse response) {}
+  _handleNotificationCallback(NotificationResponse response) {
+    _handleNotifClick(response.payload);
+  }
+
+  _handleNotifClick(String? payload) {
+    if (payload != null) {
+      if (payload == "chat") {
+        locator<NavigationService>().pushNamed(HomeTabBarPage.routeName,
+            arguments: HomeTabBarPage.chatPage);
+      }
+    }
+  }
 
   void _configureNotification() {
     NotificationUtil.initPlatformNotification(
         androidIconLauncher: NOTIFICATION_ICON,
-        onSelectNotification: _handleNotificationClick);
+        onSelectNotification: _handleNotificationCallback,
+        onSelectNotificationBackground: _handleNotificationCallback);
 
     FcmUtil.configureFcmState(
       onForeground: (RemoteMessage message) {
@@ -109,9 +122,17 @@ class _AppState extends State<App> {
       },
       onBackground: (RemoteMessage message) {
         debugPrint('zzz on background $message');
+        if (message.data.isNotEmpty) {
+          Map<String, dynamic> dataNotification = message.data;
+          _handleNotifClick(dataNotification['screen']);
+        }
       },
       onTokenRefresh: (String token) async {
         debugPrint('zzz FCM token refreshed $token');
+        final String walletAddress = await SessionService.getWalletAddress();
+        locator<MembershipRemoteRepository>().upsertFcmToken(
+            UpsertFcmTokenRequest(
+                walletAddress: walletAddress, fcmToken: token));
       },
       whenTerminate: (RemoteMessage message) {
         debugPrint('zzz on background $message');
@@ -123,9 +144,9 @@ class _AppState extends State<App> {
   void _handleGeneralNotification(RemoteMessage message) {
     RemoteNotification? notification = message.notification;
     AndroidNotification? android = message.notification?.android;
-    Map<String, dynamic> androidNotification = message.data;
+    Map<String, dynamic> dataNotification = message.data;
     if (notification != null &&
-        androidNotification.isNotEmpty &&
+        dataNotification.isNotEmpty &&
         android != null) {
       NotificationUtil.showNotification(
           androidNotificationChannel: channel,
@@ -133,7 +154,7 @@ class _AppState extends State<App> {
           notificationId: notification.hashCode,
           title: message.notification?.title ?? "",
           body: message.notification?.body ?? "",
-          payload: androidNotification['screen']);
+          payload: dataNotification['screen']);
     }
   }
 
