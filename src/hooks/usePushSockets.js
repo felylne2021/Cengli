@@ -60,7 +60,8 @@ export const usePushSocket = () => {
         user: `eip155:1:${wallet.address}`,
         env: 'prod',
         socketOptions: {
-          autoConnect: false
+          autoConnect: true,
+          reconnectionAttempts: 5
         }
       })
       setPushSocket(connectionObject)
