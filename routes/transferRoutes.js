@@ -65,38 +65,43 @@ export const transferRoutes = async (server) => {
       return reply.code(500).send({ message: error });
     }
   })
-  
+
   // TODO: Get Hyperlane bridge address by its fromChainId and destinationChainId. params: fromChainId, destinationChainId
   server.get('/bridge', async (request, reply) => {
-    const { fromChainId, destinationChainId } = request.query;
+    try {
+      const { fromChainId, destinationChainId } = request.query;
 
-    const fromBridgeAddress = await prismaClient.chain.findFirst({
-      where: {
-        chainId: parseInt(fromChainId)
-      },
-      select: {
-        chainId: true,
-        hyperlaneBridgeAddress: true
+      const fromBridgeAddress = await prismaClient.chain.findFirst({
+        where: {
+          chainId: parseInt(fromChainId)
+        },
+        select: {
+          chainId: true,
+          hyperlaneBridgeAddress: true
+        }
+      })
+
+      const destinationBridgeAddress = await prismaClient.chain.findFirst({
+        where: {
+          chainId: parseInt(destinationChainId)
+        },
+        select: {
+          chainId: true,
+          hyperlaneBridgeAddress: true
+        }
+      })
+
+      if (!fromBridgeAddress || !destinationBridgeAddress) {
+        return reply.code(404).send({ message: 'Bridge address not found' });
       }
-    })
 
-    const destinationBridgeAddress = await prismaClient.chain.findFirst({
-      where: {
-        chainId: parseInt(destinationChainId)
-      },
-      select: {
-        chainId: true,
-        hyperlaneBridgeAddress: true
-      }
-    })
-
-    if (!fromBridgeAddress || !destinationBridgeAddress) {
-      return reply.code(404).send({ message: 'Bridge address not found' });
+      return reply.code(200).send({
+        fromBridgeAddress: fromBridgeAddress.hyperlaneBridgeAddress,
+        destinationBridgeAddress: destinationBridgeAddress.hyperlaneBridgeAddress
+      });
+    } catch (error) {
+      console.log('Error getting bridge address: ', error);
+      return reply.code(500).send({ message: error });
     }
-
-    return reply.code(404).send({
-      fromBridgeAddress: fromBridgeAddress.hyperlaneBridgeAddress,
-      destinationBridgeAddress: destinationBridgeAddress.hyperlaneBridgeAddress
-    });
   })
 }
