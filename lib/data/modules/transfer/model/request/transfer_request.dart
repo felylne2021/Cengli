@@ -27,7 +27,7 @@ class TransferRequest extends Equatable {
   final int? destinationChainId;
 
   @JsonKey(name: 'amount')
-  final double? amount;
+  final int? amount;
 
   @JsonKey(name: 'note')
   final String? note;

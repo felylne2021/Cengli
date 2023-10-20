@@ -11,3 +11,4 @@ export 'state/update_order_state.dart';
 export 'state/transfer_state.dart';
 export 'state/get_partners_state.dart';
 export 'state/prepare_transaction_state.dart';
+export 'state/save_transaction_state.dart';

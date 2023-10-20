@@ -1,5 +1,6 @@
 import 'package:cengli/data/modules/transfer/model/request/create_order_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/prepare_erc20_request.dart';
+import 'package:cengli/data/modules/transfer/model/request/prepare_tx_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/transfer_request.dart';
 import 'package:cengli/data/modules/transfer/model/response/assets_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/chain_response.dart';
@@ -107,8 +108,16 @@ class TransferRemoteDataStore extends TransferRemoteRepository {
   }
 
   @override
-  Future<TransactionDataResponse> prepareTx(PrepareErc20Request param) async {
+  Future<String> prepareTx(PrepareErc20Request param) async {
     return await _api.prepareTx(param).catchError((error) {
+      errorHandler(error);
+    });
+  }
+
+  @override
+  Future<TransactionDataResponse> prepareComethTx(
+      PrepareTxRequest param) async {
+    return await _api.prepareComethTx(param).catchError((error) {
       errorHandler(error);
     });
   }

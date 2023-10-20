@@ -67,3 +67,30 @@ class UpdateUserNameEvent extends MembershipEvent {
   @override
   List<Object?> get props => [fullname, userName, userId];
 }
+
+class GetListOfGroupsEvent extends MembershipEvent {
+  final String userId;
+
+  const GetListOfGroupsEvent(this.userId) : super();
+
+  @override
+  List<Object?> get props => [userId];
+}
+
+class GetRegistrationEvent extends MembershipEvent {
+  final String walletAddress;
+
+  const GetRegistrationEvent(this.walletAddress);
+
+  @override
+  List<Object?> get props => [walletAddress];
+}
+
+class RequestPartnerEvent extends MembershipEvent {
+  final String walletAddress;
+
+  const RequestPartnerEvent(this.walletAddress);
+
+  @override
+  List<Object?> get props => [walletAddress];
+}

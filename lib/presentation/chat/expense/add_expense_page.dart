@@ -8,6 +8,7 @@ import 'package:cengli/presentation/reusable/appbar/custom_appbar.dart';
 import 'package:cengli/presentation/reusable/checkbox/general_checkbox.dart';
 import 'package:cengli/presentation/reusable/modal/modal_page.dart';
 import 'package:cengli/services/session_service.dart';
+import 'package:cengli/values/styles.dart';
 import 'package:cengli/values/values.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -138,6 +139,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                                     .map((member) => Charges(
                                         userId: _findMemberId(member.title),
                                         count: 1,
+                                        status: 'not paid',
                                         price: amount.value /
                                             filteredChargedMembers.length))
                                     .toList();
@@ -180,7 +182,6 @@ class _AddExpensePageState extends State<AddExpensePage> {
                     state is GetGroupErrorState;
               }, listener: ((context, state) {
                 if (state is GetGroupSuccessState) {
-                  debugPrint(state.group.toString());
                   groupId = state.group.id ?? "";
                   _getMembers(state.group.members ?? []);
                 } else if (state is GetGroupErrorState) {}
@@ -254,12 +255,13 @@ class _AddExpensePageState extends State<AddExpensePage> {
                     cursorHeight: 20,
                     cursorColor: KxColors.primary600,
                     textAlign: TextAlign.center,
-                    style: KxTypography(
-                        type: KxFontType.subtitle2, color: KxColors.neutral700),
+                    style: CengliTypography(
+                        type: CengliFontType.subtitle2,
+                        color: KxColors.neutral700),
                     decoration: InputDecoration.collapsed(
                         hintText: "Title",
-                        hintStyle: KxTypography(
-                            type: KxFontType.subtitle2,
+                        hintStyle: CengliTypography(
+                            type: CengliFontType.subtitle2,
                             color: KxColors.neutral500))),
                 38.0.height,
                 ValueListenableBuilder(

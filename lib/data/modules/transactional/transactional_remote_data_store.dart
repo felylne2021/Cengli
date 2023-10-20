@@ -30,6 +30,7 @@ class TransactionalDataStore extends TransactionalRemoteRepository {
                 category: expense.category,
                 memberPayId: expense.memberPayId,
                 tokenUnit: expense.tokenUnit,
+                status: 'not paid',
                 date: expense.date)
             .toJson())
         .catchError((error) {
@@ -78,8 +79,6 @@ class TransactionalDataStore extends TransactionalRemoteRepository {
     Map<String, dynamic> noDuplicateChargeData = {};
     Map<String, dynamic> chargeDetails = {"payTo": "", "amount": 0};
     List<Map<String, dynamic>> chargesData = [];
-    List<int> sameDataIndex = [];
-
 // *Through every expenses in certain group
     for (var expenseDocs in expenses.docs) {
       final Expense expense = Expense.fromJson(expenseDocs.data());
@@ -227,31 +226,5 @@ class TransactionalDataStore extends TransactionalRemoteRepository {
     await database.delete(CollectionEnum.groups.name);
     await database.delete(CollectionEnum.expenses.name);
     await database.delete(CollectionEnum.participants.name);
-  }
-
-  @override
-  List<Map<String, dynamic>> removeDuplicateCharges(
-      List<Map<String, dynamic>> charges) {
-    Map<String, dynamic> aggregateData = {};
-
-    for (var item in charges) {
-      String payTo = item['payTo'];
-      double amount = item['amount'];
-
-      if (aggregateData.containsKey(payTo)) {
-        aggregateData[payTo] += amount;
-      } else {
-        aggregateData[payTo] = amount;
-      }
-    }
-
-    List<Map<String, dynamic>> resultList = aggregateData.entries
-        .map((entry) => {
-              "payTo": entry.key,
-              "amount": entry.value,
-            })
-        .toList();
-
-    return resultList;
   }
 }

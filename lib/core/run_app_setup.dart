@@ -30,14 +30,14 @@ void configLoading() {
     ..loadingStyle = EasyLoadingStyle.custom
     ..indicatorSize = 60.0
     ..radius = 10.0
-    ..progressColor = Colors.blue
+    ..progressColor = Colors.transparent
     ..backgroundColor = Colors.transparent
     ..boxShadow = <BoxShadow>[]
     ..indicatorColor = Colors.blue
     ..textColor = Colors.blue
-    ..maskColor = Colors.black.withOpacity(0.5)
+    ..maskColor = Colors.black.withOpacity(0)
     ..userInteractions = false
-    ..maskType = EasyLoadingMaskType.black
+    ..maskType = EasyLoadingMaskType.clear
     ..indicatorWidget = const CupertinoActivityIndicator()
     ..dismissOnTap = true;
 }

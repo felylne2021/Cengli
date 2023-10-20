@@ -1,6 +1,6 @@
+import 'package:cengli/data/modules/auth/model/request/relay_transaction_request.dart';
 import 'package:velix/base/bloc/base_event.dart';
 
-import '../../data/modules/transfer/model/response/transaction_data_response.dart';
 
 abstract class AuthEvent extends BaseEvent {
   const AuthEvent();
@@ -82,10 +82,10 @@ class GetUserDataEvent extends AuthEvent {
 }
 
 class RelayTransactionEvent extends AuthEvent {
-  final TransactionDataResponse response;
+  final RelayTransactionRequest param;
 
-  const RelayTransactionEvent(this.response);
+  const RelayTransactionEvent(this.param);
 
   @override
-  List<Object?> get props => [response];
+  List<Object?> get props => [param];
 }

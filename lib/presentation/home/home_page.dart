@@ -1,12 +1,15 @@
 import 'package:cengli/bloc/auth/auth.dart';
 import 'package:cengli/bloc/auth/state/get_user_state.dart';
+import 'package:cengli/bloc/membership/state/get_list_groups_state.dart';
+import 'package:cengli/bloc/transactional/transactional.dart';
 import 'package:cengli/bloc/transfer/transfer.dart';
 import 'package:cengli/data/modules/auth/model/user_profile.dart';
+import 'package:cengli/data/modules/transactional/model/bill.dart';
 import 'package:cengli/data/modules/transactional/model/expense.dart';
+import 'package:cengli/data/modules/transactional/model/group.dart';
 import 'package:cengli/data/modules/transfer/model/response/balance_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/chain_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/get_partners_response.dart';
-import 'package:cengli/presentation/home/component/bills/bills_page.dart';
 import 'package:cengli/presentation/p2p/p2p_request_page.dart';
 import 'package:cengli/presentation/reusable/notifier/double_notifier.dart';
 import 'package:cengli/presentation/transfer/send_detail_page.dart';
@@ -20,12 +23,14 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:kinetix/kinetix.dart';
 import 'package:intl/intl.dart';
 
+import '../../bloc/membership/membership.dart';
 import '../../data/modules/transfer/model/response/transaction_response.dart';
 import '../../utils/utils.dart';
 import '../../values/values.dart';
 import '../reusable/modal/modal_page.dart';
 import '../reusable/segmented_control/segmented_control.dart';
 import 'component/actions_widget.dart';
+import 'component/bills/bills_page.dart';
 import 'component/card_widget.dart';
 import '../p2p/p2p_page.dart';
 
@@ -56,16 +61,23 @@ class _HomePageState extends State<HomePage> {
   ValueNotifier<List<Expense>> expenseResponse = ValueNotifier([]);
   ValueNotifier<List<TransactionResponse>> transactions = ValueNotifier([]);
   ValueNotifier<List<BalanceResponse>> assets = ValueNotifier([]);
+  List<Bill> bills = [];
+  List<Group> groups = [];
 
   String username = "";
   String address = "";
   String publicId = "";
+  String groupId = '';
 
   _getWalletAddress() async {
     walletAddress.value = await SessionService.getWalletAddress();
     username = await SessionService.getUsername();
 
     _getUserData(username);
+  }
+
+  Future<void> _getExpenses(String groupId) async {
+    context.read<TransactionalBloc>().add(FetchExpensesStoreEvent(groupId));
   }
 
   @override
@@ -80,9 +92,16 @@ class _HomePageState extends State<HomePage> {
                 state is GetChainsSuccessState;
           }, listener: ((context, state) {
             if (state is GetChainsSuccessState) {
-              _getAssets(state.chains.first.chainId ?? 0);
-              selectedChain.value = state.chains.first;
-              chains = state.chains;
+              _getAssets(state.chains
+                      .firstWhere((response) => response.chainId == 43113)
+                      .chainId ??
+                  43113);
+              selectedChain.value = state.chains
+                  .firstWhere((response) => response.chainId == 43113);
+              chains = state.chains
+                  .where((response) =>
+                      response.chainId == 43113 || response.chainId == 80001)
+                  .toList();
               _getUserId();
             } else if (state is GetChainsErrorState) {
               showToast(state.message);
@@ -109,6 +128,72 @@ class _HomePageState extends State<HomePage> {
               transactions.value = state.transactions;
             }
           })),
+          BlocListener<MembershipBloc, MembershipState>(
+            listenWhen: (previous, state) {
+              return state is GetListOfGroupIdSuccessState ||
+                  state is GetListOfGroupsErrorState ||
+                  state is GetListOfGroupsLoadingState;
+            },
+            listener: (context, state) {
+              if (state is GetListOfGroupIdSuccessState) {
+                groups = state.groups;
+                _getExpenses(groupId);
+              } else if (state is GetGroupErrorState) {}
+            },
+          ),
+          BlocListener<TransactionalBloc, TransactionalState>(
+            listenWhen: (previous, state) {
+              return state is FetchExpensesErrorState ||
+                  state is FetchExpensesLoadingState ||
+                  state is FetchExpensesSuccessState;
+            },
+            listener: (context, state) {
+              if (state is FetchExpensesSuccessState) {
+                expenseResponse.value = state.expenses;
+                bills.clear();
+                for (var expense in expenseResponse.value) {
+                  // for (var charge in expense.charges ?? []) {
+                  bills.add(Bill(
+                      groupId,
+                      expense.memberPayId,
+                      "USDC",
+                      selectedChain.value.chainName,
+                      expense.memberPayId,
+                      expense.date,
+                      "",
+                      expense.status,
+                      "0"));
+                  // }
+                }
+                print(bills);
+                hideLoading();
+
+                // _getCharges(groupId);
+              } else if (state is FetchExpensesErrorState) {
+                hideLoading();
+                showToast(state.message);
+              } else if (state is FetchExpensesLoadingState) {
+                showLoading();
+              }
+            },
+          ),
+          // BlocListener<TransactionalBloc, TransactionalState>(
+          //   listenWhen: (previous, state) {
+          //     return state is FetchChargesStoreErrorState ||
+          //         state is FetchChargesStoreLoadingState ||
+          //         state is FetchChargesStoreSuccessState;
+          //   },
+          //   listener: (context, state) {
+          //     if (state is FetchChargesStoreSuccessState) {
+
+          //       final charges = state.charges;
+          //       for (int i = 0; i < charges.length; i++) {
+          //         bills[i].
+          //       }
+
+          //     } else if (state is FetchChargesStoreErrorState) {}
+          //   },
+          // )
         ], child: _body()));
   }
 
@@ -207,9 +292,12 @@ class _HomePageState extends State<HomePage> {
                     bgColor: softBlue,
                     iconPath: IC_BILLS,
                     onTap: () async {
-                      Navigator.of(context).pushNamed(BillsPage.routeName);
+                      //TODO: unhide
+                      // EthService().sendTransaction("receiverAddress");
+                      Navigator.of(context)
+                          .pushNamed(BillsPage.routeName, arguments: bills);
                     },
-                  )
+                  ),
                 ],
               ),
             ),
@@ -450,6 +538,7 @@ class _HomePageState extends State<HomePage> {
   _getUserId() async {
     final userId = await SessionService.getWalletAddress();
     _getTransactions(userId);
+    _getListGroupIds(userId);
   }
 
   _getTransactions(String userId) {
@@ -462,6 +551,35 @@ class _HomePageState extends State<HomePage> {
 
   _getUserData(String username) {
     context.read<AuthBloc>().add(GetUserDataEvent(username));
+  }
+
+  Future<void> _getCharges(String groupId) async {
+    final String userId = await SessionService.getWalletAddress().then((id) {
+      context
+          .read<TransactionalBloc>()
+          .add(FetchChargesStoreEvent(id, groupId));
+
+      return id;
+    });
+  }
+
+  String _findMemberName(String id) {
+    String name = '';
+    // for (UserProfile member in totalMembers.value) {
+    //   if (id == member.id) {
+    //     name = member.name ?? "";
+    //   }
+    // }
+
+    return name;
+  }
+
+  _searchUser(String userId) {
+    context.read<MembershipBloc>().add(SearchUserEvent(false, userId));
+  }
+
+  _getListGroupIds(String userId) {
+    context.read<MembershipBloc>().add(GetListOfGroupsEvent(userId));
   }
 }
 
@@ -518,11 +636,12 @@ class HomeItemsWidget extends StatelessWidget {
                   )
                 ],
               ),
+              16.0.width,
               Text(
                 value,
                 style: KxTypography(
                     type: KxFontType.buttonMedium, color: deepGreen),
-              )
+              ).flexible()
             ],
           ).flexible(),
         ],

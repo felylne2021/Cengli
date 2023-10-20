@@ -10,6 +10,4 @@ abstract class TransactionalRemoteRepository {
   Future<void> joinGroup(String groupId, String userId);
   Future<void> migrateData(String userId);
   Future<List<Map<String, dynamic>>> getCharges(String groupId, String userId);
-  List<Map<String, dynamic>> removeDuplicateCharges(
-      List<Map<String, dynamic>> charges);
 }

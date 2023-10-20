@@ -45,6 +45,8 @@ const String IC_SUCCESS = _ICON_PATH + 'ic-success.svg';
 const String IC_P2P = _ICON_PATH + 'ic-p2p.svg';
 const String IC_CENGLI_LOGO = _ICON_PATH + 'ic-cengli-logo.svg';
 const String IC_CATEGORY_LOGO = _ICON_PATH + 'ic-category-logo.svg';
+const String IC_TRANSACTION = _ICON_PATH + 'ic-transaction.svg';
+
 // CATEGORIES
 const String IC_CATEGORY = _ICON_PATH + 'ic-category';
 

@@ -1,4 +1,3 @@
-import '../../../data/modules/transfer/model/response/transaction_data_response.dart';
 import '../transfer.dart';
 
 class PrepareTransactionLoadingState extends TransferState {
@@ -18,7 +17,7 @@ class PrepareTransactionErrorState extends TransferState {
 }
 
 class PrepareTransactionSuccessState extends TransferState {
-  final TransactionDataResponse response;
+  final String response;
 
   const PrepareTransactionSuccessState(this.response) : super();
 

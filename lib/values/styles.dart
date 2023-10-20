@@ -17,7 +17,7 @@ enum CengliFontType {
   headline1(CengliFontFormat.unboundedBold, 30, 1.6),
   headline2(CengliFontFormat.unboundedBold, 26, 1.65),
   headline3(CengliFontFormat.unboundedBold, 24, 1.58),
-  headline4(CengliFontFormat.unboundedBold, 24, 1.58),
+  headline4(CengliFontFormat.unboundedMedium, 24, 1.58),
 
   subtitle1(CengliFontFormat.unboundedBold, 20, 1.6),
   subtitle2(CengliFontFormat.unboundedMedium, 20, 1.6),

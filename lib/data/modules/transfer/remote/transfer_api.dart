@@ -1,5 +1,6 @@
 import 'package:cengli/data/modules/transfer/model/request/create_order_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/prepare_erc20_request.dart';
+import 'package:cengli/data/modules/transfer/model/request/prepare_tx_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/transfer_request.dart';
 import 'package:cengli/data/modules/transfer/model/response/assets_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/chain_response.dart';
@@ -75,7 +76,12 @@ class TransferApi implements TransferApiClient {
   }
 
   @override
-  Future<TransactionDataResponse> prepareTx(PrepareErc20Request param) {
+  Future<String> prepareTx(PrepareErc20Request param) {
     return _apiClient.prepareTx(param);
+  }
+
+  @override
+  Future<TransactionDataResponse> prepareComethTx(PrepareTxRequest param) {
+    return _apiClient.prepareComethTx(param);
   }
 }

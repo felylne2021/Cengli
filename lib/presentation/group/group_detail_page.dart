@@ -5,6 +5,7 @@ import 'package:cengli/presentation/group/components/expense_item_widget.dart';
 import 'package:cengli/presentation/group/group_member_page.dart';
 import 'package:cengli/presentation/reusable/menu/custom_menu_item_widget.dart';
 import 'package:cengli/presentation/reusable/shapes/circle_icon_widget.dart';
+import 'package:cengli/services/push_protocol/src/models/src/requests_model.dart';
 import 'package:cengli/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -22,9 +23,9 @@ import '../reusable/appbar/custom_appbar.dart';
 import '../reusable/segmented_control/segmented_control.dart';
 
 class GroupDetailPage extends StatefulWidget {
-  final String chatId;
+  final Feeds room;
 
-  const GroupDetailPage({super.key, required this.chatId});
+  const GroupDetailPage({super.key, required this.room});
   static const String routeName = '/group_detail_page';
 
   @override
@@ -116,6 +117,19 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
             } else if (state is FetchExpensesLoadingState) {
               showLoading();
             }
+          }),
+          BlocListener<TransactionalBloc, TransactionalState>(
+              listenWhen: (previous, state) {
+            return state is FetchExpensesStoreErrorState ||
+                state is FetchExpensesStoreLoadingState ||
+                state is FetchExpensesStoreSuccessState;
+          }, listener: (context, state) {
+            if (state is FetchExpensesStoreSuccessState) {
+              hideLoading();
+              listOfExpenses.value = state.expenses;
+            } else if (state is FetchExpensesLoadingState) {
+              showLoading();
+            }
           })
         ],
         child: _body(),
@@ -132,11 +146,19 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
             width: 107,
             decoration: const BoxDecoration(
                 color: KxColors.neutral200, shape: BoxShape.circle),
-            child: const Icon(
-              CupertinoIcons.group_solid,
-              size: 67,
-              color: KxColors.neutral400,
-            ),
+            child: widget.room.profilePicture == null
+                ? const Icon(
+                    CupertinoIcons.group_solid,
+                    size: 67,
+                    color: KxColors.neutral400,
+                  )
+                : CircleAvatar(
+                    child: Image.network(
+                      widget.room.profilePicture ?? "",
+                      height: 40,
+                      width: 40,
+                    ),
+                  ),
           ).center(),
           BlocBuilder<MembershipBloc, MembershipState>(
             buildWhen: (context, state) {
@@ -359,7 +381,7 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                       InkWell(
                         onTap: () => Navigator.of(context).pushNamed(
                             AddExpensePage.routeName,
-                            arguments: widget.chatId),
+                            arguments: widget.room.chatId),
                         child: const CustomMenuItemWidget(
                             icon: CircleIconWidget(
                               circleColor: KxColors.neutral50,
@@ -410,7 +432,7 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
   }
 
   _getGroup() {
-    context.read<MembershipBloc>().add(GetGroupEvent(widget.chatId));
+    context.read<MembershipBloc>().add(GetGroupEvent(widget.room.chatId ?? ""));
   }
 
   _getMembers(List<String> ids) {

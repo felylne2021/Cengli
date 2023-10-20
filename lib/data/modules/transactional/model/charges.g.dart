@@ -10,10 +10,12 @@ Charges _$ChargesFromJson(Map<String, dynamic> json) => Charges(
       userId: json['userId'] as String?,
       count: (json['count'] as num?)?.toDouble(),
       price: (json['price'] as num?)?.toDouble(),
+      status: json['status'] as String?,
     );
 
 Map<String, dynamic> _$ChargesToJson(Charges instance) => <String, dynamic>{
       'userId': instance.userId,
       'count': instance.count,
       'price': instance.price,
+      'status': instance.status,
     };

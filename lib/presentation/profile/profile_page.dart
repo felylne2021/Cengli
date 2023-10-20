@@ -3,6 +3,7 @@ import 'package:cengli/data/modules/auth/model/user_profile.dart';
 import 'package:cengli/presentation/profile/components/account_details_page.dart';
 import 'package:cengli/presentation/profile/components/profile_menu_widget.dart';
 import 'package:cengli/presentation/profile/edit/edit_profile_page.dart';
+import 'package:cengli/presentation/reusable/appbar/custom_appbar.dart';
 import 'package:dartx/dartx.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -32,26 +33,21 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        appBar: PreferredSize(
-          preferredSize: const Size.fromHeight(110),
-          child: Padding(
-            padding: const EdgeInsets.only(top: 40.0),
-            child: KxAppBarLeftTitle(
-              elevationType: KxElevationAppBarEnum.ghost,
-              appBarTitle: 'Profile',
-              trailingWidgets: [
-                InkWell(
-                  child: CircleAvatar(
-                    radius: 24,
-                    backgroundColor: KxColors.neutral200,
-                    child: SvgPicture.asset(
-                      IC_SETTINGS,
-                    ),
-                  ),
-                )
-              ],
-            ),
-          ),
+        appBar: CustomAppBarLeftTitle(
+          appbarTitle: 'Profile',
+          trailingWidgets: [
+            InkWell(
+              child: Container(
+                padding: const EdgeInsets.all(5),
+                decoration: const BoxDecoration(
+                    color: KxColors.neutral200, shape: BoxShape.circle),
+                child: SvgPicture.asset(
+                  IC_SETTINGS,
+                  width: 23,
+                ),
+              ),
+            )
+          ],
         ),
         body: BlocBuilder<AuthBloc, AuthState>(
           buildWhen: (previous, state) {

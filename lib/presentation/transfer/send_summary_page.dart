@@ -1,19 +1,23 @@
+import 'dart:convert';
+
 import 'package:cengli/bloc/auth/auth.dart';
 import 'package:cengli/bloc/transfer/transfer.dart';
+import 'package:cengli/data/modules/auth/model/request/relay_transaction_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/prepare_erc20_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/transfer_request.dart';
-import 'package:cengli/data/modules/transfer/model/response/transaction_data_response.dart';
-import 'package:cengli/presentation/home/home_page.dart';
 import 'package:cengli/presentation/reusable/page/status_page.dart';
 import 'package:cengli/presentation/transfer/send_detail_page.dart';
 import 'package:cengli/services/services.dart';
+import 'package:cengli/services/sign_html.dart';
 import 'package:cengli/utils/utils.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:kinetix/kinetix.dart';
 import 'dart:math' as math;
 
 import '../../values/values.dart';
+import '../home/home_tab_bar.dart';
 import '../reusable/appbar/custom_appbar.dart';
 
 class SendSummaryPage extends StatefulWidget {
@@ -28,6 +32,8 @@ class SendSummaryPage extends StatefulWidget {
 
 class _SendSummaryPageState extends State<SendSummaryPage> {
   TextEditingController notesController = TextEditingController();
+  late InAppWebViewController _webViewController;
+  String userAddress = "";
 
   @override
   Widget build(BuildContext context) {
@@ -43,7 +49,8 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
               }, listener: (context, state) {
                 if (state is PrepareTransactionSuccessState) {
                   hideLoading();
-                  _relayTransaction(state.response);
+                  _signTransaction(
+                      state.response, widget.argument.senderChain.rpcUrl ?? "");
                 } else if (state is PrepareTransactionLoadingState) {
                   showLoading();
                 } else if (state is PrepareTransactionErrorState) {
@@ -58,11 +65,26 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
               }, listener: (context, state) {
                 if (state is RelayTransactionSuccessState) {
                   hideLoading();
-                  Navigator.of(context).pushNamedAndRemoveUntil(
-                      StatusPage.routeName, (route) => false,
-                      arguments: StatusArgument(() => Navigator.of(context)
-                          .pushNamedAndRemoveUntil(
-                              HomePage.routeName, (route) => false)));
+                  _saveTransfer(TransferRequest(
+                      fromUserId: userAddress,
+                      fromAddress: userAddress,
+                      destinationAddress:
+                          widget.argument.receiverProfile.walletAddress,
+                      destinationUserId:
+                          widget.argument.receiverProfile.walletAddress,
+                      tokenAddress:
+                          widget.argument.selectedAsset.token?.address,
+                      fromChainId: widget.argument.senderChain.chainId,
+                      destinationChainId: widget.argument.receiverChain.chainId,
+                      amount: widget.argument.amount.toInt(),
+                      note: notesController.text));
+                  Navigator.of(context).pushNamed(StatusPage.routeName,
+                      arguments: StatusArgument(
+                          () => Navigator.of(context).popUntil((route) =>
+                              route.settings.name == HomeTabBarPage.routeName),
+                          "Hooray, Transfer is Complete!",
+                          "Your transaction has been successfully completed",
+                          "Go to wallet"));
                 } else if (state is RelayTransactionLoadingState) {
                   showLoading();
                 } else if (state is RelayTransactionErrorState) {
@@ -156,40 +178,143 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
                                   const EdgeInsets.symmetric(horizontal: 16)),
                               const Spacer(),
                               16.0.height,
-                              KxTextButton(
-                                      argument: KxTextButtonArgument(
-                                          onPressed: () async {
-                                            int amount =
-                                                (widget.argument.amount *
-                                                        math.pow(10, 6))
-                                                    .toInt();
+                              Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  SizedBox(
+                                      width: 50,
+                                      height: 50,
+                                      child: InAppWebView(
+                                        initialData: InAppWebViewInitialData(
+                                            data: signScript),
+                                        onLoadStart: (controller, url) {
+                                          showLoading();
+                                        },
+                                        onLoadStop: (controller, url) {
+                                          hideLoading();
+                                        },
+                                        initialOptions:
+                                            InAppWebViewGroupOptions(
+                                          crossPlatform: InAppWebViewOptions(
+                                              useShouldOverrideUrlLoading: true,
+                                              transparentBackground: true),
+                                          android: AndroidInAppWebViewOptions(
+                                            useHybridComposition: true,
+                                          ),
+                                          ios: IOSInAppWebViewOptions(
+                                            allowsInlineMediaPlayback: true,
+                                          ),
+                                        ),
+                                        androidOnPermissionRequest:
+                                            (InAppWebViewController controller,
+                                                String origin,
+                                                List<String> resources) async {
+                                          return PermissionRequestResponse(
+                                              resources: resources,
+                                              action:
+                                                  PermissionRequestResponseAction
+                                                      .GRANT);
+                                        },
+                                        shouldOverrideUrlLoading: (controller,
+                                            navigationAction) async {
+                                          return NavigationActionPolicy.ALLOW;
+                                        },
+                                        onWebViewCreated: (controller) {
+                                          debugPrint("Created Web");
+                                          _webViewController = controller;
+                                          controller.addJavaScriptHandler(
+                                              handlerName: 'signedTx',
+                                              callback: (args) {
+                                                debugPrint(
+                                                    'Received transaction data: $args');
 
-                                            String walletAddress =
-                                                await SessionService
-                                                    .getWalletAddress();
+                                                List<RelayTransactionRequest>
+                                                    transactionList =
+                                                    (json.decode(jsonEncode(
+                                                            args)) as List)
+                                                        .map((i) =>
+                                                            RelayTransactionRequest
+                                                                .fromJson(i))
+                                                        .toList();
 
-                                            _prepareTransaction(PrepareErc20Request(
-                                                walletAddress: walletAddress,
-                                                tokenAddress:
-                                                    "0x7ee6eb942378f7082fc58ab09dafd5f7c33a98bd",
-                                                functionName: "approve",
-                                                args: [
-                                                  walletAddress,
-                                                  amount.toString()
-                                                ]));
-                                          },
-                                          buttonText: "Transfer",
-                                          buttonColor: primaryGreen600,
-                                          buttonTextStyle: KxTypography(
-                                              type: KxFontType.buttonMedium,
-                                              color: KxColors.neutral700),
-                                          buttonSize: KxButtonSizeEnum.medium,
-                                          buttonType: KxButtonTypeEnum.primary,
-                                          buttonShape: KxButtonShapeEnum.square,
-                                          buttonContent:
-                                              KxButtonContentEnum.text))
-                                  .padding(const EdgeInsets.symmetric(
-                                      horizontal: 16))
+                                                _relayTransaction(
+                                                    transactionList.first);
+                                              });
+                                        },
+                                        onConsoleMessage: (controller,
+                                            ConsoleMessage consoleMessage) {
+                                          debugPrint(
+                                              "constol : ${consoleMessage.toString()}");
+                                        },
+                                      )),
+                                  KxTextButton(
+                                          argument: KxTextButtonArgument(
+                                              onPressed: () async {
+                                                if (widget.argument.senderChain
+                                                        .chainId ==
+                                                    widget
+                                                        .argument
+                                                        .receiverChain
+                                                        .chainId) {
+                                                  String walletAddress =
+                                                      await SessionService
+                                                          .getWalletAddress();
+                                                  userAddress = walletAddress;
+
+                                                  final double pow = widget
+                                                          .argument
+                                                          .selectedAsset
+                                                          .token
+                                                          ?.decimals ??
+                                                      0;
+
+                                                  final int formattedAmount =
+                                                      (widget.argument.amount *
+                                                              math.pow(10, pow))
+                                                          .toInt();
+
+                                                  //Same chain
+                                                  _prepareTransaction(
+                                                      PrepareErc20Request(
+                                                          walletAddress:
+                                                              walletAddress,
+                                                          tokenAddress: widget
+                                                                  .argument
+                                                                  .selectedAsset
+                                                                  .token
+                                                                  ?.address ??
+                                                              "",
+                                                          functionName:
+                                                              "transfer",
+                                                          args: [
+                                                        widget
+                                                                .argument
+                                                                .receiverProfile
+                                                                .walletAddress ??
+                                                            "",
+                                                        "$formattedAmount"
+                                                      ]));
+                                                } else {
+                                                  //Cross chain
+                                                }
+                                              },
+                                              buttonText: "Transfer",
+                                              buttonColor: primaryGreen600,
+                                              buttonTextStyle: KxTypography(
+                                                  type: KxFontType.buttonMedium,
+                                                  color: KxColors.neutral700),
+                                              buttonSize:
+                                                  KxButtonSizeEnum.medium,
+                                              buttonType:
+                                                  KxButtonTypeEnum.primary,
+                                              buttonShape:
+                                                  KxButtonShapeEnum.square,
+                                              buttonContent:
+                                                  KxButtonContentEnum.text))
+                                      .padding(const EdgeInsets.symmetric(
+                                          horizontal: 16))
+                                ],
+                              )
                             ],
                           ).padding(const EdgeInsets.symmetric(vertical: 36)),
                         )));
@@ -215,15 +340,28 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
     );
   }
 
+  _signTransaction(String response, String rpcUrl) async {
+    String walletAddress = await SessionService.getWalletAddress();
+    String privateKey = await SessionService.getPrivateKey(walletAddress);
+
+    await _webViewController.evaluateJavascript(
+        source:
+            'signTransaction("$walletAddress", "$privateKey", \'$response\', "$rpcUrl")');
+  }
+
   _prepareTransaction(PrepareErc20Request param) {
     context.read<TransferBloc>().add(PrepareTransactionEvent(param));
   }
 
-  _relayTransaction(TransactionDataResponse response) {
-    context.read<AuthBloc>().add(RelayTransactionEvent(response));
+  _relayTransaction(RelayTransactionRequest param) {
+    context.read<AuthBloc>().add(RelayTransactionEvent(param));
   }
 
   _postTransfer(TransferRequest param) {
     context.read<TransferBloc>().add(PostTransferEvent(param));
+  }
+
+  _saveTransfer(TransferRequest param) {
+    context.read<TransferBloc>().add(SaveTransactionEvent(param));
   }
 }

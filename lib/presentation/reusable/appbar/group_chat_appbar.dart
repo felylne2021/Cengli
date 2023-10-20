@@ -10,7 +10,7 @@ class GroupChatAppbar extends StatelessWidget implements PreferredSizeWidget {
       required this.leadingCallBack,
       required this.trailingCallBack,
       required this.trailingWidget})
-      : preferredSize = const Size.fromHeight(90);
+      : preferredSize = const Size.fromHeight(65);
   final String appBarTitle;
   final String appBarSubtitle;
   final Widget? leadingWidget;
@@ -22,9 +22,9 @@ class GroupChatAppbar extends StatelessWidget implements PreferredSizeWidget {
   Size preferredSize;
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return SafeArea(
+        child: Column(
       children: [
-        30.0.height,
         Row(
           mainAxisAlignment: MainAxisAlignment.start,
           crossAxisAlignment: CrossAxisAlignment.center,
@@ -64,12 +64,12 @@ class GroupChatAppbar extends StatelessWidget implements PreferredSizeWidget {
               ],
             ).flexible(),
           ],
-        ).padding(const EdgeInsets.fromLTRB(16, 16, 16, 0)),
+        ).padding(const EdgeInsets.fromLTRB(16, 0, 16, 0)),
         const Divider(
           thickness: 1,
           color: KxColors.neutral200,
         )
       ],
-    );
+    ));
   }
 }

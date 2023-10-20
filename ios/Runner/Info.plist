@@ -62,5 +62,7 @@
   <string>This app needs camera access to scan QR codes</string>
   <key>NSFaceIDUsageDescription</key>
   <string>This app needs Face id for security of wallet</string>
+  <key>NSMicrophoneUsageDescription</key>
+  <string>This app need mic for kyc purpose</string>
 </dict>
 </plist>

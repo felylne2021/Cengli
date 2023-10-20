@@ -42,7 +42,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
           trailingWidgets: [
             InkWell(
               onTap: () {
-                if (descController.text.isNotEmpty ||
+                if (descController.text.isNotEmpty &&
                     nameController.text.isNotEmpty) {
                   _createGroup();
                 } else {
@@ -75,7 +75,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
               hideLoading();
               Navigator.of(context).pushNamedAndRemoveUntil(
                   HomeTabBarPage.routeName, (route) => false,
-                  arguments: 1);
+                  arguments: HomeTabBarPage.chatPage);
             } else if (state is CreateGroupStoreLoadingState) {
               showLoading();
             } else if (state is CreateGroupStoreErrorState) {

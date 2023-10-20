@@ -10,8 +10,11 @@ import 'package:cengli/presentation/group/group_detail_page.dart';
 import 'package:cengli/presentation/home/home_page.dart';
 import 'package:cengli/presentation/launch_screen/onboarding_screen.dart';
 import 'package:cengli/presentation/membership/pin_input_page.dart';
+import 'package:cengli/presentation/p2p/kyc_page.dart';
 import 'package:cengli/presentation/p2p/order_detail_page.dart';
 import 'package:cengli/presentation/p2p/p2p_request_page.dart';
+import 'package:cengli/presentation/p2p/p2p_user_chat_page.dart';
+import 'package:cengli/presentation/p2p/partner_registration_page.dart';
 import 'package:cengli/presentation/profile/edit/edit_profile_page.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -31,6 +34,7 @@ import '../presentation/reusable/page/status_page.dart';
 import '../presentation/transfer/send_detail_page.dart';
 import '../presentation/transfer/send_page.dart';
 import '../presentation/transfer/send_summary_page.dart';
+import '../services/push_protocol/src/models/src/requests_model.dart';
 
 class AppRouter {
   static Route? onGenerateRoute(RouteSettings settings) {
@@ -90,7 +94,10 @@ class AppRouter {
             settings: settings);
       case BillsPage.routeName:
         return CupertinoPageRoute(
-            builder: (_) => const BillsPage(), settings: settings);
+            builder: (_) => BillsPage(
+                  bills: settings.arguments as List<Bill>,
+                ),
+            settings: settings);
       case BillsDetailPage.routeName:
         return CupertinoPageRoute(
             builder: (_) => BillsDetailPage(
@@ -104,8 +111,7 @@ class AppRouter {
             settings: settings);
       case GroupDetailPage.routeName:
         return CupertinoPageRoute(
-            builder: (_) =>
-                GroupDetailPage(chatId: settings.arguments as String),
+            builder: (_) => GroupDetailPage(room: settings.arguments as Feeds),
             settings: settings);
       case SendPage.routeName:
         return CupertinoPageRoute(
@@ -165,6 +171,19 @@ class AppRouter {
         return CupertinoPageRoute(
             builder: (_) => GroupMemberPage(
                 members: settings.arguments as List<UserProfile>),
+            settings: settings);
+      case KycPage.routeName:
+        return CupertinoPageRoute(
+            builder: (_) => const KycPage(), settings: settings);
+      case PartnerRegistrationPage.routeName:
+        return CupertinoPageRoute(
+            builder: (_) => PartnerRegistrationPage(
+                user: settings.arguments as UserProfile),
+            settings: settings);
+      case P2pUserChatPage.routeName:
+        return CupertinoPageRoute(
+            builder: (_) =>
+                P2pUserChatPage(argument: settings.arguments as P2pArgument),
             settings: settings);
     }
   }

@@ -12,5 +12,5 @@ void injectAuthModule() {
   locator.registerSingleton(AuthApi(locator.get()));
   locator.registerSingleton<AuthRemoteRepository>(
       AuthRemoteDataStore(locator.get(), locator.get()));
-  locator.registerSingleton(AuthBloc(locator.get()));
+  locator.registerSingleton(AuthBloc(locator.get(), locator.get()));
 }

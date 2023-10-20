@@ -17,8 +17,8 @@ class HomeTabBarPage extends ConsumerStatefulWidget {
   const HomeTabBarPage({super.key, this.initialPage});
   static const String routeName = '/home_tab_bar';
   static const int homePage = 0;
-  static const int chatPage = 0;
-  static const int profilePage = 0;
+  static const int chatPage = 1;
+  static const int profilePage = 2;
 
   @override
   ConsumerState<HomeTabBarPage> createState() => _HomeTabBarPageState();

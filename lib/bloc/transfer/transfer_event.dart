@@ -98,3 +98,12 @@ class PrepareTransactionEvent extends TransferEvent {
   @override
   List<Object?> get props => [param];
 }
+
+class SaveTransactionEvent extends TransferEvent {
+  final TransferRequest param;
+
+  const SaveTransactionEvent(this.param);
+
+  @override
+  List<Object?> get props => [param];
+}
