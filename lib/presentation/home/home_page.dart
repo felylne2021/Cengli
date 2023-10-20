@@ -20,6 +20,7 @@ import 'package:flutter/cupertino.dart';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kinetix/kinetix.dart';
 import 'package:intl/intl.dart';
 
@@ -61,6 +62,7 @@ class _HomePageState extends State<HomePage> {
   ValueNotifier<List<Expense>> expenseResponse = ValueNotifier([]);
   ValueNotifier<List<TransactionResponse>> transactions = ValueNotifier([]);
   ValueNotifier<List<BalanceResponse>> assets = ValueNotifier([]);
+  ValueNotifier<UserProfile> user = ValueNotifier(const UserProfile());
   List<Bill> bills = [];
   List<Group> groups = [];
 
@@ -336,25 +338,45 @@ class _HomePageState extends State<HomePage> {
                             return Column(
                                 children: List.generate(
                                     state.transactions.length, (index) {
-                              return Column(
-                                children: [
-                                  HomeItemsWidget(
-                                    title: state.transactions[index].note ?? "",
-                                    subtitle: DateFormat('d MMM y, h:mma')
-                                        .format(DateTime.parse(state
-                                                .transactions[index]
-                                                .createdAt ??
-                                            "")),
-                                    value: NumberFormat.currency(
-                                            locale: 'en_US', symbol: '\$')
-                                        .format(
-                                            state.transactions[index].amount),
-                                  ),
-                                  const Divider(
-                                    thickness: 1,
-                                    color: KxColors.neutral200,
-                                  )
-                                ],
+                              return ValueListenableBuilder(
+                                valueListenable: user,
+                                builder: (context, value, child) {
+                                  return Column(
+                                    children: [
+                                      HomeItemsWidget(
+                                        networkImage: value.imageProfile != null
+                                            ? (value.imageProfile ?? "")
+                                            : null,
+                                        icon: IC_SEND,
+                                        title: state.transactions[index].note ??
+                                            "",
+                                        subtitle: DateFormat('d MMM y, h:mma')
+                                            .format(DateTime.parse(state
+                                                    .transactions[index]
+                                                    .createdAt ??
+                                                "")),
+                                        value: (state.transactions[index]
+                                                        .fromAddress ==
+                                                    walletAddress.value
+                                                ? "-"
+                                                : "") +
+                                            NumberFormat.currency(
+                                                    locale: 'en_US',
+                                                    symbol: '\$')
+                                                .format(state
+                                                    .transactions[index]
+                                                    .amount),
+                                        isOut: state.transactions[index]
+                                                .fromAddress ==
+                                            walletAddress.value,
+                                      ),
+                                      const Divider(
+                                        thickness: 1,
+                                        color: KxColors.neutral200,
+                                      )
+                                    ],
+                                  );
+                                },
                               );
                             }));
                           } else {
@@ -584,16 +606,21 @@ class _HomePageState extends State<HomePage> {
 }
 
 class HomeItemsWidget extends StatelessWidget {
-  const HomeItemsWidget(
-      {super.key,
-      required this.title,
-      required this.subtitle,
-      required this.value,
-      this.networkImage});
+  const HomeItemsWidget({
+    super.key,
+    required this.title,
+    required this.subtitle,
+    required this.value,
+    this.networkImage,
+    this.icon,
+    this.isOut = false,
+  });
   final String title;
   final String subtitle;
   final String value;
   final String? networkImage;
+  final String? icon;
+  final bool isOut;
 
   @override
   Widget build(BuildContext context) {
@@ -611,10 +638,14 @@ class HomeItemsWidget extends StatelessWidget {
             )
           else
             Container(
-              height: 40,
-              width: 40,
-              decoration: const BoxDecoration(
-                  color: KxColors.neutral200, shape: BoxShape.circle),
+              padding: const EdgeInsets.all(10),
+              decoration:
+                  BoxDecoration(color: softGreen, shape: BoxShape.circle),
+              child: isOut
+                  ? SvgPicture.asset(
+                      icon ?? "",
+                    )
+                  : null,
             ),
           16.0.width,
           Row(
@@ -640,7 +671,8 @@ class HomeItemsWidget extends StatelessWidget {
               Text(
                 value,
                 style: KxTypography(
-                    type: KxFontType.buttonMedium, color: deepGreen),
+                    type: KxFontType.buttonMedium,
+                    color: isOut ? KxColors.neutral700 : deepGreen),
               ).flexible()
             ],
           ).flexible(),

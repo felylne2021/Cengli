@@ -192,13 +192,16 @@ class _P2pPageState extends ConsumerState<P2pPage> {
                                       } else {
                                         return KxTextButton(
                                             argument: KxTextButtonArgument(
-                                                onPressed: () => Navigator.of(
-                                                        context)
-                                                    .pushNamed(
-                                                        PartnerRegistrationPage
-                                                            .routeName,
+                                                onPressed: () => Navigator.of(context)
+                                                    .pushNamed(PartnerRegistrationPage.routeName,
                                                         arguments: widget
-                                                            .argument.user),
+                                                            .argument.user)
+                                                    .then((value) =>
+                                                        _getRegistration(widget
+                                                                .argument
+                                                                .user
+                                                                .walletAddress ??
+                                                            "")),
                                                 buttonText:
                                                     "Register as Cengli Partner",
                                                 buttonColor: primaryGreen600,
@@ -208,12 +211,9 @@ class _P2pPageState extends ConsumerState<P2pPage> {
                                                     color: KxColors.neutral700),
                                                 buttonSize:
                                                     KxButtonSizeEnum.medium,
-                                                buttonType:
-                                                    KxButtonTypeEnum.primary,
-                                                buttonShape:
-                                                    KxButtonShapeEnum.square,
-                                                buttonContent:
-                                                    KxButtonContentEnum.text));
+                                                buttonType: KxButtonTypeEnum.primary,
+                                                buttonShape: KxButtonShapeEnum.square,
+                                                buttonContent: KxButtonContentEnum.text));
                                       }
                                     })
                                 .padding(

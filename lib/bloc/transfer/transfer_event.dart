@@ -1,6 +1,7 @@
 import 'package:cengli/data/modules/transfer/model/request/create_order_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/prepare_erc20_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/transfer_request.dart';
+import 'package:cengli/data/modules/transfer/model/request/usdc_prepare_request.dart';
 import 'package:velix/velix.dart';
 
 import '../../data/modules/transactional/model/group.dart';
@@ -103,6 +104,25 @@ class SaveTransactionEvent extends TransferEvent {
   final TransferRequest param;
 
   const SaveTransactionEvent(this.param);
+
+  @override
+  List<Object?> get props => [param];
+}
+
+class GetBridgeEvent extends TransferEvent {
+  final int fromChainId;
+  final int destinationChainId;
+
+  const GetBridgeEvent(this.fromChainId, this.destinationChainId);
+
+  @override
+  List<Object?> get props => [fromChainId, destinationChainId];
+}
+
+class UsdcPrepareTransferEvent extends TransferEvent {
+  final UsdcPrepareRequest param;
+
+  const UsdcPrepareTransferEvent(this.param);
 
   @override
   List<Object?> get props => [param];
