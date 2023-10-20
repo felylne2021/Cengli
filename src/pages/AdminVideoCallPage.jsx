@@ -5,46 +5,49 @@ import { useSearchParams } from 'react-router-dom';
 import VideoPlayer from '../components/VideoPlayer';
 import useVideoCall from '../hooks/useVideoCall';
 
-export default function VideoCallPage() {
+export default function AdminVideoCallPage() {
   const [params] = useSearchParams()
   const pkpg = params.get('pkpg')
-  const recipientAddress = params.get('recipientAddress')
-  const chatId = params.get('chatId')
-  const isAdminSide = params.get('isAdminSide') || 'false'
-
-  if ((!pkpg || !recipientAddress || !chatId) && isAdminSide === 'false') {
-    return 'User side: params are not complete, please add pkpg, recipientAddress, chatId'
-  }
-
-  if ((!pkpg) && isAdminSide === 'true') {
+  if (!pkpg) {
     return 'Admin side: params are not complete, please add pkpg'
   }
 
-  const { wallet, data, setRequestVideoCall, acceptVideoCallRequest, videoObjectRef, isLoading } = useVideoCall({
-    chatId: chatId,
-    pkpg: pkpg,
-    recipientAddress: recipientAddress,
+  const { wallet, data, setRequestVideoCall, acceptVideoCallRequest, videoObjectRef, isPushSocketConnected, isLoading } = useVideoCall({
+    pkpg: pkpg
   })
 
-  if (!data.local.stream && !data.incoming[0].stream) {
+  if (data.incoming[0].status !== PushAPI.VideoCallStatus.CONNECTED) {
     return (
       <div className='bg-white w-screen h-screen flex flex-col justify-center items-center'>
-        <button className={`btn btn-primary ${isLoading ? 'animate-pulse' : ''}`}
-          onClick={setRequestVideoCall}
-          disabled={isLoading}
+        <h1 className='text-2xl font-semibold'>
+          Cengli{"'"}s P2P KYC Admin
+        </h1>
+
+        <div>
+          <span>
+            Status:&nbsp;
+          </span>
+
+          <span className='font-semibold'>
+            {isPushSocketConnected ?
+              <span className='text-green-500'>
+                Connected
+              </span>
+              :
+              <span className='text-red-500'>
+                Not Connected
+              </span>
+            }
+          </span>
+        </div>
+
+        <button className={`btn btn-primary mt-4 ${isLoading ? 'animate-pulse' : ''}`}
+          disabled={data.incoming[0].status !== PushAPI.VideoCallStatus.RECEIVED || isLoading}
+          onClick={acceptVideoCallRequest}
         >
-          Start Video Call
+          Accept Request
         </button>
 
-        <div className='flex flex-col max-w-[12rem] text-center break-all text-xs mt-10'>
-          <p>
-            recipientAddress:<br /> {recipientAddress}
-          </p>
-          <br />
-          <p>
-            chatId:<br /> {chatId}
-          </p>
-        </div>
       </div>
     )
   }

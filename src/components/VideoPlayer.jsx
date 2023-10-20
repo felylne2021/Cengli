@@ -1,12 +1,13 @@
 import React, { useEffect, useRef } from 'react'
 
 export default function VideoPlayer({
-  stream
+  stream,
+  className = '',
 }) {
   const videoRef = useRef()
 
   useEffect(() => {
-    if(videoRef.current){
+    if (videoRef.current) {
       videoRef.current.srcObject = stream
       videoRef.current.play()
     }
@@ -15,10 +16,9 @@ export default function VideoPlayer({
   return (
     <video
       ref={videoRef}
-      className='w-full h-full object-cover'
+      className={`w-full h-full object-cover ${className}`}
       autoPlay
       playsInline
-      muted
     />
   )
 }

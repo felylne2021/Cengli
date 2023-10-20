@@ -150,6 +150,7 @@ export default {
           primary: '#AEF964',
           "primary-light": "#BAE380",
           "base-100": "#FFFFFF",
+          error: '#F64C4C'
         }
       }
     ]
