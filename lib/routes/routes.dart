@@ -174,7 +174,7 @@ class AppRouter {
             settings: settings);
       case KycPage.routeName:
         return CupertinoPageRoute(
-            builder: (_) => const KycPage(), settings: settings);
+            builder: (_) => KycPage(url: settings.arguments as String), settings: settings);
       case PartnerRegistrationPage.routeName:
         return CupertinoPageRoute(
             builder: (_) => PartnerRegistrationPage(

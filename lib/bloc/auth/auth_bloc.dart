@@ -9,7 +9,6 @@ import 'package:cengli/data/modules/membership/membership_remote_repository.dart
 import 'package:cengli/data/modules/membership/model/request/subscribe_channel_request.dart';
 import 'package:cengli/data/modules/membership/model/request/upsert_fcm_token_request.dart';
 import 'package:cengli/data/utils/collection_util.dart';
-import 'package:cengli/services/biometric_service.dart';
 import 'package:cengli/services/eth_service.dart';
 import 'package:cengli/utils/fcm_util.dart';
 import 'package:cengli/utils/signer.dart';
@@ -34,6 +33,10 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<CheckUsernameEvent>(_onCheckUsername, transformer: sequential());
     on<GetUserDataEvent>(_onGetUserData, transformer: sequential());
     on<RelayTransactionEvent>(_onRelayTransaction, transformer: sequential());
+    on<RelayApproveTransactionEvent>(_onRelayApproveTransaction,
+        transformer: sequential());
+    on<RelayCrossTransactionEvent>(_onRelayCrossTransaction,
+        transformer: sequential());
   }
 
   Future<void> _onCreateWallet(
@@ -83,8 +86,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
       // Save fcm token
       final String fcmToken = await FcmUtil.getFcmToken();
-      await _membershipRemoteRepository
-          .upsertFcmToken(UpsertFcmTokenRequest(fcmToken: fcmToken));
+      await _membershipRemoteRepository.upsertFcmToken(UpsertFcmTokenRequest(
+          walletAddress: walletAddress.walletAddress, fcmToken: fcmToken));
 
       SessionService.setLogin(true);
       SessionService.setEncryptedPrivateKey(user?.encryptedPrivateKey ?? "");
@@ -150,17 +153,45 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     try {
       final walletAddress = await SessionService.getWalletAddress();
-      final isApprove = await BiometricService.authenticateWithBiometrics();
-      if (isApprove) {
-        await _authRepository.relayTransaction(walletAddress, event.param);
-        emit(const RelayTransactionSuccessState());
-      } else {
-        emit(const RelayTransactionErrorState("Canceled"));
-      }
+
+      await _authRepository.relayTransaction(walletAddress, event.param);
+      emit(const RelayTransactionSuccessState());
     } on AppException catch (error) {
       emit(RelayTransactionErrorState(error.message));
     } catch (error) {
       emit(RelayTransactionErrorState(error.toString()));
+    }
+  }
+
+  Future<void> _onRelayApproveTransaction(
+      RelayApproveTransactionEvent event, Emitter<AuthState> emit) async {
+    emit(const RelayApproveTransactionLoadingState());
+
+    try {
+      final walletAddress = await SessionService.getWalletAddress();
+
+      await _authRepository.relayTransaction(walletAddress, event.param);
+      emit(const RelayApproveTransactionSuccessState());
+    } on AppException catch (error) {
+      emit(RelayApproveTransactionErrorState(error.message));
+    } catch (error) {
+      emit(RelayApproveTransactionErrorState(error.toString()));
+    }
+  }
+
+  Future<void> _onRelayCrossTransaction(
+      RelayCrossTransactionEvent event, Emitter<AuthState> emit) async {
+    emit(const RelayCrossTransactionLoadingState());
+
+    try {
+      final walletAddress = await SessionService.getWalletAddress();
+
+      await _authRepository.relayTransaction(walletAddress, event.param);
+      emit(const RelayCrossTransactionSuccessState());
+    } on AppException catch (error) {
+      emit(RelayCrossTransactionErrorState(error.message));
+    } catch (error) {
+      emit(RelayCrossTransactionErrorState(error.toString()));
     }
   }
 }

@@ -13,6 +13,8 @@ class Constant {
   static const String appStoreId = "6446429674";
   static const String commethApiKey = "a83131c6-6c56-48d2-bacd-09ad4c24428b";
   static const String formatDate = 'dd MMMM yyyy';
+  static const String kycBaseUrl =
+      "https://cengli-kyc.engowl.studio/video-call?";
 
   static const List<String> profileImages = [
     "https://firebasestorage.googleapis.com/v0/b/cengli-dev.appspot.com/o/profile-four.png?alt=media&token=800b14d8-cccd-4efb-b97a-d4cd811e61d7&_gl=1*5b6gkl*_ga*MzQ3OTIyOTguMTY5NTA5ODgwMQ..*_ga_CW55HF8NVT*MTY5NzcwMTg4OS4xMDUuMS4xNjk3NzAzODI5LjI3LjAuMA..",

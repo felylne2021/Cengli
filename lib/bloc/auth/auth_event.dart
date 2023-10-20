@@ -89,3 +89,21 @@ class RelayTransactionEvent extends AuthEvent {
   @override
   List<Object?> get props => [param];
 }
+
+class RelayApproveTransactionEvent extends AuthEvent {
+  final RelayTransactionRequest param;
+
+  const RelayApproveTransactionEvent(this.param);
+
+  @override
+  List<Object?> get props => [param];
+}
+
+class RelayCrossTransactionEvent extends AuthEvent {
+  final RelayTransactionRequest param;
+
+  const RelayCrossTransactionEvent(this.param);
+
+  @override
+  List<Object?> get props => [param];
+}

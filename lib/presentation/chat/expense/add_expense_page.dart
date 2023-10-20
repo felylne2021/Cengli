@@ -10,6 +10,7 @@ import 'package:cengli/presentation/reusable/modal/modal_page.dart';
 import 'package:cengli/services/session_service.dart';
 import 'package:cengli/values/styles.dart';
 import 'package:cengli/values/values.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
@@ -193,8 +194,9 @@ class _AddExpensePageState extends State<AddExpensePage> {
               }, listener: (previous, state) {
                 if (state is GetUserDataSuccessState) {
                   userData.value = state.user;
-                  selectedPerson.value =
-                      KxSelectedListItem(state.user.name ?? "No name", true);
+                  selectedPerson.value = KxSelectedListItem(
+                      state.user.name ?? "No name", true,
+                      imagePath: state.user.imageProfile ?? "");
                 } else if (state is GetUserDataErrorState) {
                   showToast(state.error);
                 }
@@ -228,11 +230,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                   _insertData();
                   return addExpenseBody(context, members.value);
                 } else {
-                  return Center(
-                    child: CircularProgressIndicator(
-                      color: primaryGreen600,
-                    ),
-                  );
+                  return const Center(child: CupertinoActivityIndicator());
                 }
               },
             )));
@@ -370,7 +368,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                                   color: KxColors.neutral500,
                                   size: 40,
                                 )
-                              : SvgPicture.asset(person.imagePath),
+                              : Image.network(person.imagePath),
                         ),
                         trailing: const Icon(
                           Icons.chevron_right_rounded,
@@ -484,15 +482,16 @@ class _AddExpensePageState extends State<AddExpensePage> {
                               shape: const CircleBorder(),
                               checkboxWidget: Row(
                                 children: [
-                                  const CircleAvatar(
+                                  CircleAvatar(
                                       backgroundColor: Colors.transparent,
-                                      child:
-                                          //TODO: add condition if user has image
-                                          Icon(
-                                        Icons.person,
-                                        color: KxColors.neutral500,
-                                        size: 40,
-                                      )),
+                                      child: member.imageProfile == null
+                                          ? const Icon(
+                                              Icons.person,
+                                              color: KxColors.neutral500,
+                                              size: 40,
+                                            )
+                                          : Image.network(
+                                              member.imageProfile ?? "")),
                                   16.0.width,
                                   Text(
                                     member.name ?? "Default name",

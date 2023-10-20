@@ -19,8 +19,8 @@ class SendArgument {
   final UserProfile receiverProfile;
   final double amount;
 
-  SendArgument(this.senderChain, this.receiverChain, this.selectedAsset, this.assets, this.chains,
-      this.receiverProfile, this.amount);
+  SendArgument(this.senderChain, this.receiverChain, this.selectedAsset,
+      this.assets, this.chains, this.receiverProfile, this.amount);
 }
 
 class SendDetailPage extends StatefulWidget {
@@ -61,6 +61,7 @@ class _SendDetailPageState extends State<SendDetailPage> {
                 type: KxFontType.body2, color: KxColors.neutral700),
           ),
           UserAddressItemWidget(
+            imageUrl: widget.argument.receiverProfile.imageProfile,
             username: widget.argument.receiverProfile.userName ?? "",
             address: widget.argument.receiverProfile.walletAddress ?? "",
           ),

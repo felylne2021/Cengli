@@ -2,7 +2,7 @@ import 'package:cengli/data/modules/auth/model/user_profile.dart';
 import 'package:cengli/data/modules/transactional/model/group.dart';
 import 'package:cengli/data/modules/transfer/model/request/create_order_request.dart';
 import 'package:cengli/data/modules/transfer/model/response/get_partners_response.dart';
-import 'package:cengli/presentation/p2p/p2p_room_chat_paget.dart';
+import 'package:cengli/presentation/p2p/p2p_user_chat_page.dart';
 import 'package:cengli/presentation/reusable/appbar/custom_appbar.dart';
 import 'package:cengli/utils/utils.dart';
 import 'package:flutter/material.dart';
@@ -48,9 +48,9 @@ class _P2pRequestPageState extends State<P2pRequestPage> {
             listener: (context, state) {
               if (state is CreateGroupP2pSuccessState) {
                 hideLoading();
-                Navigator.of(context).pushNamed(P2pChatRoomPage.routeName,
-                    arguments:
-                        P2pChatRoomArgument(state.feeds, widget.argument.user));
+                Navigator.of(context).pushNamed(P2pUserChatPage.routeName,
+                    arguments: P2pArgument(const GetPartnersResponse(),
+                        widget.argument.user, widget.argument.chainId));
               } else if (state is CreateGroupP2pLoadingState) {
                 showLoading();
               } else if (state is CreateGroupP2pErrorState) {

@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 
 class KycPage extends StatefulWidget {
-  const KycPage({super.key});
+  final String url;
+
+  const KycPage({super.key, required this.url});
 
   @override
   State<KycPage> createState() => _KycPageState();
@@ -12,9 +14,6 @@ class KycPage extends StatefulWidget {
 }
 
 class _KycPageState extends State<KycPage> {
-  final String userUrl =
-      "https://cengli-2-copy-4fwin3or1-luminux.vercel.app/video-call?pkpg=35ecaf3dc46d80f17b3cdcd5248b119c7c39f5135e04b1bdfa42e897f7bb0903&recipientAddress=0x8f8A15956565670AC6F298596CBf70EF074D5A25&chatId=307c98a9939d6e908ded2191bc63405ee50335a94f9811df383241506f3a9829";
-
   late InAppWebViewController _webViewController;
 
   @override
@@ -22,7 +21,7 @@ class _KycPageState extends State<KycPage> {
     return Scaffold(
         appBar: CustomAppbarWithBackButton(appbarTitle: "KYC Video call"),
         body: InAppWebView(
-          initialUrlRequest: URLRequest(url: Uri.parse(userUrl)),
+          initialUrlRequest: URLRequest(url: Uri.parse(widget.url)),
           initialOptions: InAppWebViewGroupOptions(
             crossPlatform: InAppWebViewOptions(
                 useShouldOverrideUrlLoading: true, transparentBackground: true),
@@ -49,8 +48,15 @@ class _KycPageState extends State<KycPage> {
             return NavigationActionPolicy.ALLOW;
           },
           onWebViewCreated: (controller) {
-            debugPrint("Created");
             _webViewController = controller;
+            controller.addJavaScriptHandler(
+                handlerName: "callHandler",
+                callback: (args) {
+                  debugPrint("call handler $args");
+                  if (args.first == "completed") {
+                    Navigator.of(context).pop(true);
+                  }
+                });
           },
           onConsoleMessage: (controller, ConsoleMessage consoleMessage) {
             debugPrint(consoleMessage.toString());

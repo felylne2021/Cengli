@@ -23,5 +23,5 @@ class GetOrderSuccessState extends TransferState {
   const GetOrderSuccessState(this.orderResponse) : super();
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [orderResponse];
 }

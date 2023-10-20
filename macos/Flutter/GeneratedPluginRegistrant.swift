@@ -18,7 +18,6 @@ import flutter_webrtc
 import openpgp
 import path_provider_foundation
 import shared_preferences_foundation
-import sign_in_with_apple
 import sqflite
 
 func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
@@ -35,6 +34,5 @@ func RegisterGeneratedPlugins(registry: FlutterPluginRegistry) {
   OpenpgpPlugin.register(with: registry.registrar(forPlugin: "OpenpgpPlugin"))
   PathProviderPlugin.register(with: registry.registrar(forPlugin: "PathProviderPlugin"))
   SharedPreferencesPlugin.register(with: registry.registrar(forPlugin: "SharedPreferencesPlugin"))
-  SignInWithApplePlugin.register(with: registry.registrar(forPlugin: "SignInWithApplePlugin"))
   SqflitePlugin.register(with: registry.registrar(forPlugin: "SqflitePlugin"))
 }

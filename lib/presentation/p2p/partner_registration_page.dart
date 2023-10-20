@@ -1,5 +1,6 @@
 import 'package:cengli/presentation/p2p/kyc_page.dart';
 import 'package:cengli/presentation/reusable/checkbox/general_checkbox.dart';
+import 'package:cengli/services/services.dart';
 import 'package:cengli/utils/utils.dart';
 import 'package:cengli/values/string.dart';
 import 'package:expandable/expandable.dart';
@@ -57,7 +58,7 @@ class _PartnerRegistrationPageState extends State<PartnerRegistrationPage> {
                     Text(
                       "Become a Cengli Partner Today!",
                       style: KxTypography(
-                          type: KxFontType.subtitle3,
+                          type: KxFontType.subtitle2,
                           color: KxColors.neutral700),
                     ),
                     8.0.height,
@@ -120,34 +121,46 @@ class _PartnerRegistrationPageState extends State<PartnerRegistrationPage> {
                       valueListenable: isValid,
                       builder: (context, value, child) {
                         return KxTextButton(
-                                isDisabled: !value,
-                                argument: KxTextButtonArgument(
-                                    onPressed: () => Navigator.of(context)
-                                            .pushNamed(KycPage.routeName)
-                                            .then((value) {
-                                          if (value != null) {
-                                            //TODO: approve
-                                          }
-                                        }),
-                                    buttonText: "Submit",
-                                    buttonColor: primaryGreen600,
-                                    buttonTextStyle: KxTypography(
-                                        type: KxFontType.buttonMedium,
-                                        color: value
-                                            ? KxColors.neutral700
-                                            : KxColors.neutral500),
-                                    buttonSize: KxButtonSizeEnum.medium,
-                                    buttonType: KxButtonTypeEnum.primary,
-                                    buttonShape: KxButtonShapeEnum.square,
-                                    buttonContent: KxButtonContentEnum.text))
-                            .padding(
-                                const EdgeInsets.symmetric(horizontal: 16));
+                            isDisabled: !value,
+                            argument: KxTextButtonArgument(
+                                onPressed: () async {
+                                  final String walletAddress =
+                                      await SessionService.getWalletAddress();
+                                  final String privateKey =
+                                      await SessionService.getPrivateKey(
+                                          walletAddress);
+
+                                  final String kycUrl =
+                                      '${Constant.kycBaseUrl}pkpg=$privateKey';
+                                  _navigateToKyc(kycUrl, walletAddress);
+                                },
+                                buttonText: "Submit",
+                                buttonColor: primaryGreen600,
+                                buttonTextStyle: KxTypography(
+                                    type: KxFontType.buttonMedium,
+                                    color: value
+                                        ? KxColors.neutral700
+                                        : KxColors.neutral500),
+                                buttonSize: KxButtonSizeEnum.medium,
+                                buttonType: KxButtonTypeEnum.primary,
+                                buttonShape: KxButtonShapeEnum.square,
+                                buttonContent: KxButtonContentEnum.text));
                       },
                     ),
                   ],
                 ).padding(const EdgeInsets.fromLTRB(16, 16, 16, 36)),
               ],
             ))));
+  }
+
+  _navigateToKyc(String url, String walletAddress) {
+    Navigator.of(context)
+        .pushNamed(KycPage.routeName, arguments: url)
+        .then((value) {
+      if (value != null) {
+        _requestRegistration(walletAddress);
+      }
+    });
   }
 
   _requestRegistration(String walletAddress) {

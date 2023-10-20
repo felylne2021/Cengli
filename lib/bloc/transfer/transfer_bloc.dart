@@ -32,6 +32,8 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
     on<PrepareTransactionEvent>(_onPrepareTransaction,
         transformer: sequential());
     on<SaveTransactionEvent>(_onSaveTransaction, transformer: sequential());
+    on<GetBridgeEvent>(_onGetBridge, transformer: sequential());
+    on<UsdcPrepareTransferEvent>(_onUsdcPrepare, transformer: sequential());
   }
 
   Future<void> _onGetAssets(
@@ -224,6 +226,7 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
       SaveTransactionEvent event, Emitter<TransferState> emit) async {
     emit(const PostTransferLoadingState());
     try {
+      await _transferRemoteRepository.postTransfer(event.param);
       emit(const SaveTransactionSuccessState());
     } on AppException catch (error) {
       emit(SaveTransactionErrorState(error.message));
@@ -231,6 +234,38 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
       emit(SaveTransactionErrorState(error.message));
     } catch (error) {
       emit(SaveTransactionErrorState(error.toString()));
+    }
+  }
+
+  Future<void> _onGetBridge(
+      GetBridgeEvent event, Emitter<TransferState> emit) async {
+    emit(const GetBridgeLoadingState());
+    try {
+      final result = await _transferRemoteRepository.getBridge(
+          event.fromChainId, event.destinationChainId);
+      emit(GetBridgeSuccessState(result));
+    } on AppException catch (error) {
+      emit(GetBridgeErrorState(error.message));
+    } on ApiException catch (error) {
+      emit(GetBridgeErrorState(error.message));
+    } catch (error) {
+      emit(GetBridgeErrorState(error.toString()));
+    }
+  }
+
+  Future<void> _onUsdcPrepare(
+      UsdcPrepareTransferEvent event, Emitter<TransferState> emit) async {
+    emit(const UsdcPrepareLoadingState());
+    try {
+      final response =
+          await _transferRemoteRepository.prepareUsdcTx(event.param);
+      emit(UsdcPrepareSuccessState(response));
+    } on AppException catch (error) {
+      emit(UsdcPrepareErrorState(error.message));
+    } on ApiException catch (error) {
+      emit(UsdcPrepareErrorState(error.message));
+    } catch (error) {
+      emit(UsdcPrepareErrorState(error.toString()));
     }
   }
 }
