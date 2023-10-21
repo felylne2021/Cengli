@@ -1,8 +1,7 @@
 
 import {
   ComethWallet,
-  ConnectAdaptor,
-  SupportedNetworks,
+  ConnectAdaptor
 } from "@cometh/connect-sdk"
 import axios from "axios"
 import { ethers } from "ethers6"
@@ -20,41 +19,63 @@ const ERC20ABI = JSON.parse(readFileSync("utils/web3/abi/ERC20.json", "utf8"))
 
 export const COMETH_API_BASE_URL = 'https://api.connect.cometh.io'
 
-export const comethRoutes = async (server) => {
-  // Initiate Cometh on Fuji
+const getCometh = (chainId = 43113) => {
+  const _chainId = parseInt(chainId)
+
+  if (_chainId !== 43113 && _chainId !== 80001) {
+    throw new Error('Invalid chainId')
+  }
+
+  let apiKey;
+  let rpcUrl;
+
+  if (_chainId === 43113) {
+    apiKey = process.env.COMETH_AVAX_API_KEY
+    rpcUrl = process.env.COMETH_AVAX_RPC_URL
+  } else if (_chainId === 80001) {
+    apiKey = process.env.COMETH_MUMBAI_API_KEY
+    rpcUrl = process.env.COMETH_MUMBAI_RPC_URL
+  }
+
   const walletAdaptor = new ConnectAdaptor({
-    chainId: SupportedNetworks.FUJI,
-    apiKey: process.env.COMETH_API_KEY,
-    rpcUrl: process.env.COMETH_RPC_URL
-  })
+    chainId,
+    apiKey,
+    rpcUrl
+  });
 
   const wallet = new ComethWallet({
     authAdapter: walletAdaptor,
-    apiKey: process.env.COMETH_API_KEY,
-    rpcUrl: process.env.COMETH_RPC_URL
-  })
+    apiKey,
+    rpcUrl
+  });
 
-  const provider = wallet.getProvider()
+  const provider = wallet.getProvider();
 
-  const SafeFactoryContract = (address) => {
-    return new ethers.Contract(
-      address,
-      SafeFactoryABI,
-      provider
-    )
+  return { adaptor: walletAdaptor, wallet, provider, apiKey, rpcUrl };
+}
+
+const SafeFactoryContract = (address, provider) => {
+  return new ethers.Contract(
+    address,
+    SafeFactoryABI,
+    provider
+  )
+}
+
+const getUserNonce = async (address) => {
+  try {
+    const nonce = Number(await SafeFactoryContract(address).getFunction('nonce')())
+    console.log('nonce', nonce)
+
+    return nonce.toString()
+  } catch (error) {
+    // can error if address have not created a safe yet
+    console.error('getUserNonce error, address have not created a safe yet', error)
+    return "0"
   }
-  const getUserNonce = async (address) => {
-    try {
-      const nonce = Number(await SafeFactoryContract(address).getFunction('nonce')())
-      console.log('nonce', nonce)
-      return nonce.toString()
-    } catch (error) {
-      // can error if address have not created a safe yet
-      console.error('An error occurred:', error)
-      return "0"
-    }
-  }
+}
 
+export const comethRoutes = async (server) => {
   const checkSponsoredAddress = async (address, reply) => {
     const sponsored = await prismaClient.comethSponsoredAddress.findFirst({
       where: {
@@ -151,7 +172,9 @@ export const comethRoutes = async (server) => {
 
   server.post('/prepare-tx', async (request, reply) => {
     try {
-      const { safeTransactionData, walletAddress } = request.body
+      const { safeTransactionData, walletAddress, chainId = 43113 } = request.body
+      const { provider, wallet } = getCometh(chainId);
+
 
       const safeTxGas = await estimateSafeTxGas({
         walletAddress: walletAddress,
@@ -161,7 +184,10 @@ export const comethRoutes = async (server) => {
       console.log('safeTxGas', safeTxGas)
 
       // const safeTxDataTyped = Object.assign({}, (yield this._prepareTransaction(safeTxData.to, safeTxData.value, safeTxData.data)));
-      const safeTxDataTyped = Object.assign({}, await wallet._prepareTransaction(safeTransactionData.to, safeTransactionData.value, safeTransactionData.data))
+      const safeTxDataTyped = Object.assign(
+        {},
+        await wallet._prepareTransaction(safeTransactionData.to, safeTransactionData.value, safeTransactionData.data)
+      )
       console.log('safeTxDataTyped', safeTxDataTyped)
 
       // check sponsored address
@@ -206,6 +232,7 @@ export const comethRoutes = async (server) => {
   server.post('/prepare-erc20-tx', async (request, reply) => {
     try {
       const { walletAddress, tokenAddress, functionName, args, chainId } = request.body
+      const { wallet } = getCometh(chainId);
 
       await validateRequiredFields(request.body, ['walletAddress', 'tokenAddress', 'functionName'], reply)
 
@@ -249,6 +276,8 @@ export const comethRoutes = async (server) => {
       const { walletAddress, recipientAddress, fromChainId, destinationChainId, amount, tokenAddress } = request.body;
       await validateRequiredFields(request.body, ['walletAddress', 'recipientAddress', 'fromChainId', 'destinationChainId', 'amount'], reply);
 
+      const { wallet } = getCometh(fromChainId);
+
       if (parseInt(fromChainId) !== 43113) {
         return reply.code(400).send({ message: 'Only support Avalanche Fuji Testnet (43113)' });
       }
@@ -272,7 +301,7 @@ export const comethRoutes = async (server) => {
       const transferTx = await hyperlaneAvaxContract['transferXchainHypERC20'].populateTransaction(destinationChainId, toBytes32(recipientAddress), amount * 10 ** 6, {
         from: walletAddress,
         value: "0",
-        chainId: "43113"
+        chainId: fromChainId
       })
 
       const safeTxDataTyped = Object.assign({}, await wallet._prepareTransaction(transferTx.to, transferTx.value, transferTx.data))
@@ -285,26 +314,6 @@ export const comethRoutes = async (server) => {
       return reply.code(200).send(toBeSignedTransaction)
     } catch (error) {
       console.error('prepare-usdc-bridge-transfer-tx:', error)
-      return reply.code(500).send({ message: error })
-    }
-  })
-
-  server.post('/estimate-safe-tx-gas', async (request, reply) => {
-    try {
-      const {
-        walletAddress,
-        safeTransactionData
-      } = request.body
-
-      const safeTxGas = await estimateSafeTxGas({
-        walletAddress: walletAddress,
-        safeTransactionData: safeTransactionData,
-        provider: provider
-      })
-
-      return reply.code(200).send(safeTxGas)
-    } catch (error) {
-      console.error('An error occurred:', error)
       return reply.code(500).send({ message: error })
     }
   })

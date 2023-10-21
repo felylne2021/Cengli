@@ -3,7 +3,7 @@ import { getContractByChain } from "../utils/web3/assetContracts.js";
 import { validateAvailableChainId, validateRequiredFields } from "../utils/validator.js";
 import { readFileSync } from "fs";
 
-const SafeFactoryABI = JSON.parse(readFileSync("utils/web3/abi/SafeFactory.json", "utf8"))
+export const SafeFactoryABI = JSON.parse(readFileSync("utils/web3/abi/SafeFactory.json", "utf8"))
 
 export const transferRoutes = async (server) => {
   server.post('/send', async (request, reply) => {
