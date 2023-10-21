@@ -12,7 +12,7 @@ import { prismaClient } from "../utils/prisma.js"
 import { readFileSync } from "fs"
 import { avaxProvider } from "../utils/web3/assetContracts.js"
 import { validateRequiredFields } from "../utils/validator.js"
-import { hyperlaneAvaxContract } from '../utils/web3/hyperlaneContracts.js';
+import { HyperlaneWarpRouteContract, hyperlaneAvaxContract } from '../utils/web3/hyperlaneContracts.js';
 
 const SafeFactoryABI = JSON.parse(readFileSync("utils/web3/abi/SafeFactory.json", "utf8"))
 const ERC20ABI = JSON.parse(readFileSync("utils/web3/abi/ERC20.json", "utf8"))
@@ -210,7 +210,7 @@ export const comethRoutes = async (server) => {
 
       const toBeSignedTransaction = {
         domain: {
-          chainId: 43113,
+          chainId: chainId,
           verifyingContract: walletAddress
         },
         types: {
@@ -257,7 +257,7 @@ export const comethRoutes = async (server) => {
       const approveTx = await contract[functionName].populateTransaction(...args, {
         from: walletAddress,
         value: "0",
-        chainId: "43313"
+        chainId: chainId
       })
 
       const safeTxDataTyped = Object.assign({}, await wallet._prepareTransaction(approveTx.to, approveTx.value, approveTx.data))
@@ -284,11 +284,11 @@ export const comethRoutes = async (server) => {
       const { walletAddress, recipientAddress, fromChainId, destinationChainId, amount, tokenAddress } = request.body;
       await validateRequiredFields(request.body, ['walletAddress', 'recipientAddress', 'fromChainId', 'destinationChainId', 'amount'], reply);
 
-      const { wallet } = getCometh(fromChainId);
-
-      if (parseInt(fromChainId) !== 43113) {
-        return reply.code(400).send({ message: 'Only support Avalanche Fuji Testnet (43113)' });
+      if (parseInt(fromChainId) !== 43113 && parseInt(fromChainId) !== 80001) {
+        return reply.code(400).send({ message: 'Only support Avalanche Fuji Testnet (43113) and Polygon Mumbai Testnet (80001)' });
       }
+
+      const { wallet } = getCometh(fromChainId);
 
       const fromChain = await prismaClient.chain.findFirst({
         where: {
@@ -307,6 +307,66 @@ export const comethRoutes = async (server) => {
       }
 
       const transferTx = await hyperlaneAvaxContract['transferXchainHypERC20'].populateTransaction(destinationChainId, toBytes32(recipientAddress), amount * 10 ** 6, {
+        from: walletAddress,
+        value: "0",
+        chainId: fromChainId
+      })
+
+      const safeTxDataTyped = Object.assign({}, await wallet._prepareTransaction(transferTx.to, transferTx.value, transferTx.data))
+
+      await checkSponsoredAddress(safeTxDataTyped.to, reply)
+
+      const toBeSignedTransaction = await generateToBeSignedTransaction(safeTxDataTyped, walletAddress)
+      console.log('toBeSignedTransaction', toBeSignedTransaction)
+
+      return reply.code(200).send(toBeSignedTransaction)
+    } catch (error) {
+      console.error('prepare-usdc-bridge-transfer-tx:', error)
+      return reply.code(500).send({ message: error })
+    }
+  })
+
+  server.post('/prepare-bridge-transfer-tx', async (request, reply) => {
+    try {
+      const { walletAddress, recipientAddress, fromChainId, destinationChainId, amount, tokenAddress } = request.body;
+      await validateRequiredFields(request.body, ['walletAddress', 'recipientAddress', 'fromChainId', 'destinationChainId', 'amount', 'tokenAddress'], reply);
+
+      if (parseInt(fromChainId) !== 43113 && parseInt(fromChainId) !== 80001) {
+        return reply.code(400).send({ message: 'Only support Avalanche Fuji Testnet (43113) and Polygon Mumbai Testnet (80001)' });
+      }
+
+      const { wallet } = getCometh(fromChainId);
+
+      const fromBridge = await prismaClient.hyperlaneWarpRoute.findFirst({
+        where: {
+          chainId: parseInt(fromChainId),
+          tokenAddress: tokenAddress.toLowerCase()
+        }
+      })
+
+      if (!fromBridge) {
+        return reply.code(404).send({ message: 'Bridge not found' });
+      }
+
+      const token = await prismaClient.token.findFirst({
+        where: {
+          chainId: parseInt(fromChainId),
+          address: tokenAddress.toLowerCase(),
+          hyperlaneRoutes: {
+            isNot: null
+          }
+        },
+        include: {
+          hyperlaneRoutes: true
+        }
+      })
+
+      if (!token || token.hyperlaneRoutes?.bridgeAddress === null) {
+        return reply.code(404).send({ message: 'Token not found' });
+      }
+
+      const warpContract = HyperlaneWarpRouteContract(parseInt(fromChainId), token.hyperlaneRoutes.bridgeAddress)
+      const transferTx = await warpContract['transferXchainHypERC20'].populateTransaction(destinationChainId, toBytes32(recipientAddress), BigInt(amount * 10 ** token.decimals), {
         from: walletAddress,
         value: "0",
         chainId: fromChainId

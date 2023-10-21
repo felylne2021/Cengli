@@ -406,6 +406,57 @@ Prepares a transaction for a USDC bridge transfer. This endpoint validates the c
 
 --- 
 
+Certainly, here's how you could add section 6 to your existing documentation:
+
+---
+
+## **6. Prepare General Bridge Transfer Transaction**
+**Endpoint:** `POST {{baseUrl}}/cometh/prepare-bridge-transfer-tx`
+
+This endpoint prepares a transaction for a general token bridge transfer, supporting various tokens. The transaction object to be signed is generated after validating the chain information and checking if the recipient address is sponsored.
+
+### **Request Body:**
+
+- `walletAddress` (string): The address of the wallet initiating the transaction.
+- `recipientAddress` (string): The address of the wallet receiving the funds.
+- `tokenAddress` (string): The address of the token being transferred.
+- `fromChainId` (number): The chain ID of the originating blockchain.
+- `destinationChainId` (number): The chain ID of the destination blockchain.
+- `amount` (number): The amount to transfer, based on the token's decimals.
+
+**Request Example:**
+```json
+{
+  "walletAddress": "0x278A2d5B5C8696882d1D2002cE107efc74704ECf",
+  "recipientAddress": "0x278A2d5B5C8696882d1D2002cE107efc74704ECf",
+  "tokenAddress": "0x430d8B2Cb511DD47AD76f3bC8f9A035645F258a3",
+  "fromChainId": 43113,
+  "destinationChainId": 80001,
+  "amount": 12345
+}
+```
+
+### **Response Body:**
+
+- `domain`: Object containing metadata about the transaction, such as chain ID and verifying contract.
+- `types`: Object containing various transaction parameters, like gas fees and data payload.
+
+**Response Example:**
+```json
+{
+  "domain": {
+    "chainId": "43113",
+    "verifyingContract": "0x1E1960b1528541fa85a331C8933521073D6d3682"
+  },
+  "types": {
+    "to": "0x89e2139c21254d799595051E0F3F1F5bA34Ac2c2",
+    // ...other fields
+  }
+}
+```
+
+--- 
+
 ### ERC20 Token Transfer Flow (Same Chain)
 
 #### 1. Transfer ERC20 Token
@@ -421,55 +472,70 @@ const toBeSignedData_transfer = await axios.post(`${backendUrl}/cometh/prepare-e
 
 **Sign**: Use HTML interface to sign `toBeSignedData_transfer`.
 
-### Different Chain Transfer Flow
+Sure, here's your updated documentation:
 
-#### 1. Get Hyperlane Bridge Contract Address
+---
+
+### Multi-Chain ERC20 Token Transfer Flow
+
+#### 1. Get Bridge Address Based on `fromChainId` and `tokenAddress`
+
+Currently, only CIDR on FUJI and MUMBAI is supported.
+
+**Request:**
 
 ```javascript
-const getHyperlaneBridge = await axios.get(`${backendUrl}/transfer/bridge?fromChainId=43313&destinationChainId=5`);
+const response = await axios.get(`${backendUrl}/transfer/hyperlane-warp-route?fromChainId=43113&tokenAddress=0x430d8B2Cb511DD47AD76f3bC8f9A035645F258a3`);
 ```
 
 **Example Response:**
 
 ```json
 {
-  "fromBridgeAddress": "0x...",
-  "destinationBridgeAddress": "0x..."
+  "id": "b78c260b-d74a-45ae-896c-c8c08f151fd5",
+  "bridgeAddress": "0x...",
+  "chainId": 43113,
+  "tokenAddress": "0x430d8B2Cb511DD47AD76f3bC8f9A035645F258a3"
 }
 ```
 
 ---
 
-#### 2. Approve ERC20 to Hyperlane Bridge Address
+#### 2. Approve the ERC20 to the Hyperlane Bridge Address
+
+**Request:**
 
 ```javascript
 const toBeSignedData_approve = await axios.post(`${backendUrl}/cometh/prepare-erc20-tx`, {
   walletAddress: comethWalletAddress,
   tokenAddress: TEST_TOKEN_ADDRESS,
   functionName: "approve",
-  args: [fromBridgeAddress, formattedAmount]
+  args: [response.data.bridgeAddress, formattedAmount]
 });
 ```
 
-**Sign**: Use HTML interface to sign `toBeSignedData_approve`.
+**Sign**: Use the HTML interface to sign `toBeSignedData_approve`.
 
 Then send the signed transaction to the Cometh Relay API.
 
 ---
 
-#### 3. Prepare Transaction for Different Chain Transfer
+#### 3. Prepare Bridge Transfer Transaction
+
+**Endpoint**: `/cometh/prepare-bridge-transfer-tx`
+
+**Request:**
 
 ```javascript
-const toBeSignedData = await axios.post(`${backendUrl}/cometh/prepare-usdc-bridge-transfer-tx`, {
-  walletAddress: comethWalletAddress,
-  recipientAddress: "0x....",
-  fromChainId: 43313,
-  destinationChainId: 5,
-  amount: 10000
+const toBeSignedData = await axios.post(`${backendUrl}/cometh/prepare-bridge-transfer-tx`, {
+  walletAddress: "0x278A2d5B5C8696882d1D2002cE107efc74704ECf",
+  recipientAddress: "0x278A2d5B5C8696882d1D2002cE107efc74704ECf",
+  tokenAddress: "0x430d8B2Cb511DD47AD76f3bC8f9A035645F258a3",
+  fromChainId: 43113,
+  destinationChainId: 80001,
+  amount: 12345
 });
 ```
-
-**Sign**: Use HTML interface to sign `toBeSignedData_approve`.
 
 Then send the signed transaction to the Cometh Relay API.
 

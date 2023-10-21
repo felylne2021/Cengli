@@ -1,11 +1,13 @@
 -- CreateTable
 CREATE TABLE `Chain` (
+    `index` INTEGER NOT NULL DEFAULT 0,
     `chainId` INTEGER NOT NULL,
     `chainName` VARCHAR(191) NOT NULL,
     `rpcUrl` VARCHAR(191) NOT NULL,
     `nativeCurrency` JSON NOT NULL,
     `blockExplorer` VARCHAR(191) NOT NULL,
     `logoURI` VARCHAR(191) NOT NULL,
+    `hyperlaneBridgeAddress` VARCHAR(191) NOT NULL DEFAULT '0x0',
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -25,7 +27,18 @@ CREATE TABLE `Token` (
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `Token_address_chainId_key`(`address`, `chainId`),
+    UNIQUE INDEX `Token_chainId_address_key`(`chainId`, `address`),
+    PRIMARY KEY (`id`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `HyperlaneWarpRoute` (
+    `id` VARCHAR(191) NOT NULL,
+    `bridgeAddress` VARCHAR(191) NOT NULL,
+    `chainId` INTEGER NOT NULL,
+    `tokenAddress` VARCHAR(191) NOT NULL,
+
+    UNIQUE INDEX `HyperlaneWarpRoute_chainId_tokenAddress_key`(`chainId`, `tokenAddress`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -41,6 +54,7 @@ CREATE TABLE `Transaction` (
     `tokenAddress` VARCHAR(191) NOT NULL,
     `amount` DOUBLE NOT NULL,
     `note` VARCHAR(191) NULL,
+    `tokenId` VARCHAR(191) NOT NULL,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
@@ -53,10 +67,11 @@ CREATE TABLE `P2PPartner` (
     `userId` VARCHAR(191) NOT NULL,
     `address` VARCHAR(191) NOT NULL,
     `name` VARCHAR(191) NOT NULL DEFAULT 'Larry Gonzales',
+    `chainId` INTEGER NOT NULL DEFAULT 43113,
     `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
     `updatedAt` DATETIME(3) NOT NULL,
 
-    UNIQUE INDEX `P2PPartner_userId_key`(`userId`),
+    UNIQUE INDEX `P2PPartner_userId_chainId_key`(`userId`, `chainId`),
     PRIMARY KEY (`id`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
@@ -106,26 +121,58 @@ CREATE TABLE `OrderChat` (
     PRIMARY KEY (`orderId`)
 ) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
+-- CreateTable
+CREATE TABLE `ComethSponsoredAddress` (
+    `chainId` INTEGER NOT NULL,
+    `targetAddress` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    UNIQUE INDEX `ComethSponsoredAddress_chainId_targetAddress_key`(`chainId`, `targetAddress`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
+-- CreateTable
+CREATE TABLE `UserNotification` (
+    `walletAddress` VARCHAR(191) NOT NULL,
+    `fcmToken` VARCHAR(191) NOT NULL,
+    `createdAt` DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    `updatedAt` DATETIME(3) NOT NULL,
+
+    PRIMARY KEY (`walletAddress`)
+) DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+
 -- AddForeignKey
 ALTER TABLE `Token` ADD CONSTRAINT `Token_chainId_fkey` FOREIGN KEY (`chainId`) REFERENCES `Chain`(`chainId`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `Transaction` ADD CONSTRAINT `Transaction_tokenAddress_fromChainId_fkey` FOREIGN KEY (`tokenAddress`, `fromChainId`) REFERENCES `Token`(`address`, `chainId`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `HyperlaneWarpRoute` ADD CONSTRAINT `HyperlaneWarpRoute_chainId_fkey` FOREIGN KEY (`chainId`) REFERENCES `Chain`(`chainId`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `HyperlaneWarpRoute` ADD CONSTRAINT `HyperlaneWarpRoute_chainId_tokenAddress_fkey` FOREIGN KEY (`chainId`, `tokenAddress`) REFERENCES `Token`(`chainId`, `address`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `Transaction` ADD CONSTRAINT `Transaction_tokenId_fkey` FOREIGN KEY (`tokenId`) REFERENCES `Token`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `P2PPartner` ADD CONSTRAINT `P2PPartner_chainId_fkey` FOREIGN KEY (`chainId`) REFERENCES `Chain`(`chainId`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `PartnerBalance` ADD CONSTRAINT `PartnerBalance_partnerId_fkey` FOREIGN KEY (`partnerId`) REFERENCES `P2PPartner`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `PartnerBalance` ADD CONSTRAINT `PartnerBalance_tokenId_fkey` FOREIGN KEY (`tokenId`) REFERENCES `Token`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `PartnerBalance` ADD CONSTRAINT `PartnerBalance_tokenId_fkey` FOREIGN KEY (`tokenId`) REFERENCES `Token`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `P2POrder` ADD CONSTRAINT `P2POrder_partnerId_fkey` FOREIGN KEY (`partnerId`) REFERENCES `P2PPartner`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE `P2POrder` ADD CONSTRAINT `P2POrder_tokenId_fkey` FOREIGN KEY (`tokenId`) REFERENCES `Token`(`id`) ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE `P2POrder` ADD CONSTRAINT `P2POrder_tokenId_fkey` FOREIGN KEY (`tokenId`) REFERENCES `Token`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `P2POrderDeposit` ADD CONSTRAINT `P2POrderDeposit_orderId_fkey` FOREIGN KEY (`orderId`) REFERENCES `P2POrder`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE `OrderChat` ADD CONSTRAINT `OrderChat_orderId_fkey` FOREIGN KEY (`orderId`) REFERENCES `P2POrder`(`id`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE `ComethSponsoredAddress` ADD CONSTRAINT `ComethSponsoredAddress_chainId_fkey` FOREIGN KEY (`chainId`) REFERENCES `Chain`(`chainId`) ON DELETE CASCADE ON UPDATE CASCADE;

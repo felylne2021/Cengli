@@ -45,6 +45,17 @@ export const transferRoutes = async (server) => {
       //   console.log("Transaction cross chain message ID.");
       // }
 
+      const token = await prismaClient.token.findFirst({
+        where: {
+          address: tokenAddress.toLowerCase(),
+          chainId: parseInt(fromChainId)
+        }
+      })
+
+      if (!token) {
+        return reply.code(404).send({ message: 'Token not found' });
+      }
+
       const transaction = await prismaClient.transaction.create({
         data: {
           fromUserId: fromUserId,
@@ -56,6 +67,7 @@ export const transferRoutes = async (server) => {
           destinationChainId: destinationChainId,
           amount: amount,
           note: note,
+          tokenId: token.id
         }
       })
 
@@ -99,6 +111,30 @@ export const transferRoutes = async (server) => {
         fromBridgeAddress: fromBridgeAddress.hyperlaneBridgeAddress,
         destinationBridgeAddress: destinationBridgeAddress.hyperlaneBridgeAddress
       });
+    } catch (error) {
+      console.log('Error getting bridge address: ', error);
+      return reply.code(500).send({ message: error });
+    }
+  })
+
+  server.get('/hyperlane-warp-route', async (request, reply) => {
+    try {
+      const { fromChainId, tokenAddress } = request.query;
+
+      await validateRequiredFields(request.query, ['fromChainId', 'tokenAddress'], reply)
+
+      const fromBridge = await prismaClient.hyperlaneWarpRoute.findFirst({
+        where: {
+          tokenAddress: tokenAddress.toLowerCase(),
+          chainId: parseInt(fromChainId)
+        }
+      })
+
+      if (!fromBridge) {
+        return reply.code(404).send({ message: 'Bridge not found, only FUJI and MUMBAI are supported' });
+      }
+
+      return reply.code(200).send(fromBridge);
     } catch (error) {
       console.log('Error getting bridge address: ', error);
       return reply.code(500).send({ message: error });

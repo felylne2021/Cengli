@@ -29,7 +29,10 @@ export const CHAINS_CONFIGS = [
         symbol: 'CIDR',
         decimals: 18,
         logoURI: "https://i.ibb.co/PGC7hK3/CIDR-logo-1.png",
-        priceUsd: 1
+        priceUsd: 1,
+        hyperlaneWarpRoute: {
+          bridgeAddress: '0x89e2139c21254d799595051E0F3F1F5bA34Ac2c2',
+        }
       }
     ],
     hyperlaneBridgeAddress: '0x89e2139c21254d799595051E0F3F1F5bA34Ac2c2',
@@ -61,7 +64,10 @@ export const CHAINS_CONFIGS = [
         symbol: 'CIDR',
         decimals: 18,
         logoURI: "https://i.ibb.co/PGC7hK3/CIDR-logo-1.png",
-        priceUsd: 1
+        priceUsd: 1,
+        hyperlaneWarpRoute: {
+          bridgeAddress: '0x...',
+        }
       }
     ],
     hyperlaneBridgeAddress: '0x69E0F399c8A6A767CdAFc109ae7692edDbdfb256',

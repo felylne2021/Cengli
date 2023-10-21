@@ -35,7 +35,7 @@ export const dataWorker = async (server) => {
         for (const token of chainConfig.tokens) {
           await prismaClient.token.upsert({
             where: {
-              address_chainId: {
+              chainId_address: {
                 address: token.address,
                 chainId: chainConfig.chainId,
               },
@@ -57,6 +57,25 @@ export const dataWorker = async (server) => {
               priceUsd: token.priceUsd,
             },
           });
+
+          if(token?.hyperlaneWarpRoute){
+            await prismaClient.hyperlaneWarpRoute.upsert({
+              where: {
+                chainId_tokenAddress: {
+                  chainId: chainConfig.chainId,
+                  tokenAddress: token.address,
+                }
+              },
+              create: {
+                chainId: chainConfig.chainId,
+                tokenAddress: token.address,
+                bridgeAddress: token.hyperlaneWarpRoute.bridgeAddress,
+              },
+              update: {
+                bridgeAddress: token.hyperlaneWarpRoute.bridgeAddress,
+              }
+            })
+          }
         }
       }
     } catch (error) {

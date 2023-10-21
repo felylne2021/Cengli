@@ -23,6 +23,7 @@ model Chain {
   tokens                   Token[]
   comethSponsoredAddresses ComethSponsoredAddress[]
   p2pPartners              P2PPartner[]
+  hyperlaneWarpRoutes      HyperlaneWarpRoute[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -39,15 +40,30 @@ model Token {
   logoURI  String
   priceUsd Float
 
-  chain           Chain            @relation(fields: [chainId], references: [chainId], onDelete: Cascade)
+  chain           Chain               @relation(fields: [chainId], references: [chainId], onDelete: Cascade)
   transactions    Transaction[]
   partnerBalances PartnerBalance[]
   orders          P2POrder[]
+  hyperlaneRoutes HyperlaneWarpRoute?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([address, chainId])
+  @@unique([chainId, address])
+}
+
+model HyperlaneWarpRoute {
+  id String @id @default(uuid())
+
+  bridgeAddress String
+
+  chainId Int
+  chain   Chain @relation(fields: [chainId], references: [chainId], onDelete: Cascade)
+
+  tokenAddress String
+  token        Token  @relation(fields: [chainId, tokenAddress], references: [chainId, address], onDelete: Cascade)
+
+  @@unique([chainId, tokenAddress])
 }
 
 model Transaction {
@@ -66,7 +82,8 @@ model Transaction {
 
   note String?
 
-  token Token @relation(fields: [tokenAddress, fromChainId], references: [address, chainId], onDelete: Cascade)
+  tokenId String
+  token Token @relation(fields: [tokenId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -74,12 +91,12 @@ model Transaction {
 
 model P2PPartner {
   id      String @id @default(uuid())
-  userId  String 
+  userId  String
   address String
   name    String @default("Larry Gonzales")
 
-  chainId Int @default(43113)
-  chain Chain @relation(fields: [chainId], references: [chainId], onDelete: Cascade)
+  chainId Int   @default(43113)
+  chain   Chain @relation(fields: [chainId], references: [chainId], onDelete: Cascade)
 
   balances PartnerBalance[]
   orders   P2POrder[]
