@@ -466,7 +466,8 @@ const toBeSignedData_transfer = await axios.post(`${backendUrl}/cometh/prepare-e
   walletAddress: comethWalletAddress,
   tokenAddress: TEST_TOKEN_ADDRESS,
   functionName: "transfer",
-  args: [recipientAddress, formattedAmount]
+  args: [recipientAddress, formattedAmount],
+  chainId: 43113
 });
 ```
 
