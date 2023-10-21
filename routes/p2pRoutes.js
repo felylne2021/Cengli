@@ -18,7 +18,8 @@ export const p2pRoutes = async (server) => {
             include: {
               token: true
             }
-          }
+          },
+          chain: true
         },
         orderBy: {
           createdAt: 'asc'
