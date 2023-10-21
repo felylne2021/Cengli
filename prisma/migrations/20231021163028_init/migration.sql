@@ -1,0 +1,5 @@
+-- AlterTable
+ALTER TABLE `P2PPartner` ADD COLUMN `chainId` INTEGER NOT NULL DEFAULT 43113;
+
+-- AddForeignKey
+ALTER TABLE `P2PPartner` ADD CONSTRAINT `P2PPartner_chainId_fkey` FOREIGN KEY (`chainId`) REFERENCES `Chain`(`chainId`) ON DELETE CASCADE ON UPDATE CASCADE;

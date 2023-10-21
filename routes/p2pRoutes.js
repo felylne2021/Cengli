@@ -1,7 +1,7 @@
 import { prismaClient } from "../utils/prisma.js";
 import { validateAvailableChainId, validateRequiredFields } from "../utils/validator.js";
-import { EscrowContractAddress, cancelOrder, checkAllowance, checkBalance, depositToEscrow, releaseFunds } from "../utils/web3/p2pController.js";
-import { fetchUSDCTokenBalance } from "../workers/partnerWorker.js";
+import { EscrowContractAddress, cancelOrder, checkAllowance, checkBalance, depositToEscrow, getEthersProvider, releaseFunds } from "../utils/web3/p2pController.js";
+import { fetchPartnerTokenBalance, fetchUSDCTokenBalance } from "../workers/partnerWorker.js";
 
 export const p2pRoutes = async (server) => {
   // Fetch all active partners
@@ -12,7 +12,7 @@ export const p2pRoutes = async (server) => {
           balances: {
             where: {
               token: {
-                symbol: 'USDC'
+                symbol: 'CIDR'
               }
             },
             include: {
@@ -25,6 +25,15 @@ export const p2pRoutes = async (server) => {
         }
       })
 
+      // delete balances[i] from partners[i] if balances[i].token.chainId !== partner.chainId
+      for (const partner of partners) {
+        for (let i = 0; i < partner.balances.length; i++) {
+          if (partner.balances[i].token.chainId !== partner.chainId) {
+            partner.balances.splice(i, 1)
+          }
+        }
+      }
+
       return reply.send(partners);
     } catch (error) {
       return reply.code(500).send({ message: error });
@@ -34,25 +43,28 @@ export const p2pRoutes = async (server) => {
   // Add a new partner
   server.post('/partners', async (request, reply) => {
     try {
-      const { userId, userAddress, name } = request.body;
-      await validateRequiredFields(request.body, ['userId', 'userAddress', 'name'], reply);
+      const { userId, userAddress, name, chainId } = request.body;
+      await validateRequiredFields(request.body, ['userId', 'userAddress', 'name', 'chainId'], reply);
 
       const partner = await prismaClient.p2PPartner.upsert({
         where: {
           userId: userId,
-          address: userAddress
+          address: userAddress,
+          chainId: parseInt(chainId)
         },
         create: {
           userId: userId,
           address: userAddress,
-          name: name ? name : 'Name not set'
+          name: name ? name : 'Name not set',
+          chainId: parseInt(chainId)
         },
         update: {
-          name: name ? name : 'Name not set'
+          name: name ? name : 'Name not set',
+          chainId: parseInt(chainId)
         }
       })
 
-      await fetchUSDCTokenBalance(partner.id);
+      await fetchPartnerTokenBalance(partner.id, parseInt(chainId))
 
       return reply.send(partner);
     } catch (error) {
@@ -202,7 +214,8 @@ export const p2pRoutes = async (server) => {
       }
 
       // validate partner has enough balance
-      const sellerBalance = await checkBalance(token.address, partner.address)
+      const provider = getEthersProvider(parseInt(partner.chainId))
+      const sellerBalance = await checkBalance(token.address, partner.address, provider)
       if (sellerBalance < amount) {
         return reply.code(400).send({ message: 'Invalid amount, make sure the partner has enough balance' });
       }
@@ -275,13 +288,15 @@ export const p2pRoutes = async (server) => {
       }
 
       // validate partner has enough allowance to CengliP2PReserve contract
-      const partnerAllowance = await checkAllowance(order.token.address, order.partner.address, EscrowContractAddress)
+      const provider = getEthersProvider(order.partner.chainId)
+      const partnerAllowance = await checkAllowance(order.token.address, order.partner.address, EscrowContractAddress(), provider)
+      console.log('partnerAllowance: ', partnerAllowance);
       if (partnerAllowance < order.amount) {
         return reply.code(400).send({ message: 'The partner does not have enough allowance to CengliP2PReserve contract' });
       }
 
       // transfer tokens from partner to CengliP2PReserve contract
-      await depositToEscrow(order.buyerAddress, order.partner.address, order.token.address, order.amount * Math.pow(10, order.token.decimals), order.id)
+      await depositToEscrow(order.buyerAddress, order.partner.address, order.token.address, order.amount * Math.pow(10, order.token.decimals), order.id, order.partner.chainId)
 
       // update order status
       const updatedOrder = await prismaClient.p2POrder.update({
@@ -473,7 +488,7 @@ export const p2pRoutes = async (server) => {
       }
 
       // Transfer fund from Escrow contract to buyer
-      await releaseFunds(parseInt(order.deposit?.contractOrderId))
+      await releaseFunds(parseInt(order.deposit?.contractOrderId), order.partner.chainId)
 
       // update order status
       const updatedOrder = await prismaClient.p2POrder.update({

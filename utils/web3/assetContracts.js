@@ -17,9 +17,9 @@ export const goerliProvider = new ethers.JsonRpcProvider(GOERLI_API_KEY);
 export const goerliSigner = new ethers.Wallet(PRIVATE_KEY, goerliProvider);
 const goerliContract = new ethers.Contract("0xa0d2cAa1699bC7193a0eAA485160981ECE90f25F", abi, goerliSigner);
 
-// const polygonProvider = new ethers.JsonRpcApiProvider(MUMBAI_API_KEY);
-// const polygonSigner = new ethers.Wallet(PRIVATE_KEY, polygonProvider);
-// const polygonContract = new ethers.Contract("0xA1bD683B06b9B7F633cc7A96A9E5f0AE0662C6C4", USDCTransferCengliABI.abi, polygonSigner);
+const polygonProvider = new ethers.JsonRpcProvider(MUMBAI_API_KEY)
+const polygonSigner = new ethers.Wallet(PRIVATE_KEY, polygonProvider);
+const polygonContract = new ethers.Contract("0x040115A44A07636B08368a998f43ECabF52dC1dE", abi, polygonSigner);
 
 export const optimismProvider = new ethers.JsonRpcProvider(OPTIMISM_API_KEY);
 export const optimismSigner = new ethers.Wallet(PRIVATE_KEY, optimismProvider);
@@ -44,7 +44,7 @@ const ChainIds = {
 export const getContractByChain = (chainId) => {
   const contracts = {
     [ChainIds.Goerli]: goerliContract,
-    // [ChainIds.Polygon]: polygonContract,
+    [ChainIds.Polygon]: polygonContract,
     [ChainIds.Avax]: avaxContract,
     [ChainIds.Optimism]: optimismContract,
     [ChainIds.Arbitrum]: arbitrumContract

@@ -11,6 +11,7 @@ datasource db {
 }
 
 model Chain {
+  index                  Int    @default(0)
   chainId                Int    @id
   chainName              String
   rpcUrl                 String
@@ -21,6 +22,7 @@ model Chain {
 
   tokens                   Token[]
   comethSponsoredAddresses ComethSponsoredAddress[]
+  p2pPartners              P2PPartner[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -64,7 +66,7 @@ model Transaction {
 
   note String?
 
-  token Token @relation(fields: [tokenAddress, fromChainId], references: [address, chainId])
+  token Token @relation(fields: [tokenAddress, fromChainId], references: [address, chainId], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -75,6 +77,9 @@ model P2PPartner {
   userId  String @unique
   address String
   name    String @default("Larry Gonzales")
+
+  chainId Int @default(43113)
+  chain Chain @relation(fields: [chainId], references: [chainId], onDelete: Cascade)
 
   balances PartnerBalance[]
   orders   P2POrder[]
@@ -90,7 +95,7 @@ model PartnerBalance {
   amount Float
 
   partner P2PPartner @relation(fields: [partnerId], references: [id], onDelete: Cascade)
-  token   Token      @relation(fields: [tokenId], references: [id])
+  token   Token      @relation(fields: [tokenId], references: [id], onDelete: Cascade)
 
   @@unique([tokenId, partnerId])
 }
@@ -107,7 +112,7 @@ model P2POrder {
   destinationChainId Int
 
   tokenId String
-  token   Token  @relation(fields: [tokenId], references: [id])
+  token   Token  @relation(fields: [tokenId], references: [id], onDelete: Cascade)
 
   amount Float
   status String @default("WFSAC") // WFSAC = waiting for seller to accept, WFBP = Waiting for buyer payment, WFSA = Waiting for seller approval, C = Completed, CB = Cancelled by buyer, CS = Cancelled by seller

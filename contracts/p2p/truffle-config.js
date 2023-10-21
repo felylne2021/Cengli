@@ -18,14 +18,24 @@ module.exports = {
     },
     mumbai: {
       provider: () =>
-        new HDWalletProvider(privateKey, `wss://polygon-mumbai.infura.io/ws/v3/${infuraProjectId}`),
+        new HDWalletProvider(privateKey, `https://rpc.ankr.com/polygon_mumbai`),
       network_id: 80001,
-      confirmations: 4,
+      confirmations: 2,
       timeoutBlocks: 3000,
       networkCheckTimeout: 20000,
       skipDryRun: true,
-      gas: 20000000,
+      gas: 2000000,
     },
+    avax: {
+      provider: () =>
+        new HDWalletProvider(privateKey, `https://rpc.ankr.com/avalanche_fuji`),
+      network_id: 43113,
+      confirmations: 2,
+      timeoutBlocks: 3000,
+      networkCheckTimeout: 20000,
+      skipDryRun: true,
+      // gas: 15000000,
+    }
   },
 
   mocha: {
@@ -35,13 +45,13 @@ module.exports = {
   // Configure your compilers
   compilers: {
     solc: {
-      version: "0.8.21",
-      // settings: {
-      //   optimizer: {
-      //     enabled: true,
-      //     runs: 1000
-      //   }
-      // }
+      version: "0.8.19",
+      settings: {
+        optimizer: {
+          enabled: true,
+          runs: 1000
+        }
+      }
     }
   },
   plugins: [
@@ -49,6 +59,8 @@ module.exports = {
   ],
   api_keys: {
     etherscan: process.env.ETHERSCAN_API_KEY,
-    polygonscan: process.env.POLYGONSCAN_API_KEY
+    polygonscan: process.env.POLYGONSCAN_API_KEY,
+    testnet_snowtrace: process.env.SNOWTRACE_API_KEY,
+    snowtrace: process.env.SNOWTRACE_API_KEY,
   },
 };

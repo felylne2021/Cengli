@@ -9,13 +9,15 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "deploy-goerli": "truffle compile && truffle migrate --network goerli && truffle run verify CengliP2PEscrow --network goerli",
-    "deploy-mock-goerli": "truffle compile && truffle migrate --network goerli && truffle run verify MockERC20 --network goerli",
-    "verify-mock-goerli": "truffle run verify MockERC20 --network goerli"
+    "deploy-avax": "truffle compile && truffle migrate --network avax && truffle run verify CengliP2PEscrow --network avax",
+    "deploy-mumbai": "truffle compile && truffle migrate --network mumbai && truffle run verify CengliP2PEscrow --network mumbai",
+    "verify-mumbai": "truffle run verify CengliP2PEscrow --network mumbai",
+    "verify-avax": "truffle run verify CengliP2PEscrow --network avax"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
     "@openzeppelin/contracts": "^5.0.0",
-    "truffle-plugin-verify": "^0.6.5"
+    "truffle-plugin-verify": "^0.5.33"
   }
 }

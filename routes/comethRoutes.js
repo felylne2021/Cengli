@@ -27,14 +27,17 @@ const getCometh = (chainId = 43113) => {
   }
 
   let apiKey;
+  let apiSecret;
   let rpcUrl;
 
   if (_chainId === 43113) {
     apiKey = process.env.COMETH_AVAX_API_KEY
     rpcUrl = process.env.COMETH_AVAX_RPC_URL
+    apiSecret = process.env.COMETH_AVAX_API_SECRET
   } else if (_chainId === 80001) {
     apiKey = process.env.COMETH_MUMBAI_API_KEY
     rpcUrl = process.env.COMETH_MUMBAI_RPC_URL
+    apiSecret = process.env.COMETH_MUMBAI_SECRET_KEY
   }
 
   const walletAdaptor = new ConnectAdaptor({
@@ -51,7 +54,7 @@ const getCometh = (chainId = 43113) => {
 
   const provider = wallet.getProvider();
 
-  return { adaptor: walletAdaptor, wallet, provider, apiKey, rpcUrl };
+  return { adaptor: walletAdaptor, wallet, provider, apiKey, rpcUrl, apiSecret };
 }
 
 const SafeFactoryContract = (address, provider) => {
@@ -129,7 +132,9 @@ export const comethRoutes = async (server) => {
 
   server.post('/sponsored-address', async (request, reply) => {
     try {
-      const { targetAddress } = request.body
+      const { targetAddress, chainId } = request.body
+
+      const { apiKey, apiSecret } = getCometh(chainId);
 
       // check if address is already sponsored
       const sponsored = await prismaClient.comethSponsoredAddress.findFirst({
@@ -148,7 +153,7 @@ export const comethRoutes = async (server) => {
         method: 'POST',
         url: `${COMETH_API_BASE_URL}/sponsored-address`,
         headers: {
-          apiSecret: process.env.COMETH_API_SECRET
+          apiSecret: apiSecret
         },
         data: {
           targetAddress: targetAddress
@@ -158,12 +163,15 @@ export const comethRoutes = async (server) => {
 
       await prismaClient.comethSponsoredAddress.create({
         data: {
-          chainId: 43113,
+          chainId: parseInt(chainId),
           targetAddress: targetAddress.toLowerCase()
         }
       })
 
-      return reply.code(200).send(createSponsored.data)
+      return reply.code(200).send({
+        data: createSponsored.data,
+        message: `Address ${targetAddress} is sponsored, chainId: ${chainId}`
+      })
     } catch (error) {
       console.error('An error occurred:', error)
       return reply.code(500).send({ message: error })

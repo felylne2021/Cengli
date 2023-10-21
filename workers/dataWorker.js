@@ -12,6 +12,7 @@ export const dataWorker = async (server) => {
         await prismaClient.chain.upsert({
           where: { chainId: chainConfig.chainId },
           update: {
+            index: chainConfig.index,
             chainName: chainConfig.chainName,
             rpcUrl: chainConfig.rpcUrl,
             nativeCurrency: chainConfig.nativeCurrency,
@@ -20,6 +21,7 @@ export const dataWorker = async (server) => {
             hyperlaneBridgeAddress: chainConfig.hyperlaneBridgeAddress
           },
           create: {
+            index: chainConfig.index,
             chainId: chainConfig.chainId,
             chainName: chainConfig.chainName,
             rpcUrl: chainConfig.rpcUrl,
