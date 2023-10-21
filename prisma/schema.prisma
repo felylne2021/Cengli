@@ -74,7 +74,7 @@ model Transaction {
 
 model P2PPartner {
   id      String @id @default(uuid())
-  userId  String @unique
+  userId  String 
   address String
   name    String @default("Larry Gonzales")
 
@@ -86,6 +86,8 @@ model P2PPartner {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([userId, chainId])
 }
 
 model PartnerBalance {
