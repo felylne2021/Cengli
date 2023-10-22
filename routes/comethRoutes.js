@@ -251,14 +251,25 @@ export const comethRoutes = async (server) => {
       const provider = wallet.getProvider();
       const contract = new ethers.Contract(tokenAddress, ERC20ABI, provider);
 
-      console.log({
-        walletAddress,
-        tokenAddress,
-        functionName,
-        args
-      })
+      // console.log({
+      //   walletAddress,
+      //   tokenAddress,
+      //   functionName,
+      //   args
+      // })
 
-      const approveTx = await contract[functionName].populateTransaction(...args, {
+      console.log('contract', contract)
+
+      // Convert float to string representation of its integer form (multiplied by 10^n for n decimals)
+      const newArgs = args.map(arg => {
+        if (typeof arg === "string" && arg.includes('.')) {
+          return parseFloat(arg);
+        }
+        return arg;
+      });
+      
+
+      const approveTx = await contract[functionName].populateTransaction(...newArgs, {
         from: walletAddress,
         value: "0",
         chainId: chainId
@@ -282,6 +293,7 @@ export const comethRoutes = async (server) => {
   const toBytes32 = (address) => {
     return '0x' + address.slice(2).padStart(64, '0');
   };
+  console.log(toBytes32('0x278A2d5B5C8696882d1D2002cE107efc74704ECf'))
 
   server.post('/prepare-usdc-bridge-transfer-tx', async (request, reply) => {
     try {
