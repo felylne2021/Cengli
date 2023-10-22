@@ -34,8 +34,7 @@ export const CHAINS_CONFIGS = [
         priceUsd: 1,
         hyperlaneWarpRoute: {
           bridgeAddress: '0xC39f664Aa28293781C3C2907C172C50cA0596a98',
-          wrappedTokenAddress: '0xF4897D343B80F555535328FEFAb378Ca598721C1',
-          autoswapAddress: '0x232DDeEC9443845D7De95a3380984A0601436A5d'
+          wrappedTokenAddress: '0xF4897D343B80F555535328FEFAb378Ca598721C1'
         }
       },
       {
@@ -46,9 +45,8 @@ export const CHAINS_CONFIGS = [
         logoURI: "https://i.ibb.co/PGC7hK3/CIDR-logo-1.png",
         priceUsd: 1,
         hyperlaneWarpRoute: {
-          bridgeAddress: '0x...',
-          wrappedTokenAddress: '0x...',
-          autoswapAddress: '0x...'
+          bridgeAddress: '0xC39f664Aa28293781C3C2907C172C50cA0596a98',
+          wrappedTokenAddress: '0x...'
         }
       }
     ],
@@ -84,8 +82,19 @@ export const CHAINS_CONFIGS = [
         priceUsd: 1,
         hyperlaneWarpRoute: {
           bridgeAddress: '0xf0b28E28aE68cB563758Fee6062b01250a6916ef',
-          wrappedTokenAddress: '0x02a441b2a9Ddeb3f52855c12d1035aa859F479E7',
-          autoswapAddress: '0x46e5Fa54bEe2fBd132f386abA4d0817dA9517FA4'
+          wrappedTokenAddress: '0x02a441b2a9Ddeb3f52855c12d1035aa859F479E7'
+        }
+      },
+      {
+        address: '0x02a441b2a9Ddeb3f52855c12d1035aa859F479E7',
+        name: 'hypCIDR',
+        symbol: 'hypCIDR',
+        decimals: 18,
+        logoURI: "https://i.ibb.co/PGC7hK3/CIDR-logo-1.png",
+        priceUsd: 1,
+        hyperlaneWarpRoute: {
+          bridgeAddress: '0xf0b28E28aE68cB563758Fee6062b01250a6916ef',
+          wrappedTokenAddress: '0x...'
         }
       }
     ],

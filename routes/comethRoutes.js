@@ -386,7 +386,7 @@ export const comethRoutes = async (server) => {
         }
       })
 
-      if (!token || token.hyperlaneRoute?.bridgeAddress === null) {
+      if (!token || token.hyperlaneRoute.bridgeAddress === null) {
         return reply.code(404).send({ message: 'Token not found' });
       }
 

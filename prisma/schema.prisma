@@ -60,7 +60,7 @@ model HyperlaneWarpRoute {
 
   bridgeAddress       String
   wrappedTokenAddress String
-  autoswapAddress     String
+  // autoswapAddress     String
 
   chainId Int
   chain   Chain @relation(fields: [chainId], references: [chainId], onDelete: Cascade)

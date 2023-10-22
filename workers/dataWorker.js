@@ -72,13 +72,11 @@ export const dataWorker = async (server) => {
                 chainId: chainConfig.chainId,
                 tokenAddress: token.address,
                 bridgeAddress: token.hyperlaneWarpRoute.bridgeAddress,
-                wrappedTokenAddress: token.hyperlaneWarpRoute.wrappedTokenAddress,
-                autoswapAddress: token.hyperlaneWarpRoute.autoswapAddress,
+                wrappedTokenAddress: token.hyperlaneWarpRoute.wrappedTokenAddress
               },
               update: {
                 bridgeAddress: token.hyperlaneWarpRoute.bridgeAddress,
-                wrappedTokenAddress: token.hyperlaneWarpRoute.wrappedTokenAddress,
-                autoswapAddress: token.hyperlaneWarpRoute.autoswapAddress,
+                wrappedTokenAddress: token.hyperlaneWarpRoute.wrappedTokenAddress
               }
             })
           }
