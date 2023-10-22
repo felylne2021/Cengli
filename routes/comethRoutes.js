@@ -67,14 +67,13 @@ const SafeFactoryContract = (address, provider) => {
 
 const getUserNonce = async (address, provider) => {
   try {
-    const genNonce = customAlphabet('1234567890', 8)
-    return genNonce()
+    // const genNonce = customAlphabet('1234567890', 8)
+    // return genNonce()
 
+    const nonce = Number(await SafeFactoryContract(address, provider).getFunction('nonce')())
+    console.log('nonce', nonce)
 
-    // const nonce = Number(await SafeFactoryContract(address, provider).getFunction('nonce')())
-    // console.log('nonce', nonce)
-
-    // return nonce.toString()
+    return nonce.toString()
   } catch (error) {
     // can error if address have not created a safe yet
     console.error('getUserNonce error, address have not created a safe yet', error)
@@ -95,7 +94,7 @@ export const comethRoutes = async (server) => {
     }
   }
 
-  const generateToBeSignedTransaction = async (safeTxDataTyped, walletAddress, provider) => {
+  const generateToBeSignedTransaction = async (safeTxDataTyped, walletAddress, provider, increment) => {
     const toBeSignedTransaction = {
       domain: {
         chainId: 43113,
