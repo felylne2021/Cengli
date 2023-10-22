@@ -37,7 +37,7 @@
     "ethers6": "npm:ethers@^6.8.0",
     "fastify": "^4.24.0",
     "markdown-it": "^13.0.2",
-    "nanoid": "^5.0.1",
+    "nanoid": "^5.0.2",
     "node-cron": "^3.0.2",
     "react-is": "^18.2.0",
     "truffle-plugin-verify": "^0.6.5"

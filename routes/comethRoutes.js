@@ -5,6 +5,7 @@ import {
 } from "@cometh/connect-sdk"
 import axios from "axios"
 import { ethers } from "ethers6"
+import { nanoid, customAlphabet } from "nanoid"
 
 import { estimateSafeTxGas } from "../utils/web3/comethHelpers.js"
 
@@ -66,10 +67,14 @@ const SafeFactoryContract = (address, provider) => {
 
 const getUserNonce = async (address, provider) => {
   try {
-    const nonce = Number(await SafeFactoryContract(address, provider).getFunction('nonce')())
-    console.log('nonce', nonce)
+    const genNonce = customAlphabet('1234567890', 8)
+    return genNonce()
 
-    return nonce.toString()
+
+    // const nonce = Number(await SafeFactoryContract(address, provider).getFunction('nonce')())
+    // console.log('nonce', nonce)
+
+    // return nonce.toString()
   } catch (error) {
     // can error if address have not created a safe yet
     console.error('getUserNonce error, address have not created a safe yet', error)
