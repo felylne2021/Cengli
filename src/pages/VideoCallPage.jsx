@@ -76,7 +76,7 @@ export const VideoCall = ({
           Start KYC Session
         </button>
 
-        <div className='flex flex-col max-w-[12rem] text-center break-all text-xs mt-10'>
+        {/* <div className='flex flex-col max-w-[12rem] text-center break-all text-xs mt-10'>
           <p>
             recipientAddress:<br /> {adminAddress}
           </p>
@@ -84,7 +84,7 @@ export const VideoCall = ({
           <p>
             chatId:<br /> {chatId}
           </p>
-        </div>
+        </div> */}
       </div>
     )
   }
@@ -138,7 +138,7 @@ export const VideoCall = ({
               </button>
 
               {/* Change Cameras */}
-              <button className='btn btn-white aspect-square w-[3rem] h-[3rem] rounded-full hidden'>
+              <button className='btn btn-white aspect-square w-[3rem] h-[3rem] rounded-full opacity-0 pointer-events-none'>
                 Yee
               </button>
             </div>

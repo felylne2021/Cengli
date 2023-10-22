@@ -104,7 +104,7 @@ export default function AdminVideoCallPage() {
               </button>
 
               {/* Change Cameras */}
-              <button className='btn btn-white aspect-square w-[3rem] h-[3rem] rounded-full hidden'>
+              <button className='btn btn-white aspect-square w-[3rem] h-[3rem] rounded-full opacity-0 pointer-events-none'>
                 Yee
               </button>
             </div>
