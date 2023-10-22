@@ -146,6 +146,8 @@ export const transferRoutes = async (server) => {
         }
       })
 
+      delete fromBridge.token;
+
       return reply.code(200).send({
         ...fromBridge,
         destinationWrappedTokenAddress: destination?.wrappedTokenAddress
