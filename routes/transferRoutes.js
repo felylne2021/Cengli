@@ -148,7 +148,7 @@ export const transferRoutes = async (server) => {
 
       return reply.code(200).send({
         ...fromBridge,
-        destinationTokenAddress: destination.tokenAddress
+        destinationWrappedTokenAddress: destination?.wrappedTokenAddress
       });
     } catch (error) {
       console.log('Error getting bridge address: ', error);
