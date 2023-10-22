@@ -8,6 +8,7 @@ import 'package:cengli/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:kinetix/kinetix.dart';
 
 import '../../values/values.dart';
@@ -31,7 +32,7 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
   @override
   void initState() {
     super.initState();
-    tokenController.text = "USDC";
+    tokenController.text = "CIDR";
   }
 
   @override
@@ -113,8 +114,8 @@ class _CreateGroupPageState extends State<CreateGroupPage> {
           controller: tokenController,
           title: "Accepted Token",
           hint: "",
-          prefix: Image.asset(
-            IC_USDC,
+          prefix: SvgPicture.asset(
+            IC_CIDR,
             width: 24,
           ).padding(const EdgeInsets.only(left: 16, right: 12)),
           isEnabled: false,

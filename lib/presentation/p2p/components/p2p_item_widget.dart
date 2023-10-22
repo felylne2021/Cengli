@@ -4,8 +4,15 @@ import 'package:kinetix/kinetix.dart';
 class P2pItemWidget extends StatelessWidget {
   final String name;
   final String quantity;
+  final String image;
+  final String chainName;
 
-  const P2pItemWidget({super.key, required this.name, required this.quantity});
+  const P2pItemWidget(
+      {super.key,
+      required this.name,
+      required this.quantity,
+      required this.image,
+      required this.chainName});
 
   @override
   Widget build(BuildContext context) {
@@ -13,24 +20,48 @@ class P2pItemWidget extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         18.0.height,
-        Text(
-          name,
-          style: KxTypography(
-              type: KxFontType.subtitle4, color: KxColors.neutral700),
-        ).padding(const EdgeInsets.symmetric(horizontal: 16)),
-        4.0.height,
         Row(
           children: [
-            Text(
-              "Quantity",
-              style: KxTypography(
-                  type: KxFontType.fieldText3, color: KxColors.neutral500),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  name,
+                  style: KxTypography(
+                      type: KxFontType.subtitle4, color: KxColors.neutral700),
+                ),
+                4.0.height,
+                Row(
+                  children: [
+                    Text(
+                      "Quantity",
+                      style: KxTypography(
+                          type: KxFontType.fieldText3,
+                          color: KxColors.neutral500),
+                    ),
+                    2.0.width,
+                    Text(
+                      quantity,
+                      style: KxTypography(
+                          type: KxFontType.buttonSmall,
+                          color: KxColors.neutral600),
+                    ),
+                  ],
+                ),
+              ],
             ),
-            2.0.width,
+            const Spacer(),
+            Container(
+              width: 24,
+              height: 24,
+              decoration: const BoxDecoration(shape: BoxShape.circle),
+              child: Image.network(image),
+            ),
+            4.0.width,
             Text(
-              quantity,
+              chainName,
               style: KxTypography(
-                  type: KxFontType.buttonSmall, color: KxColors.neutral600),
+                  type: KxFontType.body2, color: KxColors.neutral700),
             ),
           ],
         ).padding(const EdgeInsets.symmetric(horizontal: 16)),

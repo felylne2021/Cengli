@@ -13,5 +13,6 @@ void injectTransferModule() {
   locator.registerSingleton(TransferApi(locator.get()));
   locator.registerSingleton<TransferRemoteRepository>(
       TransferRemoteDataStore(locator.get(), locator.get()));
-  locator.registerSingleton(TransferBloc(locator.get(), locator.get()));
+  locator.registerSingleton(
+      TransferBloc(locator.get(), locator.get(), locator.get()));
 }

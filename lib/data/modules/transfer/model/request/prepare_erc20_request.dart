@@ -13,6 +13,9 @@ class PrepareErc20Request extends Equatable {
 
   @JsonKey(name: 'functionName')
   final String? functionName;
+  
+  @JsonKey(name: 'chainId')
+  final int? chainId;
 
   @JsonKey(name: 'args')
   final List<String>? args;
@@ -21,6 +24,7 @@ class PrepareErc20Request extends Equatable {
       {this.walletAddress,
       this.tokenAddress,
       this.functionName,
+      this.chainId,
       this.args});
 
   @override
@@ -28,6 +32,7 @@ class PrepareErc20Request extends Equatable {
         walletAddress,
         tokenAddress,
         functionName,
+        chainId,
         args
       ];
 

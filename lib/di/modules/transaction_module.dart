@@ -10,5 +10,5 @@ void injectTransactionModule() {
       TransactionalLocalDataStore(locator.get()));
   locator.registerSingleton<TransactionalRemoteRepository>(
       TransactionalDataStore(locator.get(), locator.get()));
-  locator.registerSingleton(TransactionalBloc(locator.get(), locator.get()));
+  locator.registerSingleton(TransactionalBloc(locator.get(), locator.get(), locator.get()));
 }

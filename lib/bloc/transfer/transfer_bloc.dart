@@ -1,4 +1,5 @@
 import 'package:bloc_concurrency/bloc_concurrency.dart';
+import 'package:cengli/data/modules/membership/membership_remote_repository.dart';
 import 'package:cengli/data/modules/transactional/transactional_remote_repository.dart';
 import 'package:cengli/data/modules/transfer/model/request/create_order_request.dart';
 import 'package:cengli/data/modules/transfer/transfer_remote_repository.dart';
@@ -8,6 +9,8 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:velix/velix.dart';
 import 'package:ethers/signers/wallet.dart' as ethers;
 
+import '../../data/modules/membership/model/request/notification_payload_request.dart';
+import '../../data/modules/membership/model/request/send_notif_request.dart';
 import '../../data/modules/transactional/model/group.dart';
 import '../../data/utils/collection_util.dart';
 import '../../presentation/p2p/order_detail_page.dart';
@@ -17,12 +20,14 @@ import 'transfer.dart';
 class TransferBloc extends Bloc<TransferEvent, TransferState> {
   final TransferRemoteRepository _transferRemoteRepository;
   final TransactionalRemoteRepository _transactionalRemoteRepository;
+  final MembershipRemoteRepository _membershipRemoteRepository;
 
-  TransferBloc(
-      this._transferRemoteRepository, this._transactionalRemoteRepository)
+  TransferBloc(this._transferRemoteRepository,
+      this._transactionalRemoteRepository, this._membershipRemoteRepository)
       : super(const TransferInitiateState()) {
     on<GetAssetsEvent>(_onGetAssets, transformer: sequential());
     on<GetChainsEvent>(_onGetChains, transformer: sequential());
+    on<GetReceiverChainsEvent>(_onGetReceiverChains, transformer: sequential());
     on<GetTransactionsEvent>(_onGetTransactions, transformer: sequential());
     on<CreateGroupP2pEvent>(_onCreateGroupP2p, transformer: sequential());
     on<GetOrderEvent>(_onGetOrder, transformer: sequential());
@@ -33,7 +38,10 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
         transformer: sequential());
     on<SaveTransactionEvent>(_onSaveTransaction, transformer: sequential());
     on<GetBridgeEvent>(_onGetBridge, transformer: sequential());
-    on<UsdcPrepareTransferEvent>(_onUsdcPrepare, transformer: sequential());
+    on<PrepareBridgeTransferEvent>(_onPrepareBridge, transformer: sequential());
+    on<GetBridgeInfoEvent>(_onGetBridgeInfo, transformer: sequential());
+    on<PrepareUsdcBridgeTransferEvent>(_onPrepareUsdcBridge,
+        transformer: sequential());
   }
 
   Future<void> _onGetAssets(
@@ -47,8 +55,25 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
       emit(GetAssetsSuccessState(assets));
     } on AppException catch (error) {
       emit(GetAssetsErrorState(error.message));
+    } on ApiException catch (error) {
+      emit(GetAssetsErrorState(error.message));
     } catch (error) {
       emit(GetAssetsErrorState(error.toString()));
+    }
+  }
+
+  Future<void> _onGetReceiverChains(
+      GetReceiverChainsEvent event, Emitter<TransferState> emit) async {
+    emit(const GetReceiverChainsLoadingState());
+    try {
+      final chains = await _transferRemoteRepository.getChains();
+      emit(GetReceiverChainsSuccessState(chains));
+    } on AppException catch (error) {
+      emit(GetReceiverChainsErrorState(error.message));
+    } on ApiException catch (error) {
+      emit(GetReceiverChainsErrorState(error.message));
+    } catch (error) {
+      emit(GetReceiverChainsErrorState(error.toString()));
     }
   }
 
@@ -59,6 +84,8 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
       final chains = await _transferRemoteRepository.getChains();
       emit(GetChainsSuccessState(chains));
     } on AppException catch (error) {
+      emit(GetChainsErrorState(error.message));
+    } on ApiException catch (error) {
       emit(GetChainsErrorState(error.message));
     } catch (error) {
       emit(GetChainsErrorState(error.toString()));
@@ -73,6 +100,8 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
           await _transferRemoteRepository.getTransactions(event.userId);
       emit(GetTransactionsSuccessState(transactions));
     } on AppException catch (error) {
+      emit(GetTransactionsErrorState(error.message));
+    } on ApiException catch (error) {
       emit(GetTransactionsErrorState(error.message));
     } catch (error) {
       emit(GetTransactionsErrorState(error.toString()));
@@ -120,10 +149,24 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
 
       await _transactionalRemoteRepository.createGroup(storeGroup);
 
+      // Send notification
+      final members = event.group.members ?? [];
+
+      if (members.contains(walletAddress)) {
+        members.remove(walletAddress);
+      }
+      final targetedMembers = members;
+      _membershipRemoteRepository.sendNotification(SendNotifRequest(
+          walletAddresses: targetedMembers,
+          notificationPayload: const NotificationPayloadRequest(
+              title: "P2P", body: "New Order!", screen: "order")));
+
       emit(CreateGroupP2pSuccessState(
           Feeds(chatId: group?.chatId ?? "", groupInformation: group),
           storeGroup));
     } on AppException catch (error) {
+      emit(CreateGroupP2pErrorState(error.message));
+    } on ApiException catch (error) {
       emit(CreateGroupP2pErrorState(error.message));
     } catch (error) {
       emit(CreateGroupP2pErrorState(error.toString()));
@@ -137,6 +180,8 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
       final order = await _transferRemoteRepository.getOrder(event.orderId);
       emit(GetOrderSuccessState(order));
     } on AppException catch (error) {
+      emit(GetOrderErrorState(error.message));
+    } on ApiException catch (error) {
       emit(GetOrderErrorState(error.message));
     } catch (error) {
       emit(GetOrderErrorState(error.toString()));
@@ -170,6 +215,8 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
           break;
       }
     } on AppException catch (error) {
+      emit(UpdateOrderStatusErrorState(error.message));
+    } on ApiException catch (error) {
       emit(UpdateOrderStatusErrorState(error.message));
     } catch (error) {
       emit(UpdateOrderStatusErrorState(error.toString()));
@@ -241,9 +288,9 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
       GetBridgeEvent event, Emitter<TransferState> emit) async {
     emit(const GetBridgeLoadingState());
     try {
-      final result = await _transferRemoteRepository.getBridge(
-          event.fromChainId, event.destinationChainId);
-      emit(GetBridgeSuccessState(result));
+      final response = await _transferRemoteRepository.getBridgeInfo(
+          event.fromChainId, event.destinationChainId, event.tokenAddress);
+      emit(GetBridgeSuccessState(response));
     } on AppException catch (error) {
       emit(GetBridgeErrorState(error.message));
     } on ApiException catch (error) {
@@ -253,19 +300,51 @@ class TransferBloc extends Bloc<TransferEvent, TransferState> {
     }
   }
 
-  Future<void> _onUsdcPrepare(
-      UsdcPrepareTransferEvent event, Emitter<TransferState> emit) async {
-    emit(const UsdcPrepareLoadingState());
+  Future<void> _onPrepareBridge(
+      PrepareBridgeTransferEvent event, Emitter<TransferState> emit) async {
+    emit(const PrepareBridgeLoadingState());
     try {
       final response =
-          await _transferRemoteRepository.prepareUsdcTx(event.param);
-      emit(UsdcPrepareSuccessState(response));
+          await _transferRemoteRepository.prepareBridgeTx(event.param);
+      emit(PrepareBridgeSuccessState(response));
     } on AppException catch (error) {
-      emit(UsdcPrepareErrorState(error.message));
+      emit(PrepareBridgeErrorState(error.message));
     } on ApiException catch (error) {
-      emit(UsdcPrepareErrorState(error.message));
+      emit(PrepareBridgeErrorState(error.message));
     } catch (error) {
-      emit(UsdcPrepareErrorState(error.toString()));
+      emit(PrepareBridgeErrorState(error.toString()));
+    }
+  }
+
+  Future<void> _onGetBridgeInfo(
+      GetBridgeInfoEvent event, Emitter<TransferState> emit) async {
+    emit(const GetBridgeInfoLoadingState());
+    try {
+      final response = await _transferRemoteRepository.getBridgeInfo(
+          event.fromChainId, event.destinationChainId, event.tokenAddress);
+      emit(GetBridgeInfoSuccessState(response));
+    } on AppException catch (error) {
+      emit(GetBridgeInfoErrorState(error.message));
+    } on ApiException catch (error) {
+      emit(GetBridgeInfoErrorState(error.message));
+    } catch (error) {
+      emit(GetBridgeInfoErrorState(error.toString()));
+    }
+  }
+
+  Future<void> _onPrepareUsdcBridge(
+      PrepareUsdcBridgeTransferEvent event, Emitter<TransferState> emit) async {
+    emit(const PrepareUsdcBridgeLoadingState());
+    try {
+      final response =
+          await _transferRemoteRepository.prepareUsdcBridgeTx(event.param);
+      emit(PrepareUsdcBridgeSuccessState(response));
+    } on AppException catch (error) {
+      emit(PrepareUsdcBridgeErrorState(error.message));
+    } on ApiException catch (error) {
+      emit(PrepareUsdcBridgeErrorState(error.message));
+    } catch (error) {
+      emit(PrepareUsdcBridgeErrorState(error.toString()));
     }
   }
 }

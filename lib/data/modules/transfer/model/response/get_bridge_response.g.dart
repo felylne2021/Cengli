@@ -8,12 +8,18 @@ part of 'get_bridge_response.dart';
 
 GetBridgeResponse _$GetBridgeResponseFromJson(Map<String, dynamic> json) =>
     GetBridgeResponse(
-      fromBridgeAddress: json['fromBridgeAddress'] as String?,
-      destinationBridgeAddress: json['destinationBridgeAddress'] as String?,
+      id: json['id'] as String?,
+      bridgeAddress: json['bridgeAddress'] as String?,
+      chainId: json['chainId'] as int?,
+      tokenAddress: json['tokenAddress'] as String?,
+      destinationTokenAddress: json['destinationTokenAddress'] as String?,
     );
 
 Map<String, dynamic> _$GetBridgeResponseToJson(GetBridgeResponse instance) =>
     <String, dynamic>{
-      'fromBridgeAddress': instance.fromBridgeAddress,
-      'destinationBridgeAddress': instance.destinationBridgeAddress,
+      'id': instance.id,
+      'bridgeAddress': instance.bridgeAddress,
+      'chainId': instance.chainId,
+      'tokenAddress': instance.tokenAddress,
+      'destinationTokenAddress': instance.destinationTokenAddress,
     };

@@ -1,6 +1,6 @@
 import 'package:cengli/data/modules/auth/model/request/relay_transaction_request.dart';
+import 'package:cengli/data/utils/collection_util.dart';
 import 'package:velix/base/bloc/base_event.dart';
-
 
 abstract class AuthEvent extends BaseEvent {
   const AuthEvent();
@@ -83,27 +83,41 @@ class GetUserDataEvent extends AuthEvent {
 
 class RelayTransactionEvent extends AuthEvent {
   final RelayTransactionRequest param;
+  final ComethNetworkEnum network;
 
-  const RelayTransactionEvent(this.param);
+  const RelayTransactionEvent(this.param, this.network);
 
   @override
-  List<Object?> get props => [param];
+  List<Object?> get props => [param, network];
 }
 
 class RelayApproveTransactionEvent extends AuthEvent {
   final RelayTransactionRequest param;
+  final ComethNetworkEnum network;
 
-  const RelayApproveTransactionEvent(this.param);
+  const RelayApproveTransactionEvent(this.param, this.network);
 
   @override
-  List<Object?> get props => [param];
+  List<Object?> get props => [param, network];
 }
+
+class RelayDestinationTransactionEvent extends AuthEvent {
+  final RelayTransactionRequest param;
+  final ComethNetworkEnum network;
+
+  const RelayDestinationTransactionEvent(this.param, this.network);
+
+  @override
+  List<Object?> get props => [param, network];
+}
+
 
 class RelayCrossTransactionEvent extends AuthEvent {
   final RelayTransactionRequest param;
+  final ComethNetworkEnum network;
 
-  const RelayCrossTransactionEvent(this.param);
+  const RelayCrossTransactionEvent(this.param, this.network);
 
   @override
-  List<Object?> get props => [param];
+  List<Object?> get props => [param, network];
 }

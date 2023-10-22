@@ -11,3 +11,4 @@ export 'state/check_username_state.dart';
 export 'state/relay_transaction_state.dart';
 export 'state/relay_approve_state.dart';
 export 'state/relay_cross_state.dart';
+export 'state/relay_destination_state.dart';

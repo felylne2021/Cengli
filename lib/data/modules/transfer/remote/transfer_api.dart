@@ -2,9 +2,10 @@ import 'package:cengli/data/modules/transfer/model/request/create_order_request.
 import 'package:cengli/data/modules/transfer/model/request/prepare_erc20_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/prepare_tx_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/transfer_request.dart';
-import 'package:cengli/data/modules/transfer/model/request/usdc_prepare_request.dart';
+import 'package:cengli/data/modules/transfer/model/request/prepare_bridge_request.dart';
 import 'package:cengli/data/modules/transfer/model/response/assets_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/chain_response.dart';
+import 'package:cengli/data/modules/transfer/model/response/get_bridge_info_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/get_bridge_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/order_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/get_partners_response.dart';
@@ -88,12 +89,24 @@ class TransferApi implements TransferApiClient {
   }
 
   @override
-  Future<GetBridgeResponse> getBridge(int fromChainId, int destinationChainId) {
-    return _apiClient.getBridge(fromChainId, destinationChainId);
+  Future<GetBridgeResponse> getBridge(int fromChainId, String tokenAddress) {
+    return _apiClient.getBridge(fromChainId, tokenAddress);
   }
 
   @override
-  Future<String> prepareUsdcTx(UsdcPrepareRequest param) {
-    return _apiClient.prepareUsdcTx(param);
+  Future<String> prepareBridgeTx(PrepareBridgeRequest param) {
+    return _apiClient.prepareBridgeTx(param);
+  }
+
+  @override
+  Future<GetBridgeInfoResponse> getBridgeInfo(
+      int fromChainId, int destinationChainId, String tokenAddress) {
+    return _apiClient.getBridgeInfo(
+        fromChainId, destinationChainId, tokenAddress);
+  }
+
+  @override
+  Future<String> prepareUsdcBridgeTx(PrepareBridgeRequest param) {
+    return _apiClient.prepareUsdcBridgeTx(param);
   }
 }

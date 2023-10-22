@@ -19,10 +19,14 @@ class _AuthApiClient implements AuthApiClient {
   String? baseUrl;
 
   @override
-  Future<CreateWalletResponse> createWallet(param) async {
+  Future<CreateWalletResponse> createWallet(
+    param,
+    apiKey,
+  ) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{};
+    final _headers = <String, dynamic>{r'apikey': apiKey};
+    _headers.removeWhere((k, v) => v == null);
     final _data = <String, dynamic>{};
     _data.addAll(param.toJson());
     final _result = await _dio.fetch<Map<String, dynamic>>(
@@ -43,10 +47,14 @@ class _AuthApiClient implements AuthApiClient {
   }
 
   @override
-  Future<SignerAddressResponse> getPredictWalletAddress(param) async {
+  Future<SignerAddressResponse> getPredictWalletAddress(
+    param,
+    apiKey,
+  ) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{};
+    final _headers = <String, dynamic>{r'apikey': apiKey};
+    _headers.removeWhere((k, v) => v == null);
     final _data = <String, dynamic>{};
     _data.addAll(param.toJson());
     final _result = await _dio.fetch<Map<String, dynamic>>(
@@ -67,10 +75,14 @@ class _AuthApiClient implements AuthApiClient {
   }
 
   @override
-  Future<CreateWalletResponse> getWalletAddress(ownerAddress) async {
+  Future<CreateWalletResponse> getWalletAddress(
+    ownerAddress,
+    apiKey,
+  ) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{};
+    final _headers = <String, dynamic>{r'apikey': apiKey};
+    _headers.removeWhere((k, v) => v == null);
     final _data = <String, dynamic>{};
     final _result = await _dio.fetch<Map<String, dynamic>>(
         _setStreamType<CreateWalletResponse>(Options(
@@ -93,10 +105,12 @@ class _AuthApiClient implements AuthApiClient {
   Future<RelayTransactionResponse> relayTransaction(
     walletAddress,
     param,
+    apiKey,
   ) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
-    final _headers = <String, dynamic>{};
+    final _headers = <String, dynamic>{r'apikey': apiKey};
+    _headers.removeWhere((k, v) => v == null);
     final _data = <String, dynamic>{};
     _data.addAll(param.toJson());
     final _result = await _dio.fetch<Map<String, dynamic>>(

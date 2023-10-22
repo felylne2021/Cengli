@@ -11,15 +11,18 @@ class Constant {
       ? "com.cengli.iosapp.dev"
       : "com.cengli.iosapp";
   static const String appStoreId = "6446429674";
-  static const String commethApiKey = "a83131c6-6c56-48d2-bacd-09ad4c24428b";
+  static const String commethAvaxApiKey =
+      "a83131c6-6c56-48d2-bacd-09ad4c24428b";
+  static const String commethPolygonApiKey =
+      "4a6194e8-d56f-4ec3-bc1e-fe821c689dae";
   static const String formatDate = 'dd MMMM yyyy';
   static const String kycBaseUrl =
       "https://cengli-kyc.engowl.studio/video-call?";
 
   static const List<String> profileImages = [
-    "https://firebasestorage.googleapis.com/v0/b/cengli-dev.appspot.com/o/profile-four.png?alt=media&token=800b14d8-cccd-4efb-b97a-d4cd811e61d7&_gl=1*5b6gkl*_ga*MzQ3OTIyOTguMTY5NTA5ODgwMQ..*_ga_CW55HF8NVT*MTY5NzcwMTg4OS4xMDUuMS4xNjk3NzAzODI5LjI3LjAuMA..",
-    "https://firebasestorage.googleapis.com/v0/b/cengli-dev.appspot.com/o/profile-one.png?alt=media&token=ae6f338e-f662-4445-8210-7f1d8404c217&_gl=1*3jj4fr*_ga*MzQ3OTIyOTguMTY5NTA5ODgwMQ..*_ga_CW55HF8NVT*MTY5NzcwMTg4OS4xMDUuMS4xNjk3NzAzODQ3LjkuMC4w",
-    "https://firebasestorage.googleapis.com/v0/b/cengli-dev.appspot.com/o/profile-three.png?alt=media&token=759780f9-080a-4327-8e7a-a31664715bac&_gl=1*10sd3m8*_ga*MzQ3OTIyOTguMTY5NTA5ODgwMQ..*_ga_CW55HF8NVT*MTY5NzcwMTg4OS4xMDUuMS4xNjk3NzAzODYzLjYwLjAuMA..",
-    "https://firebasestorage.googleapis.com/v0/b/cengli-dev.appspot.com/o/profile-two.png?alt=media&token=4958edcd-d796-4f2a-bfde-82836f1451db&_gl=1*12dotqe*_ga*MzQ3OTIyOTguMTY5NTA5ODgwMQ..*_ga_CW55HF8NVT*MTY5NzcwMTg4OS4xMDUuMS4xNjk3NzAzODc2LjQ3LjAuMA.."
+    "https://firebasestorage.googleapis.com/v0/b/cengli-dev.appspot.com/o/img-profile1.png?alt=media&token=e07107ae-fbfa-4480-8c22-39cd1902cf10&_gl=1*rfk8n4*_ga*MzQ3OTIyOTguMTY5NTA5ODgwMQ..*_ga_CW55HF8NVT*MTY5NzkxNDU2MS4xMjUuMS4xNjk3OTE0Njg1LjUyLjAuMA..",
+    "https://firebasestorage.googleapis.com/v0/b/cengli-dev.appspot.com/o/img-profile2.png?alt=media&token=6af67667-998f-4d03-a78d-d643365a8198&_gl=1*i8m2xw*_ga*MzQ3OTIyOTguMTY5NTA5ODgwMQ..*_ga_CW55HF8NVT*MTY5NzkxNDU2MS4xMjUuMS4xNjk3OTE0NzAxLjM2LjAuMA..",
+    "https://firebasestorage.googleapis.com/v0/b/cengli-dev.appspot.com/o/img-profile3.png?alt=media&token=37d4800f-df68-4d72-bbe8-b4f16b8d6c78&_gl=1*mqw8w5*_ga*MzQ3OTIyOTguMTY5NTA5ODgwMQ..*_ga_CW55HF8NVT*MTY5NzkxNDU2MS4xMjUuMS4xNjk3OTE0NzExLjI2LjAuMA..",
+    "https://firebasestorage.googleapis.com/v0/b/cengli-dev.appspot.com/o/img-profile4.png?alt=media&token=bb9dd35d-922c-48d2-8a60-91bd5675ccb8&_gl=1*1c3nk4y*_ga*MzQ3OTIyOTguMTY5NTA5ODgwMQ..*_ga_CW55HF8NVT*MTY5NzkxNDU2MS4xMjUuMS4xNjk3OTE0NzI2LjExLjAuMA.."
   ];
 }

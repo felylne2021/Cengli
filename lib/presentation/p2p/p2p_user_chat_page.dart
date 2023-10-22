@@ -57,7 +57,8 @@ class _ChatePageState extends ConsumerState<P2pUserChatPage> {
           ).padding(const EdgeInsets.symmetric(horizontal: 60));
         }
 
-        return Column(
+        return SingleChildScrollView(
+            child: Column(
           children: List.generate(spaces.length, (index) {
             final item = spaces[index];
             final image =
@@ -92,7 +93,7 @@ class _ChatePageState extends ConsumerState<P2pUserChatPage> {
               ),
             );
           }),
-        ).padding(const EdgeInsets.only(top: 24));
+        ).padding(const EdgeInsets.only(top: 24)));
       },
     );
   }

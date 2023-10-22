@@ -1,9 +1,10 @@
 import 'package:cengli/data/modules/transfer/model/request/create_order_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/prepare_tx_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/transfer_request.dart';
-import 'package:cengli/data/modules/transfer/model/request/usdc_prepare_request.dart';
+import 'package:cengli/data/modules/transfer/model/request/prepare_bridge_request.dart';
 import 'package:cengli/data/modules/transfer/model/response/assets_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/chain_response.dart';
+import 'package:cengli/data/modules/transfer/model/response/get_bridge_info_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/get_bridge_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/order_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/get_partners_response.dart';
@@ -28,6 +29,9 @@ abstract class TransferRemoteRepository {
   Future<UpdateOrderResponse> fundOrder(String orderId, String callerUserId);
   Future<String> prepareTx(PrepareErc20Request param);
   Future<TransactionDataResponse> prepareComethTx(PrepareTxRequest param);
-  Future<GetBridgeResponse> getBridge(int fromChainId, int destinationChainId);
-  Future<String> prepareUsdcTx(UsdcPrepareRequest param);
+  Future<GetBridgeResponse> getBridge(int fromChainId, String tokenAddress);
+  Future<String> prepareBridgeTx(PrepareBridgeRequest param);
+  Future<GetBridgeInfoResponse> getBridgeInfo(
+      int fromChainId, int destinationChainId, String tokenAddress);
+  Future<String> prepareUsdcBridgeTx(PrepareBridgeRequest param);
 }

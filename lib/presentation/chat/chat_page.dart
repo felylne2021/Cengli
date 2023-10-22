@@ -182,6 +182,7 @@ class _ChatePageState extends ConsumerState<ChatPage> {
                             .map((value) => pCAIP10ToWallet(value.wallet))
                             .toList() ??
                         []);
+                    ref.read(chatRoomProvider).setIsp2p(false);
                     Navigator.of(context).pushNamed(ChatRoomPage.routeName,
                         arguments: ChatRoomArgument(item));
                   },

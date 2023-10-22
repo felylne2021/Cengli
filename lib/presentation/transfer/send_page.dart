@@ -1,7 +1,6 @@
 import 'package:cengli/presentation/group/components/user_item_widget.dart';
 import 'package:cengli/presentation/reusable/appbar/custom_appbar.dart';
 import 'package:cengli/presentation/transfer/send_detail_page.dart';
-import 'package:cengli/services/push_protocol/push_restapi_dart.dart' as push;
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -64,7 +63,11 @@ class _SendPageState extends State<SendPage> {
           isValid.value = true;
         } else if (state is SearchUserErrorState) {
           userProfile.value = const UserProfile();
-          isValid.value = false;
+          if (!controller.text.startsWith('0x')) {
+            isValid.value = false;
+          } else {
+            isValid.value = true;
+          }
         }
       }), child: LayoutBuilder(
         builder: (_, constraints) {
@@ -152,13 +155,18 @@ class _SendPageState extends State<SendPage> {
                                   onPressed: () => Navigator.of(context)
                                       .pushNamed(SendDetailPage.routeName,
                                           arguments: SendArgument(
-                                              widget.argument.senderChain,
-                                              widget.argument.senderChain,
-                                              widget.argument.selectedAsset,
-                                              widget.argument.assets,
-                                              widget.argument.chains,
-                                              userProfile.value,
-                                              1)),
+                                            widget.argument.senderChain,
+                                            widget.argument.senderChain,
+                                            widget.argument.selectedAsset,
+                                            widget.argument.assets,
+                                            userProfile.value ==
+                                                    const UserProfile()
+                                                ? UserProfile(
+                                                    walletAddress:
+                                                        controller.text)
+                                                : userProfile.value,
+                                            1,
+                                          )),
                                   buttonText: "Transfer",
                                   buttonColor: primaryGreen600,
                                   buttonTextStyle: KxTypography(
@@ -184,19 +192,33 @@ class _SendPageState extends State<SendPage> {
 
   _validate(String value) {
     if (value.startsWith("0x")) {
-      if (push.isValidETHAddress(value)) {
+      if (isETHAddress(value)) {
         isValidEth = true;
         isUsername = false;
         isValid.value = true;
         _searchUser(false);
       } else {
+        debugPrint("not valid");
         isValid.value = false;
       }
     } else {
+      debugPrint("not valid start");
       isValidEth = false;
       isUsername = true;
       _searchUser(true);
     }
+  }
+
+  bool isETHAddress(String address) {
+    if (!address.startsWith('0x')) {
+      return false;
+    }
+    if (address.length != 42) {
+      return false;
+    }
+
+    final validChars = RegExp(r'^[0-9a-fA-F]{40}$');
+    return validChars.hasMatch(address.substring(2));
   }
 
   _searchUser(bool isUsername) {

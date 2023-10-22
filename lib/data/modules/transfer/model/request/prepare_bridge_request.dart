@@ -1,28 +1,32 @@
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 
-part 'usdc_prepare_request.g.dart';
+part 'prepare_bridge_request.g.dart';
 
 @JsonSerializable()
-class UsdcPrepareRequest extends Equatable {
+class PrepareBridgeRequest extends Equatable {
   @JsonKey(name: 'walletAddress')
   final String? walletAddress;
 
   @JsonKey(name: 'recipientAddress')
   final String? recipientAddress;
 
+  @JsonKey(name: 'tokenAddress')
+  final String? tokenAddress;
+
   @JsonKey(name: 'fromChainId')
   final int? fromChainId;
 
-   @JsonKey(name: 'destinationChainId')
+  @JsonKey(name: 'destinationChainId')
   final int? destinationChainId;
 
-    @JsonKey(name: 'amount')
-  final int? amount;
+  @JsonKey(name: 'amount')
+  final String? amount;
 
-  const UsdcPrepareRequest(
+  const PrepareBridgeRequest(
       {this.walletAddress,
       this.recipientAddress,
+      this.tokenAddress,
       this.fromChainId,
       this.destinationChainId,
       this.amount});
@@ -31,13 +35,14 @@ class UsdcPrepareRequest extends Equatable {
   List<Object?> get props => [
         walletAddress,
         recipientAddress,
+        tokenAddress,
         fromChainId,
         destinationChainId,
         amount
       ];
 
-  Map<String, dynamic> toJson() => _$UsdcPrepareRequestToJson(this);
+  Map<String, dynamic> toJson() => _$PrepareBridgeRequestToJson(this);
 
-  factory UsdcPrepareRequest.fromJson(Map<String, dynamic> json) =>
-      _$UsdcPrepareRequestFromJson(json);
+  factory PrepareBridgeRequest.fromJson(Map<String, dynamic> json) =>
+      _$PrepareBridgeRequestFromJson(json);
 }

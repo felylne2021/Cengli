@@ -1,5 +1,6 @@
 import 'package:bloc_concurrency/bloc_concurrency.dart';
 import 'package:cengli/bloc/transactional/state_remote/fetch_charges_store_state.dart';
+import 'package:cengli/data/modules/membership/membership_remote_repository.dart';
 import 'package:cengli/data/modules/transactional/model/group.dart';
 import 'package:cengli/data/modules/transactional/transactional_local_repository.dart';
 import 'package:cengli/data/modules/transactional/transactional_remote_repository.dart';
@@ -9,15 +10,18 @@ import 'package:cengli/services/push_protocol/push_restapi_dart.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:velix/velix.dart';
 import 'package:ethers/signers/wallet.dart' as ethers;
+import '../../data/modules/membership/model/request/notification_payload_request.dart';
+import '../../data/modules/membership/model/request/send_notif_request.dart';
 import '../../services/services.dart';
 import 'transactional.dart';
 
 class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
   final TransactionalLocalRepository _transactionalLocalRepository;
   final TransactionalRemoteRepository _transactionRepository;
+  final MembershipRemoteRepository _membershipRemoteRepository;
 
-  TransactionalBloc(
-      this._transactionalLocalRepository, this._transactionRepository)
+  TransactionalBloc(this._transactionalLocalRepository,
+      this._transactionRepository, this._membershipRemoteRepository)
       : super(const TransactionalInitiateState()) {
     //Remote
     on<CreateGroupStoreEvent>(_createGroupStore, transformer: sequential());
@@ -43,6 +47,7 @@ class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
     try {
       final walletAddress = await SessionService.getWalletAddress();
       final privateKey = await SessionService.getPrivateKey(walletAddress);
+      final username = await SessionService.getUsername();
 
       final group = await createGroup(
           groupName: event.group.name ?? "",
@@ -52,7 +57,7 @@ class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
           groupDescription: event.group.groupDescription ?? "",
           members: event.group.members ?? [],
           admins: [],
-          isPublic: false);
+          isPublic: true);
 
       final storeGroup = Group(
           id: group?.chatId ?? "",
@@ -61,10 +66,27 @@ class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
           members: event.group.members ?? [],
           groupType: GroupTypeEnum.general.name);
 
+
+      // Send notification
+      final members = event.group.members ?? [];
+
+      if (members.contains(walletAddress)) {
+        members.remove(walletAddress);
+      }
+      final targetedMembers = members;
+      _membershipRemoteRepository.sendNotification(SendNotifRequest(
+          walletAddresses: targetedMembers,
+          notificationPayload: NotificationPayloadRequest(
+              title: group?.groupName ?? "",
+              body: "$username invite you to join the group",
+              screen: "chat")));
+
       await _transactionRepository.createGroup(storeGroup);
 
       emit(CreateGroupStoreSuccessState(storeGroup));
     } on AppException catch (error) {
+      emit(CreateGroupStoreErrorState(error.message));
+    } on ApiException catch (error) {
       emit(CreateGroupStoreErrorState(error.message));
     } catch (error) {
       emit(CreateGroupStoreErrorState(error.toString()));
@@ -78,6 +100,8 @@ class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
       final groups = await _transactionRepository.getGroups(event.userId);
       emit(FetchGroupsStoreSuccessState(groups));
     } on AppException catch (error) {
+      emit(FetchGroupsStoreErrorState(error.message));
+    } on ApiException catch (error) {
       emit(FetchGroupsStoreErrorState(error.message));
     } catch (error) {
       emit(FetchGroupsStoreErrorState(error.toString()));
@@ -93,6 +117,8 @@ class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
       emit(const CreateExpenseStoreSuccessState());
     } on AppException catch (error) {
       emit(CreateExpenseStoreErrorState(error.message));
+    } on ApiException catch (error) {
+      emit(CreateExpenseStoreErrorState(error.message));
     } catch (error) {
       emit(CreateExpenseStoreErrorState(error.toString()));
     }
@@ -105,6 +131,8 @@ class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
       final groups = await _transactionRepository.getExpenses(event.groupId);
       emit(FetchExpensesStoreSuccessState(groups));
     } on AppException catch (error) {
+      emit(FetchExpensesStoreErrorState(error.message));
+    } on ApiException catch (error) {
       emit(FetchExpensesStoreErrorState(error.message));
     } catch (error) {
       emit(FetchExpensesStoreErrorState(error.toString()));
@@ -119,6 +147,8 @@ class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
       emit(const MigrateDataSuccessState());
     } on AppException catch (error) {
       emit(MigrateDataErrorState(error.message));
+    } on ApiException catch (error) {
+      emit(MigrateDataErrorState(error.message));
     } catch (error) {
       emit(MigrateDataErrorState(error.toString()));
     }
@@ -131,6 +161,8 @@ class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
       await _transactionRepository.joinGroup(event.groupId, event.userId);
       emit(const JoinGroupSuccessState());
     } on AppException catch (error) {
+      emit(JoinGroupErrorState(error.message));
+    } on ApiException catch (error) {
       emit(JoinGroupErrorState(error.message));
     } catch (error) {
       emit(JoinGroupErrorState(error.toString()));
@@ -162,6 +194,8 @@ class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
       emit(const CreateGroupSuccessState());
     } on AppException catch (error) {
       emit(CreateGroupErrorState(error.message));
+    } on ApiException catch (error) {
+      emit(CreateGroupErrorState(error.message));
     } catch (error) {
       emit(CreateGroupErrorState(error.toString()));
     }
@@ -174,6 +208,8 @@ class TransactionalBloc extends Bloc<TransactionalEvent, TransactionalState> {
       final groups = await _transactionalLocalRepository.getGroups();
       emit(FetchGroupsSuccessState(groups));
     } on AppException catch (error) {
+      emit(FetchGroupsErrorState(error.message));
+    } on ApiException catch (error) {
       emit(FetchGroupsErrorState(error.message));
     } catch (error) {
       emit(FetchGroupsErrorState(error.toString()));

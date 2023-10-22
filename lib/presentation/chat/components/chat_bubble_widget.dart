@@ -1,5 +1,6 @@
 import 'package:cengli/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
 import 'package:kinetix/kinetix.dart';
 
 class ChatBubbleWidget extends StatelessWidget {
@@ -66,7 +67,7 @@ class ChatBubbleWidget extends StatelessWidget {
               ],
             ),
             6.0.height,
-            Text(
+            SelectableText(
               message,
               style: KxTypography(
                   type: KxFontType.fieldText1, color: KxColors.neutral700),

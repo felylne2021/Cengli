@@ -16,6 +16,7 @@ const String IMG_TOPUP = _IMAGE_PATH + 'img-topup.png';
 const String IMG_EMPTY_CHAT = _IMAGE_PATH + 'img-empty-chat.png';
 const String IMG_SUCCESS = _IMAGE_PATH + 'img-success.png';
 const String IMG_EMPTY_GROUP = _IMAGE_PATH + 'img-empty-group.png';
+const String IMG_GROUP = _IMAGE_PATH + 'img-group.png';
 
 //* ICONS
 const String IC_WALLET = _ICON_PATH + 'ic-wallet.svg';
@@ -46,6 +47,9 @@ const String IC_P2P = _ICON_PATH + 'ic-p2p.svg';
 const String IC_CENGLI_LOGO = _ICON_PATH + 'ic-cengli-logo.svg';
 const String IC_CATEGORY_LOGO = _ICON_PATH + 'ic-category-logo.svg';
 const String IC_TRANSACTION = _ICON_PATH + 'ic-transaction.svg';
+const String IC_CIDR = _ICON_PATH + 'ic-cidr.svg';
+const String IC_DEPOSIT = _ICON_PATH + 'ic-deposit.svg';
+const String IC_ROUTE = _ICON_PATH + 'ic-route.svg';
 
 // CATEGORIES
 const String IC_CATEGORY = _ICON_PATH + 'ic-category';

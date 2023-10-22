@@ -2,9 +2,10 @@ import 'package:cengli/data/modules/transfer/model/request/create_order_request.
 import 'package:cengli/data/modules/transfer/model/request/prepare_erc20_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/prepare_tx_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/transfer_request.dart';
-import 'package:cengli/data/modules/transfer/model/request/usdc_prepare_request.dart';
+import 'package:cengli/data/modules/transfer/model/request/prepare_bridge_request.dart';
 import 'package:cengli/data/modules/transfer/model/response/assets_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/chain_response.dart';
+import 'package:cengli/data/modules/transfer/model/response/get_bridge_info_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/get_bridge_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/order_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/get_partners_response.dart';
@@ -126,17 +127,32 @@ class TransferRemoteDataStore extends TransferRemoteRepository {
 
   @override
   Future<GetBridgeResponse> getBridge(
-      int fromChainId, int destinationChainId) async {
+      int fromChainId, String tokenAddress) async {
+    return await _api.getBridge(fromChainId, tokenAddress).catchError((error) {
+      errorHandler(error);
+    });
+  }
+
+  @override
+  Future<String> prepareBridgeTx(PrepareBridgeRequest param) async {
+    return await _api.prepareBridgeTx(param).catchError((error) {
+      errorHandler(error);
+    });
+  }
+
+  @override
+  Future<GetBridgeInfoResponse> getBridgeInfo(
+      int fromChainId, int destinationChainId, String tokenAddress) async {
     return await _api
-        .getBridge(fromChainId, destinationChainId)
+        .getBridgeInfo(fromChainId, destinationChainId, tokenAddress)
         .catchError((error) {
       errorHandler(error);
     });
   }
 
   @override
-  Future<String> prepareUsdcTx(UsdcPrepareRequest param) async {
-    return await _api.prepareUsdcTx(param).catchError((error) {
+  Future<String> prepareUsdcBridgeTx(PrepareBridgeRequest param) async {
+    return await _api.prepareUsdcBridgeTx(param).catchError((error) {
       errorHandler(error);
     });
   }

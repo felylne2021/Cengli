@@ -18,6 +18,9 @@ GetPartnersResponse _$GetPartnersResponseFromJson(Map<String, dynamic> json) =>
           ?.map(
               (e) => PartnerBalanceResponse.fromJson(e as Map<String, dynamic>))
           .toList(),
+      chain: json['chain'] == null
+          ? null
+          : ChainResponse.fromJson(json['chain'] as Map<String, dynamic>),
     );
 
 Map<String, dynamic> _$GetPartnersResponseToJson(
@@ -30,4 +33,5 @@ Map<String, dynamic> _$GetPartnersResponseToJson(
       'createdAt': instance.createdAt,
       'updatedAt': instance.updatedAt,
       'balances': instance.balances,
+      'chain': instance.chain,
     };

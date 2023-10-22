@@ -13,6 +13,7 @@ import 'package:kinetix/kinetix.dart';
 
 import '../../values/values.dart';
 import '../reusable/appbar/group_chat_appbar.dart';
+import 'expense/add_expense_page.dart';
 
 class ChatRoomArgument {
   final Feeds room;
@@ -56,19 +57,19 @@ class _ChatRoomPageState extends ConsumerState<ChatRoomPage> {
               backgroundColor: primaryGreen600,
               child: SvgPicture.asset(IC_CREATE_EXPENSES),
             ),
-            trailingCallBack: () => Navigator.of(context).pushNamed(
+            centerCallback: () => Navigator.of(context).pushNamed(
                 GroupDetailPage.routeName,
                 arguments: widget.argument.room),
+            trailingCallBack: () => Navigator.of(context).pushNamed(
+                AddExpensePage.routeName,
+                arguments: widget.argument.room.chatId),
             leadingWidget: Container(
               height: 48,
               width: 48,
               decoration: const BoxDecoration(
                   color: KxColors.neutral200, shape: BoxShape.circle),
               child: room.profilePicture == null
-                  ? const Icon(
-                      CupertinoIcons.person_2_fill,
-                      color: KxColors.neutral400,
-                    )
+                  ? Image.asset(IMG_GROUP)
                   : CircleAvatar(
                       child: Image.network(
                         room.profilePicture ?? "",

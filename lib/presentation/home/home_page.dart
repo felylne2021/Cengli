@@ -44,13 +44,17 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  @override
-  void initState() {
-    super.initState();
+  void _initData() {
     _getWalletAddress();
     _getChains();
     //TODO: unhide once transaction is confirmed from API
     // _getExpenses();
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _initData();
   }
 
   ValueNotifier<ChainResponse> selectedChain =
@@ -158,7 +162,7 @@ class _HomePageState extends State<HomePage> {
                   bills.add(Bill(
                       groupId,
                       expense.memberPayId,
-                      "USDC",
+                      "CIDR",
                       selectedChain.value.chainName,
                       expense.memberPayId,
                       expense.date,
@@ -200,355 +204,378 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _body() {
-    return SingleChildScrollView(
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            DoubleValueListenableBuilder(
-                first: walletAddress,
-                second: selectedChain,
-                builder: (context, address, chain, child) {
+    return CustomScrollView(
+      physics:
+          const BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      slivers: [
+        CupertinoSliverRefreshControl(
+          onRefresh: () async {
+            _initData();
+          },
+        ),
+        SliverList(
+            delegate: SliverChildListDelegate([
+          16.0.height,
+          DoubleValueListenableBuilder(
+              first: walletAddress,
+              second: selectedChain,
+              builder: (context, address, chain, child) {
+                return BlocBuilder<TransferBloc, TransferState>(
+                  buildWhen: (previous, state) {
+                    return state is GetAssetsSuccessState ||
+                        state is GetAssetsLoadingState;
+                  },
+                  builder: (context, state) {
+                    if (state is GetAssetsSuccessState) {
+                      return CardWidget(
+                        walletAddress: address,
+                        balance: NumberFormat.currency(locale: 'id_ID')
+                            .format(state.assets.totalBalanceUsd),
+                        tokenCount: state.assets.tokens?.length ?? 1,
+                        chainName: (chain.chainName ?? "").split(" ").first,
+                        username: username,
+                        isLoading: false,
+                      );
+                    } else {
+                      return CardWidget(
+                          walletAddress: address,
+                          tokenCount: 1,
+                          balance: "\$0",
+                          chainName: "",
+                          isLoading: true,
+                          username: username);
+                    }
+                  },
+                );
+              }),
+          24.0.height,
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 31),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                ActionWidget(
+                    title: 'Send',
+                    bgColor: softGreen,
+                    iconPath: IC_SEND,
+                    onTap: () {
+                      if (selectedChain.value.chainId != null) {
+                        Navigator.of(context)
+                            .pushNamed(SendPage.routeName,
+                                arguments: SendArgument(
+                                    selectedChain.value,
+                                    const ChainResponse(),
+                                    const BalanceResponse(),
+                                    assets.value,
+                                    const UserProfile(),
+                                    0))
+                            .then((_) {
+                          _getChains();
+                        });
+                      }
+                    }),
+                BlocBuilder<AuthBloc, AuthState>(
+                  buildWhen: (previous, state) {
+                    return state is GetUserDataErrorState ||
+                        state is GetUserDataLoadingState ||
+                        state is GetUserDataSuccessState;
+                  },
+                  builder: (context, state) {
+                    if (state is GetUserDataSuccessState) {
+                      return ActionWidget(
+                          title: 'P2P',
+                          bgColor: softPurple,
+                          iconPath: IC_P2P,
+                          onTap: () => Navigator.of(context)
+                                  .pushNamed(P2pPage.routeName,
+                                      arguments: P2pArgument(
+                                          const GetPartnersResponse(),
+                                          state.user,
+                                          selectedChain.value.chainId ?? 0))
+                                  .then((_) {
+                                _getChains();
+                              }));
+                    } else {
+                      return ActionWidget(
+                          title: 'P2P',
+                          bgColor: softPurple,
+                          iconPath: IC_P2P,
+                          onTap: () {});
+                    }
+                  },
+                ),
+                ActionWidget(
+                  title: 'Bills',
+                  bgColor: softBlue,
+                  iconPath: IC_BILLS,
+                  onTap: () async {
+                    //TODO: unhide
+                    // EthService().sendTransaction("receiverAddress");
+                    Navigator.of(context)
+                        .pushNamed(BillsPage.routeName, arguments: bills);
+                  },
+                ),
+              ],
+            ),
+          ),
+          30.0.height,
+          SegmentedControl(
+            activeColor: primaryGreen600,
+            onSelected: (index) {
+              currentIndex.value = index;
+              if (index == 0) {
+                _getAssets(selectedChain.value.chainId ?? 0);
+              } else {
+                _getUserId();
+              }
+            },
+            title: segmentedTitles,
+            initialIndex: currentIndex.value,
+            currentIndex: currentIndex,
+            segmentType: SegmentedControlEnum.ghost,
+            padding: 16,
+          ).center(),
+          14.0.height,
+          ValueListenableBuilder(
+            valueListenable: currentIndex,
+            builder: (context, currIndex, child) {
+              switch (currIndex) {
+                case 1:
                   return BlocBuilder<TransferBloc, TransferState>(
                     buildWhen: (previous, state) {
-                      return state is GetAssetsSuccessState ||
-                          state is GetAssetsLoadingState;
+                      return state is GetTransactionsErrorState ||
+                          state is GetTransactionsLoadingState ||
+                          state is GetTransactionsSuccessState;
                     },
                     builder: (context, state) {
-                      if (state is GetAssetsSuccessState) {
-                        return CardWidget(
-                          walletAddress: address,
-                          balance: NumberFormat.currency(
-                                  locale: 'en_US', symbol: '\$')
-                              .format(state.assets.totalBalanceUsd),
-                          tokenCount: state.assets.tokens?.length ?? 1,
-                          chainName: (chain.chainName ?? "").split(" ").first,
-                          username: username,
-                        );
+                      if (state is GetTransactionsSuccessState) {
+                        if (state.transactions.isNotEmpty) {
+                          return Column(
+                              children: List.generate(state.transactions.length,
+                                  (index) {
+                            return ValueListenableBuilder(
+                              valueListenable: user,
+                              builder: (context, value, child) {
+                                return Column(
+                                  children: [
+                                    HomeItemsWidget(
+                                      icon: state.transactions[index].note != ""
+                                          ? (state.transactions[index]
+                                                      .fromAddress ==
+                                                  walletAddress.value
+                                              ? IC_SEND
+                                              : IC_DEPOSIT)
+                                          : IC_P2P,
+                                      iconColor:
+                                          state.transactions[index].note != ""
+                                              ? (state.transactions[index]
+                                                          .fromAddress ==
+                                                      walletAddress.value
+                                                  ? softGreen
+                                                  : softBlueIcon)
+                                              : softPurple,
+                                      title: state.transactions[index].note !=
+                                              ""
+                                          ? (state.transactions[index].note ==
+                                                  "Transfer"
+                                              ? (state.transactions[index]
+                                                          .fromAddress ==
+                                                      walletAddress.value
+                                                  ? "Transfer"
+                                                  : "Deposit")
+                                              : state.transactions[index]
+                                                      .note ??
+                                                  "")
+                                          : "P2P",
+                                      subtitle: DateFormat('d MMM y, h:mma')
+                                          .format(DateTime.parse(state
+                                                  .transactions[index]
+                                                  .createdAt ??
+                                              "")),
+                                      value: (state.transactions[index]
+                                                      .fromAddress ==
+                                                  walletAddress.value
+                                              ? "-"
+                                              : "") +
+                                          NumberFormat.currency(locale: 'id_ID')
+                                              .format(state
+                                                  .transactions[index].amount),
+                                      textColor: state.transactions[index]
+                                                  .fromAddress ==
+                                              walletAddress.value
+                                          ? KxColors.neutral700
+                                          : deepGreen,
+                                    ),
+                                    const Divider(
+                                      thickness: 1,
+                                      color: KxColors.neutral200,
+                                    )
+                                  ],
+                                );
+                              },
+                            );
+                          }));
+                        } else {
+                          return Column(
+                            children: [
+                              Image.asset(
+                                IMG_EMPTY_CHAT,
+                                width: 150,
+                              ),
+                              Text(
+                                "No Transaction Found",
+                                style: KxTypography(
+                                    type: KxFontType.buttonMedium,
+                                    color: KxColors.neutral700),
+                              )
+                            ],
+                          ).padding(const EdgeInsetsDirectional.only(top: 24));
+                        }
+                      } else if (state is GetTransactionsLoadingState) {
+                        return const CupertinoActivityIndicator()
+                            .padding(const EdgeInsetsDirectional.only(top: 24));
                       } else {
-                        return CardWidget(
-                            walletAddress: address,
-                            tokenCount: 1,
-                            balance: "\$0",
-                            chainName: "",
-                            username: username);
+                        return const SizedBox();
                       }
                     },
                   );
-                }),
-            24.0.height,
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 31),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  ActionWidget(
-                      title: 'Send',
-                      bgColor: softGreen,
-                      iconPath: IC_SEND,
-                      onTap: () => Navigator.of(context)
-                              .pushNamed(SendPage.routeName,
-                                  arguments: SendArgument(
-                                      selectedChain.value,
-                                      const ChainResponse(),
-                                      const BalanceResponse(),
-                                      assets.value,
-                                      chains,
-                                      const UserProfile(),
-                                      0))
-                              .then((_) {
-                            _getChains();
-                          })),
-                  BlocBuilder<AuthBloc, AuthState>(
+                default:
+                  return BlocBuilder<TransferBloc, TransferState>(
                     buildWhen: (previous, state) {
-                      return state is GetUserDataErrorState ||
-                          state is GetUserDataLoadingState ||
-                          state is GetUserDataSuccessState;
+                      return state is GetAssetsErrorState ||
+                          state is GetAssetsLoadingState ||
+                          state is GetAssetsSuccessState;
                     },
                     builder: (context, state) {
-                      if (state is GetUserDataSuccessState) {
-                        return ActionWidget(
-                            title: 'P2P',
-                            bgColor: softPurple,
-                            iconPath: IC_P2P,
-                            onTap: () => Navigator.of(context)
-                                    .pushNamed(P2pPage.routeName,
-                                        arguments: P2pArgument(
-                                            const GetPartnersResponse(),
-                                            state.user,
-                                            selectedChain.value.chainId ?? 0))
-                                    .then((_) {
-                                  _getChains();
-                                }));
+                      if (state is GetAssetsSuccessState) {
+                        final tokens = state.assets.tokens ?? [];
+
+                        if (tokens.isNotEmpty) {
+                          return Column(
+                              children: List.generate(tokens.length, (index) {
+                            return Column(
+                              children: [
+                                HomeItemsWidget(
+                                  title: tokens[index].token?.name ?? "",
+                                  subtitle:
+                                      "${tokens[index].balance} ${tokens[index].token?.symbol}",
+                                  networkImage: tokens[index].token?.logoURI,
+                                  value: NumberFormat.currency(locale: 'id_ID')
+                                      .format(tokens[index].balanceUSd),
+                                ),
+                                const Divider(
+                                  thickness: 1,
+                                  color: KxColors.neutral200,
+                                )
+                              ],
+                            );
+                          }));
+                        } else {
+                          return Column(
+                            children: [
+                              Image.asset(
+                                IMG_EMPTY_CHAT,
+                                width: 150,
+                              ),
+                              Text(
+                                "No Transaction Found",
+                                style: KxTypography(
+                                    type: KxFontType.buttonMedium,
+                                    color: KxColors.neutral700),
+                              )
+                            ],
+                          ).padding(const EdgeInsetsDirectional.only(top: 24));
+                        }
+                      } else if (state is GetAssetsLoadingState) {
+                        return const CupertinoActivityIndicator()
+                            .padding(const EdgeInsetsDirectional.only(top: 24));
                       } else {
-                        return ActionWidget(
-                            title: 'P2P',
-                            bgColor: softPurple,
-                            iconPath: IC_P2P,
-                            onTap: () {});
+                        return const SizedBox();
                       }
                     },
-                  ),
-                  ActionWidget(
-                    title: 'Bills',
-                    bgColor: softBlue,
-                    iconPath: IC_BILLS,
-                    onTap: () async {
-                      //TODO: unhide
-                      // EthService().sendTransaction("receiverAddress");
-                      Navigator.of(context)
-                          .pushNamed(BillsPage.routeName, arguments: bills);
-                    },
-                  ),
-                ],
-              ),
-            ),
-            30.0.height,
-            SegmentedControl(
-              activeColor: primaryGreen600,
-              onSelected: (index) {
-                currentIndex.value = index;
-                if (index == 0) {
-                  _getAssets(selectedChain.value.chainId ?? 0);
-                } else {
-                  _getUserId();
-                }
-              },
-              title: segmentedTitles,
-              initialIndex: currentIndex.value,
-              currentIndex: currentIndex,
-              segmentType: SegmentedControlEnum.ghost,
-              padding: 16,
-            ),
-            14.0.height,
-            ValueListenableBuilder(
-              valueListenable: currentIndex,
-              builder: (context, currIndex, child) {
-                switch (currIndex) {
-                  case 1:
-                    return BlocBuilder<TransferBloc, TransferState>(
-                      buildWhen: (previous, state) {
-                        return state is GetTransactionsErrorState ||
-                            state is GetTransactionsLoadingState ||
-                            state is GetTransactionsSuccessState;
-                      },
-                      builder: (context, state) {
-                        if (state is GetTransactionsSuccessState) {
-                          if (state.transactions.isNotEmpty) {
-                            return Column(
-                                children: List.generate(
-                                    state.transactions.length, (index) {
-                              return ValueListenableBuilder(
-                                valueListenable: user,
-                                builder: (context, value, child) {
-                                  return Column(
-                                    children: [
-                                      HomeItemsWidget(
-                                        networkImage: value.imageProfile != null
-                                            ? (value.imageProfile ?? "")
-                                            : null,
-                                        icon: IC_SEND,
-                                        title: state.transactions[index].note ??
-                                            "",
-                                        subtitle: DateFormat('d MMM y, h:mma')
-                                            .format(DateTime.parse(state
-                                                    .transactions[index]
-                                                    .createdAt ??
-                                                "")),
-                                        value: (state.transactions[index]
-                                                        .fromAddress ==
-                                                    walletAddress.value
-                                                ? "-"
-                                                : "") +
-                                            NumberFormat.currency(
-                                                    locale: 'en_US',
-                                                    symbol: '\$')
-                                                .format(state
-                                                    .transactions[index]
-                                                    .amount),
-                                        isOut: state.transactions[index]
-                                                .fromAddress ==
-                                            walletAddress.value,
-                                      ),
-                                      const Divider(
-                                        thickness: 1,
-                                        color: KxColors.neutral200,
-                                      )
-                                    ],
-                                  );
-                                },
-                              );
-                            }));
-                          } else {
-                            return Column(
-                              children: [
-                                Image.asset(
-                                  IMG_EMPTY_CHAT,
-                                  width: 150,
-                                ),
-                                Text(
-                                  "No Transaction Found",
-                                  style: KxTypography(
-                                      type: KxFontType.buttonMedium,
-                                      color: KxColors.neutral700),
-                                )
-                              ],
-                            ).padding(
-                                const EdgeInsetsDirectional.only(top: 24));
-                          }
-                        } else if (state is GetTransactionsLoadingState) {
-                          return const CupertinoActivityIndicator().padding(
-                              const EdgeInsetsDirectional.only(top: 24));
-                        } else {
-                          return const SizedBox();
-                        }
-                      },
-                    );
-                  default:
-                    return BlocBuilder<TransferBloc, TransferState>(
-                      buildWhen: (previous, state) {
-                        return state is GetAssetsErrorState ||
-                            state is GetAssetsLoadingState ||
-                            state is GetAssetsSuccessState;
-                      },
-                      builder: (context, state) {
-                        if (state is GetAssetsSuccessState) {
-                          final tokens = state.assets.tokens ?? [];
-
-                          if (tokens.isNotEmpty) {
-                            return Column(
-                                children: List.generate(tokens.length, (index) {
-                              return Column(
-                                children: [
-                                  HomeItemsWidget(
-                                    title: tokens[index].token?.name ?? "",
-                                    subtitle:
-                                        "${tokens[index].balance} ${tokens[index].token?.symbol}",
-                                    networkImage: tokens[index].token?.logoURI,
-                                    value: NumberFormat.currency(
-                                            locale: 'en_US', symbol: '\$')
-                                        .format(tokens[index].balanceUSd),
-                                  ),
-                                  const Divider(
-                                    thickness: 1,
-                                    color: KxColors.neutral200,
-                                  )
-                                ],
-                              );
-                            }));
-                          } else {
-                            return Column(
-                              children: [
-                                Image.asset(
-                                  IMG_EMPTY_CHAT,
-                                  width: 150,
-                                ),
-                                Text(
-                                  "No Transaction Found",
-                                  style: KxTypography(
-                                      type: KxFontType.buttonMedium,
-                                      color: KxColors.neutral700),
-                                )
-                              ],
-                            ).padding(
-                                const EdgeInsetsDirectional.only(top: 24));
-                          }
-                        } else if (state is GetAssetsLoadingState) {
-                          return const CupertinoActivityIndicator().padding(
-                              const EdgeInsetsDirectional.only(top: 24));
-                        } else {
-                          return const SizedBox();
-                        }
-                      },
-                    );
-                }
-              },
-            ),
-          ],
-        ),
-      ),
-    );
+                  );
+              }
+            },
+          ),
+        ]))
+      ],
+    ).padding(const EdgeInsets.symmetric(horizontal: 16));
   }
 
   PreferredSize homePageAppBar(BuildContext context) {
     return PreferredSize(
       preferredSize: const Size.fromHeight(105),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          SafeArea(
-              child: Container(
-                  decoration: const BoxDecoration(color: Colors.transparent),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text("Wallet",
-                          style: CengliTypography(
-                              type: CengliFontType.subtitle4,
-                              color: KxColors.neutral700)),
-                      InkWell(
-                        onTap: () {
-                          KxGeneralListModalArgument argument =
-                              KxGeneralListModalArgument(
-                            modalTitle: 'Select Network',
-                            items: [],
-                            selectedItem: KxSelectedListItem("", false),
-                            modalListType: KxModalListType.general,
+      child: SafeArea(
+        child: Container(
+            decoration: const BoxDecoration(color: Colors.transparent),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text("Wallet",
+                    style: CengliTypography(
+                        type: CengliFontType.subtitle4,
+                        color: KxColors.neutral700)),
+                InkWell(
+                  onTap: () {
+                    KxGeneralListModalArgument argument =
+                        KxGeneralListModalArgument(
+                      modalTitle: 'Select Network',
+                      items: [],
+                      selectedItem: KxSelectedListItem("", false),
+                      modalListType: KxModalListType.general,
+                    );
+                    KxModalUtil()
+                        .showGeneralModal(
+                            context,
+                            ModalListPage(
+                                argument: argument,
+                                isNetworkImage: true,
+                                chains: chains))
+                        .then((value) {
+                      if (value != null) {
+                        selectedChain.value = value;
+                        _getAssets(selectedChain.value.chainId ?? 0);
+                      }
+                    });
+                  },
+                  child: Container(
+                    padding: const EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                        color: KxColors.neutral200,
+                        borderRadius: BorderRadius.circular(20)),
+                    child: ValueListenableBuilder(
+                        valueListenable: selectedChain,
+                        builder: (context, item, child) {
+                          return Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: [
+                              if (item.logoURI != null)
+                                Image.network(
+                                  item.logoURI ?? "",
+                                  height: 24,
+                                  width: 24,
+                                )
+                              else
+                                const CupertinoActivityIndicator(),
+                              8.0.width,
+                              Text(
+                                (item.chainName ?? "").split(" ").first,
+                                style: KxTypography(
+                                    type: KxFontType.fieldText2,
+                                    color: KxColors.neutral700),
+                              ),
+                              const Icon(
+                                Icons.keyboard_arrow_down_rounded,
+                                size: 20,
+                                color: KxColors.neutral700,
+                              )
+                            ],
                           );
-                          KxModalUtil()
-                              .showGeneralModal(
-                                  context,
-                                  ModalListPage(
-                                      argument: argument,
-                                      isNetworkImage: true,
-                                      chains: chains))
-                              .then((value) {
-                            if (value != null) {
-                              selectedChain.value = value;
-                              _getAssets(selectedChain.value.chainId ?? 0);
-                            }
-                          });
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                              color: KxColors.neutral200,
-                              borderRadius: BorderRadius.circular(20)),
-                          child: ValueListenableBuilder(
-                              valueListenable: selectedChain,
-                              builder: (context, item, child) {
-                                return Row(
-                                  mainAxisAlignment:
-                                      MainAxisAlignment.spaceEvenly,
-                                  children: [
-                                    if (item.logoURI != null)
-                                      Image.network(
-                                        item.logoURI ?? "",
-                                        height: 24,
-                                        width: 24,
-                                      )
-                                    else
-                                      const CupertinoActivityIndicator(),
-                                    8.0.width,
-                                    Text(
-                                      (item.chainName ?? "").split(" ").first,
-                                      style: KxTypography(
-                                          type: KxFontType.fieldText2,
-                                          color: KxColors.neutral700),
-                                    ),
-                                    const Icon(
-                                      Icons.keyboard_arrow_down_rounded,
-                                      size: 16,
-                                      color: KxColors.neutral700,
-                                    )
-                                  ],
-                                );
-                              }),
-                        ),
-                      )
-                    ],
-                  ).padding(const EdgeInsets.fromLTRB(16, 50, 16, 12)))),
-        ],
+                        }),
+                  ),
+                )
+              ],
+            ).padding(const EdgeInsets.fromLTRB(16, 50, 16, 12))),
       ),
     );
   }
@@ -606,21 +633,22 @@ class _HomePageState extends State<HomePage> {
 }
 
 class HomeItemsWidget extends StatelessWidget {
-  const HomeItemsWidget({
-    super.key,
-    required this.title,
-    required this.subtitle,
-    required this.value,
-    this.networkImage,
-    this.icon,
-    this.isOut = false,
-  });
+  const HomeItemsWidget(
+      {super.key,
+      required this.title,
+      required this.subtitle,
+      required this.value,
+      this.networkImage,
+      this.icon,
+      this.iconColor,
+      this.textColor});
   final String title;
   final String subtitle;
   final String value;
   final String? networkImage;
   final String? icon;
-  final bool isOut;
+  final Color? iconColor;
+  final Color? textColor;
 
   @override
   Widget build(BuildContext context) {
@@ -631,21 +659,20 @@ class HomeItemsWidget extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           if (networkImage != null)
-            Image.network(
+            ClipOval(
+                child: Image.network(
               networkImage ?? "",
               height: 40,
               width: 40,
-            )
+            ))
           else
             Container(
               padding: const EdgeInsets.all(10),
               decoration:
-                  BoxDecoration(color: softGreen, shape: BoxShape.circle),
-              child: isOut
-                  ? SvgPicture.asset(
-                      icon ?? "",
-                    )
-                  : null,
+                  BoxDecoration(color: iconColor, shape: BoxShape.circle),
+              child: SvgPicture.asset(
+                icon ?? "",
+              ),
             ),
           16.0.width,
           Row(
@@ -672,7 +699,7 @@ class HomeItemsWidget extends StatelessWidget {
                 value,
                 style: KxTypography(
                     type: KxFontType.buttonMedium,
-                    color: isOut ? KxColors.neutral700 : deepGreen),
+                    color: textColor ?? deepGreen),
               ).flexible()
             ],
           ).flexible(),

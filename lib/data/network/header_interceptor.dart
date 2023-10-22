@@ -1,6 +1,5 @@
 import 'dart:convert';
 
-import 'package:cengli/values/values.dart';
 import 'package:dio/dio.dart';
 import 'package:logger/logger.dart';
 
@@ -13,10 +12,6 @@ class HeaderInterceptor extends Interceptor {
   void onRequest(
       RequestOptions options, RequestInterceptorHandler handler) async {
     options.contentType = Headers.jsonContentType;
-
-    if (options.baseUrl.contains("cometh")) {
-      options.headers["apikey"] = Constant.commethApiKey;
-    }
 
     _logger.d("--> ${options.method} ${options.baseUrl}${options.path}\n" +
         "Query: ${options.queryParameters}\n" +

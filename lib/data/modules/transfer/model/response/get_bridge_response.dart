@@ -5,19 +5,31 @@ part 'get_bridge_response.g.dart';
 
 @JsonSerializable()
 class GetBridgeResponse extends Equatable {
-  @JsonKey(name: 'fromBridgeAddress')
-  final String? fromBridgeAddress;
+  @JsonKey(name: 'id')
+  final String? id;
 
-  @JsonKey(name: 'destinationBridgeAddress')
-  final String? destinationBridgeAddress;
+  @JsonKey(name: 'bridgeAddress')
+  final String? bridgeAddress;
+
+  @JsonKey(name: 'chainId')
+  final int? chainId;
+
+  @JsonKey(name: 'tokenAddress')
+  final String? tokenAddress;
+
+  @JsonKey(name: 'destinationTokenAddress')
+  final String? destinationTokenAddress;
 
   const GetBridgeResponse(
-      {this.fromBridgeAddress,
-      this.destinationBridgeAddress});
+      {this.id,
+      this.bridgeAddress,
+      this.chainId,
+      this.tokenAddress,
+      this.destinationTokenAddress});
 
   @override
   List<Object?> get props =>
-      [fromBridgeAddress, destinationBridgeAddress];
+      [id, bridgeAddress, chainId, tokenAddress, destinationTokenAddress];
 
   Map<String, dynamic> toJson() => _$GetBridgeResponseToJson(this);
 

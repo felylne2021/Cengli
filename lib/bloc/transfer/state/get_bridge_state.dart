@@ -1,5 +1,6 @@
 import 'package:cengli/bloc/transfer/transfer.dart';
-import 'package:cengli/data/modules/transfer/model/response/get_bridge_response.dart';
+
+import '../../../data/modules/transfer/model/response/get_bridge_info_response.dart';
 
 class GetBridgeLoadingState extends TransferState {
   const GetBridgeLoadingState() : super();
@@ -18,7 +19,7 @@ class GetBridgeErrorState extends TransferState {
 }
 
 class GetBridgeSuccessState extends TransferState {
-  final GetBridgeResponse response;
+  final GetBridgeInfoResponse response;
 
   const GetBridgeSuccessState(this.response) : super();
 

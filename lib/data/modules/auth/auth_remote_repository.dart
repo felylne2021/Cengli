@@ -7,13 +7,18 @@ import 'model/response/relay_transaction_response.dart';
 import 'model/user_profile.dart';
 
 abstract class AuthRemoteRepository {
-  Future<void> createUser(UserProfile userProfile);
-  Future<CreateWalletResponse> createWallet(CreateWalletRequest param);
+  //Cometh
+  Future<CreateWalletResponse> createWallet(
+      CreateWalletRequest param, String apiKey);
   Future<SignerAddressResponse> predictSignerAddress(
-      PredictSignerAddressRequest param);
-  Future<CreateWalletResponse> getWalletAddress(String ownerAddres);
+      PredictSignerAddressRequest param, String apiKey);
+  Future<CreateWalletResponse> getWalletAddress(
+      String ownerAddres, String apiKey);
+  Future<RelayTransactionResponse> relayTransaction(
+      String walletAddress, RelayTransactionRequest param, String apiKey);
+
+  //Cengli
+  Future<void> createUser(UserProfile userProfile);
   Future<bool> checkUsername(String username);
   Future<UserProfile> getUserData(String username);
-  Future<RelayTransactionResponse> relayTransaction(
-      String walletAddress, RelayTransactionRequest param);
 }
