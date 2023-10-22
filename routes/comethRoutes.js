@@ -10,7 +10,6 @@ import { estimateSafeTxGas } from "../utils/web3/comethHelpers.js"
 
 import { prismaClient } from "../utils/prisma.js"
 import { readFileSync } from "fs"
-import { avaxProvider } from "../utils/web3/assetContracts.js"
 import { validateRequiredFields } from "../utils/validator.js"
 import { HyperlaneCCTPRouteContract, HyperlaneWarpRouteContract, hyperlaneAvaxContract } from '../utils/web3/hyperlaneContracts.js';
 
@@ -279,8 +278,6 @@ export const comethRoutes = async (server) => {
   const toBytes32 = (address) => {
     return '0x' + address.slice(2).padStart(64, '0');
   };
-
-  console.log(toBytes32('0x278A2d5B5C8696882d1D2002cE107efc74704ECf'))
 
   server.post('/prepare-usdc-bridge-transfer-tx', async (request, reply) => {
     try {
