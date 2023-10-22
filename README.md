@@ -35,10 +35,6 @@ Experience **Cengli** now:
 - 🌐 **Local and International Trade:** Empower individuals for broader market reach.
 - 🏦 **Inclusive Platform:** Removing banking hurdles for everyone.
 
-### 📄 License
-
-📜 **Cengli** is licensed under the [MIT License](./LICENSE).
-
 ---
 
 <p align="center">
