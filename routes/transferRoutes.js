@@ -65,7 +65,7 @@ export const transferRoutes = async (server) => {
           tokenAddress: tokenAddress,
           fromChainId: fromChainId,
           destinationChainId: destinationChainId,
-          amount: amount,
+          amount: parseFloat(amount),
           note: note,
           tokenId: token.id
         }

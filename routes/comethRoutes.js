@@ -311,11 +311,11 @@ export const comethRoutes = async (server) => {
       const { wallet } = getCometh(fromChainId);
       const provider = wallet.getProvider();
 
-      const formattedAmount = amount * 10 ** fromToken.decimals
+      const formattedAmount = parseFloat(amount) * 10 ** fromToken.decimals
       console.log('formattedAmount', formattedAmount)
 
       const contract = await HyperlaneCCTPRouteContract(fromChainId, fromToken.hyperlaneCCTPRoute.bridgeAddress)
-      const transferTx = await contract['transferXchainUSDC'].populateTransaction(parseInt(destinationChainId), toBytes32(recipientAddress), amount * 10 ** fromToken.decimals, {
+      const transferTx = await contract['transferXchainUSDC'].populateTransaction(parseInt(destinationChainId), toBytes32(recipientAddress), parseFloat(amount) * 10 ** fromToken.decimals, {
         from: walletAddress,
         value: "0",
         chainId: fromChainId
@@ -375,7 +375,7 @@ export const comethRoutes = async (server) => {
       }
 
       const warpContract = HyperlaneWarpRouteContract(parseInt(fromChainId), token.hyperlaneRoute.bridgeAddress)
-      const transferTx = await warpContract['transferXchainHypERC20'].populateTransaction(destinationChainId, toBytes32(recipientAddress), BigInt(amount * 10 ** token.decimals), {
+      const transferTx = await warpContract['transferXchainHypERC20'].populateTransaction(destinationChainId, toBytes32(recipientAddress), BigInt(parseFloat(amount) * 10 ** token.decimals), {
         from: walletAddress,
         value: "0",
         chainId: fromChainId
