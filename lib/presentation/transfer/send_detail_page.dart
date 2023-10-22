@@ -149,6 +149,12 @@ class _SendDetailPageState extends State<SendDetailPage> {
                                     if (value != null) {
                                       selectedAsset.value = value;
                                       _validate();
+                                      isCrossChain.value =
+                                          selectedChain.value !=
+                                              widget.argument.senderChain;
+                                      if (isCrossChain.value) {
+                                        _getBridge();
+                                      }
                                     }
                                   });
                                 },

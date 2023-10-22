@@ -15,8 +15,11 @@ TransactionResponse _$TransactionResponseFromJson(Map<String, dynamic> json) =>
       destinationAddress: json['destinationAddress'] as String?,
       chainId: json['chainId'] as int?,
       tokenAddress: json['tokenAddress'] as String?,
-      amount: json['amount'] as int?,
+      amount: (json['amount'] as num?)?.toDouble(),
       note: json['note'] as String?,
+      token: json['token'] == null
+          ? null
+          : TokenResponse.fromJson(json['token'] as Map<String, dynamic>),
       createdAt: json['createdAt'] as String?,
       updatedAt: json['updatedAt'] as String?,
     );
@@ -32,6 +35,7 @@ Map<String, dynamic> _$TransactionResponseToJson(
       'chainId': instance.chainId,
       'tokenAddress': instance.tokenAddress,
       'amount': instance.amount,
+      'token': instance.token,
       'note': instance.note,
       'createdAt': instance.createdAt,
       'updatedAt': instance.updatedAt,

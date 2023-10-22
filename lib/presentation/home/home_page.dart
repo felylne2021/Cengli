@@ -392,14 +392,8 @@ class _HomePageState extends State<HomePage> {
                                                   .transactions[index]
                                                   .createdAt ??
                                               "")),
-                                      value: (state.transactions[index]
-                                                      .fromAddress ==
-                                                  walletAddress.value
-                                              ? "-"
-                                              : "") +
-                                          NumberFormat.currency(locale: 'id_ID')
-                                              .format(state
-                                                  .transactions[index].amount),
+                                      value:
+                                          "${state.transactions[index].fromAddress == walletAddress.value ? "-" : ""}${NumberFormat.currency(locale: 'id_ID', symbol: '').format(state.transactions[index].amount ?? 0)} ${state.transactions[index].token?.symbol}",
                                       textColor: state.transactions[index]
                                                   .fromAddress ==
                                               walletAddress.value
@@ -458,7 +452,7 @@ class _HomePageState extends State<HomePage> {
                                 HomeItemsWidget(
                                   title: tokens[index].token?.name ?? "",
                                   subtitle:
-                                      "${tokens[index].balance} ${tokens[index].token?.symbol}",
+                                      "${NumberFormat.currency(locale: 'id_ID', symbol: '').format(tokens[index].balance ?? 0)} ${tokens[index].token?.symbol}",
                                   networkImage: tokens[index].token?.logoURI,
                                   value: NumberFormat.currency(locale: 'id_ID')
                                       .format(tokens[index].balanceUSd),

@@ -542,8 +542,6 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
   _prepareCross() async {
     String walletAddress = await SessionService.getWalletAddress();
 
-    debugPrint("duar $bridge");
-
     if (bridge.routeType == "HYPERLANE_WRAP") {
       _prepareBridgeTx(PrepareBridgeRequest(
           walletAddress: walletAddress,
@@ -602,16 +600,13 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
   _prepareApprove(String bridgeAddress, String tokenAddress) async {
     String walletAddress = await SessionService.getWalletAddress();
     userAddress = walletAddress;
-    final double pow = widget.argument.selectedAsset.token?.decimals ?? 0;
-    final int formattedAmount =
-        (widget.argument.amount * math.pow(10, pow)).toInt();
 
     _prepareTransaction(PrepareErc20Request(
         walletAddress: walletAddress,
         tokenAddress: tokenAddress,
         functionName: "approve",
         chainId: widget.argument.senderChain.chainId,
-        args: [bridgeAddress, "$formattedAmount"]));
+        args: [bridgeAddress, widget.argument.amount.toString()]));
   }
 
   _getBridge(int fromChainId, int destinationCHainId, String tokenAddress) {

@@ -1,3 +1,4 @@
+import 'package:cengli/data/modules/transfer/model/response/token_response.dart';
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 
@@ -27,11 +28,14 @@ class TransactionResponse extends Equatable {
   final String? tokenAddress;
 
   @JsonKey(name: 'amount')
-  final int? amount;
+  final double? amount;
+
+  @JsonKey(name: 'token')
+  final TokenResponse? token;
 
   @JsonKey(name: 'note')
   final String? note;
-  
+
   @JsonKey(name: 'createdAt')
   final String? createdAt;
 
@@ -48,6 +52,7 @@ class TransactionResponse extends Equatable {
       this.tokenAddress,
       this.amount,
       this.note,
+      this.token,
       this.createdAt,
       this.updatedAt});
 
@@ -62,6 +67,7 @@ class TransactionResponse extends Equatable {
         tokenAddress,
         amount,
         note,
+        token,
         createdAt,
         updatedAt
       ];
