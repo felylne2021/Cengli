@@ -18,15 +18,15 @@ export const accountRoutes = async (server) => {
         where: { chainId: parseInt(chainId) }
       });
 
-      console.log('Tokens to be retrieved:', tokensToBeRetrieved);
+      // console.log('Tokens to be retrieved:', tokensToBeRetrieved);
       
       const contractByChain = getContractByChain(parseInt(chainId));
 
       const result = await retrieveBalances(tokensToBeRetrieved, address, contractByChain);
       const { totalBalanceUsd, tokens } = result;
 
-      console.log('Total Balance (USD):', totalBalanceUsd);
-      console.log('Tokens:', tokens);
+      // console.log('Total Balance (USD):', totalBalanceUsd);
+      // console.log('Tokens:', tokens);
 
       return reply.code(200).send({
         totalBalanceUsd,

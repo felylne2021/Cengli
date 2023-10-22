@@ -68,7 +68,7 @@ export const fetchPartnerTokenBalance = async (partnerId, chainId) => {
     }
   }
 
-  console.log('Partner CIDR balance on AVAX updated')
+  // console.log('Partner CIDR balance on AVAX updated')
 }
 
 export const fetchUSDCTokenBalance = async (partnerId) => {
@@ -122,5 +122,5 @@ export const fetchUSDCTokenBalance = async (partnerId) => {
     })
   }
 
-  console.log('Partner USDC balance on AVAX updated')
+  // console.log('Partner USDC balance on AVAX updated')
 }

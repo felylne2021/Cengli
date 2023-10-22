@@ -258,8 +258,6 @@ export const comethRoutes = async (server) => {
       //   args
       // })
 
-      console.log('contract', contract)
-
       // Convert float to string representation of its integer form (multiplied by 10^n for n decimals)
       const newArgs = args.map(arg => {
         if (typeof arg === "string" && arg.includes('.')) {
@@ -322,7 +320,7 @@ export const comethRoutes = async (server) => {
         return reply.code(404).send({ message: 'Token does not support CCTP' });
       }
 
-      console.log('fromToken', fromToken)
+      // console.log('fromToken', fromToken)
 
       const { wallet } = getCometh(fromChainId);
       const provider = wallet.getProvider();
