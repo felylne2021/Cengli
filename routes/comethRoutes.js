@@ -32,11 +32,11 @@ const getCometh = (chainId = 43113) => {
 
   if (_chainId === 43113) {
     apiKey = process.env.COMETH_AVAX_API_KEY
-    rpcUrl = process.env.COMETH_AVAX_RPC_URL
+    rpcUrl = 'https://rpc.ankr.com/avalanche_fuji'
     apiSecret = process.env.COMETH_AVAX_API_SECRET
   } else if (_chainId === 80001) {
     apiKey = process.env.COMETH_MUMBAI_API_KEY
-    rpcUrl = process.env.COMETH_MUMBAI_RPC_URL
+    rpcUrl = 'https://rpc-mumbai.maticvigil.com'
     apiSecret = process.env.COMETH_MUMBAI_SECRET_KEY
   }
 
