@@ -5,7 +5,8 @@ import 'package:cengli/bloc/transfer/transfer.dart';
 import 'package:cengli/data/modules/auth/model/request/relay_transaction_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/prepare_erc20_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/transfer_request.dart';
-import 'package:cengli/data/modules/transfer/model/request/usdc_prepare_request.dart';
+import 'package:cengli/data/modules/transfer/model/request/prepare_bridge_request.dart';
+import 'package:cengli/data/utils/collection_util.dart';
 import 'package:cengli/presentation/reusable/page/status_page.dart';
 import 'package:cengli/presentation/transfer/send_detail_page.dart';
 import 'package:cengli/services/biometric_service.dart';
@@ -18,6 +19,7 @@ import 'package:flutter_inappwebview/flutter_inappwebview.dart';
 import 'package:kinetix/kinetix.dart';
 import 'dart:math' as math;
 
+import '../../data/modules/transfer/model/response/get_bridge_info_response.dart';
 import '../../values/values.dart';
 import '../home/home_tab_bar.dart';
 import '../reusable/appbar/custom_appbar.dart';
@@ -36,9 +38,9 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
   TextEditingController notesController = TextEditingController();
   late InAppWebViewController _webViewController;
   String userAddress = "";
+  GetBridgeInfoResponse bridge = const GetBridgeInfoResponse();
   bool isCrossChain = false;
-  bool isDoneApprove = false;
-  bool isDoneUsdc = false;
+  int crossChainStep = 1;
 
   @override
   void initState() {
@@ -70,6 +72,7 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
                   showToast(state.message);
                 }
               }),
+              // Same chain relay transaction
               BlocListener<AuthBloc, AuthState>(listenWhen: (previous, state) {
                 return state is RelayTransactionErrorState ||
                     state is RelayTransactionLoadingState ||
@@ -89,7 +92,9 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
                       fromChainId: widget.argument.senderChain.chainId,
                       destinationChainId: widget.argument.receiverChain.chainId,
                       amount: widget.argument.amount.toInt(),
-                      note: notesController.text));
+                      note: notesController.text.isEmpty
+                          ? "Transfer"
+                          : notesController.text));
                   Navigator.of(context).pushNamed(StatusPage.routeName,
                       arguments: StatusArgument(
                           () => Navigator.of(context).popUntil((route) =>
@@ -104,6 +109,7 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
                   showToast(state.message);
                 }
               }),
+              // Cross chain step 1
               BlocListener<TransferBloc, TransferState>(
                   listenWhen: (previous, state) {
                 return state is GetBridgeSuccessState ||
@@ -112,7 +118,9 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
               }, listener: (context, state) {
                 if (state is GetBridgeSuccessState) {
                   hideLoading();
-                  _prepareApprove(state.response.fromBridgeAddress ?? "");
+                  bridge = state.response;
+                  _prepareApprove(state.response.fromBridgeAddress ?? "",
+                      widget.argument.selectedAsset.token?.address ?? "");
                 } else if (state is GetBridgeLoadingState) {
                   showLoading();
                 } else if (state is GetBridgeErrorState) {
@@ -120,23 +128,43 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
                   showToast(state.message);
                 }
               }),
+              // Cross chain step 2 Wrap
               BlocListener<TransferBloc, TransferState>(
                   listenWhen: (previous, state) {
-                return state is UsdcPrepareErrorState ||
-                    state is UsdcPrepareLoadingState ||
-                    state is UsdcPrepareSuccessState;
+                return state is PrepareBridgeErrorState ||
+                    state is PrepareBridgeLoadingState ||
+                    state is PrepareBridgeSuccessState;
               }, listener: (context, state) {
-                if (state is UsdcPrepareSuccessState) {
+                if (state is PrepareBridgeSuccessState) {
                   hideLoading();
                   _signTransaction(
                       state.response, widget.argument.senderChain.rpcUrl ?? "");
-                } else if (state is UsdcPrepareLoadingState) {
+                } else if (state is PrepareBridgeLoadingState) {
                   showLoading();
-                } else if (state is UsdcPrepareErrorState) {
+                } else if (state is PrepareBridgeErrorState) {
                   hideLoading();
                   showToast(state.message);
                 }
               }),
+              // Cross chain step 2 CCTP
+              BlocListener<TransferBloc, TransferState>(
+                  listenWhen: (previous, state) {
+                return state is PrepareUsdcBridgeErrorState ||
+                    state is PrepareUsdcBridgeLoadingState ||
+                    state is PrepareUsdcBridgeSuccessState;
+              }, listener: (context, state) {
+                if (state is PrepareUsdcBridgeSuccessState) {
+                  hideLoading();
+                  _signTransaction(
+                      state.response, widget.argument.senderChain.rpcUrl ?? "");
+                } else if (state is PrepareUsdcBridgeLoadingState) {
+                  showLoading();
+                } else if (state is PrepareUsdcBridgeErrorState) {
+                  hideLoading();
+                  showToast(state.message);
+                }
+              }),
+              // Cross chain step 3
               BlocListener<AuthBloc, AuthState>(listenWhen: (previous, state) {
                 return state is RelayApproveTransactionErrorState ||
                     state is RelayApproveTransactionLoadingState ||
@@ -144,6 +172,9 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
               }, listener: (context, state) {
                 if (state is RelayApproveTransactionSuccessState) {
                   hideLoading();
+                  //*MARK: uncomment if need destination approval
+                  // _prepareApprove(bridge.bridgeAddress ?? "",
+                  //     bridge.destinationTokenAddress ?? "");
                   _prepareCross();
                 } else if (state is RelayApproveTransactionLoadingState) {
                   showLoading();
@@ -152,6 +183,23 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
                   showToast(state.message);
                 }
               }),
+              // Cross chain step 4
+              BlocListener<AuthBloc, AuthState>(listenWhen: (previous, state) {
+                return state is RelayDestinationTransactionErrorState ||
+                    state is RelayDestinationTransactionLoadingState ||
+                    state is RelayDestinationTransactionSuccessState;
+              }, listener: (context, state) {
+                if (state is RelayDestinationTransactionSuccessState) {
+                  hideLoading();
+                  _prepareCross();
+                } else if (state is RelayDestinationTransactionLoadingState) {
+                  showLoading();
+                } else if (state is RelayDestinationTransactionErrorState) {
+                  hideLoading();
+                  showToast(state.message);
+                }
+              }),
+              // Cross chain step 5
               BlocListener<AuthBloc, AuthState>(listenWhen: (previous, state) {
                 return state is RelayCrossTransactionErrorState ||
                     state is RelayCrossTransactionLoadingState ||
@@ -171,7 +219,9 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
                       fromChainId: widget.argument.senderChain.chainId,
                       destinationChainId: widget.argument.receiverChain.chainId,
                       amount: widget.argument.amount.toInt(),
-                      note: notesController.text));
+                      note: notesController.text.isEmpty
+                          ? "Transfer"
+                          : notesController.text));
                   Navigator.of(context).pushNamed(StatusPage.routeName,
                       arguments: StatusArgument(
                           () => Navigator.of(context).popUntil((route) =>
@@ -331,11 +381,20 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
                                                   _relayTransaction(
                                                       transactionList.first);
                                                 } else {
-                                                  if (isDoneApprove) {
-                                                    isDoneApprove = true;
+                                                  if (crossChainStep == 1) {
+                                                    crossChainStep += 1;
                                                     _relayApproveTransaction(
                                                         transactionList.first);
-                                                  } else {
+                                                  }
+                                                  //*MARK: uncomment if need destination approval
+                                                  // else if (crossChainStep ==
+                                                  //     2) {
+                                                  //   crossChainStep += 1;
+                                                  //   _relayDestinationTransaction(
+                                                  //       transactionList.first);
+                                                  // }
+                                                  else {
+                                                    // crossChainStep += 1;
                                                     _relayCrossTransaction(
                                                         transactionList.first);
                                                   }
@@ -368,20 +427,6 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
                                                             .getWalletAddress();
                                                     userAddress = walletAddress;
 
-                                                    final double pow = widget
-                                                            .argument
-                                                            .selectedAsset
-                                                            .token
-                                                            ?.decimals ??
-                                                        0;
-
-                                                    final int formattedAmount =
-                                                        (widget.argument
-                                                                    .amount *
-                                                                math.pow(
-                                                                    10, pow))
-                                                            .toInt();
-
                                                     //Same chain
                                                     _prepareTransaction(
                                                         PrepareErc20Request(
@@ -393,14 +438,20 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
                                                                     .token
                                                                     ?.address ??
                                                                 "",
-                                                            functionName: "transfer",
+                                                            functionName:
+                                                                "transfer",
+                                                            chainId: widget
+                                                                .argument
+                                                                .senderChain
+                                                                .chainId,
                                                             args: [
                                                           widget
                                                                   .argument
                                                                   .receiverProfile
                                                                   .walletAddress ??
                                                               "",
-                                                          "$formattedAmount"
+                                                          widget.argument.amount
+                                                              .toString()
                                                         ]));
                                                   } else {
                                                     //Cross chain
@@ -414,7 +465,13 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
                                                                 .argument
                                                                 .receiverChain
                                                                 .chainId ??
-                                                            0);
+                                                            0,
+                                                        widget
+                                                                .argument
+                                                                .selectedAsset
+                                                                .token
+                                                                ?.address ??
+                                                            "");
                                                   }
                                                 }
                                               },
@@ -451,6 +508,7 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
           style: KxTypography(
               type: KxFontType.fieldText3, color: KxColors.neutral500),
         ),
+        14.0.width,
         Text(
           value,
           style: KxTypography(
@@ -473,41 +531,75 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
     context.read<TransferBloc>().add(PrepareTransactionEvent(param));
   }
 
-  _usdcPrepareTransaction(UsdcPrepareRequest param) {
-    context.read<TransferBloc>().add(UsdcPrepareTransferEvent(param));
+  _prepareBridgeTx(PrepareBridgeRequest param) {
+    context.read<TransferBloc>().add(PrepareBridgeTransferEvent(param));
+  }
+
+  _prepareUsdcBridgeTx(PrepareBridgeRequest param) {
+    context.read<TransferBloc>().add(PrepareUsdcBridgeTransferEvent(param));
   }
 
   _prepareCross() async {
     String walletAddress = await SessionService.getWalletAddress();
-    final double pow = widget.argument.selectedAsset.token?.decimals ?? 0;
-    final int formattedAmount =
-        (widget.argument.amount * math.pow(10, pow)).toInt();
 
-    _usdcPrepareTransaction(UsdcPrepareRequest(
-        walletAddress: walletAddress,
-        recipientAddress: widget.argument.receiverProfile.walletAddress,
-        fromChainId: widget.argument.senderChain.chainId,
-        destinationChainId: widget.argument.receiverChain.chainId,
-        amount: formattedAmount));
+    debugPrint("duar $bridge");
+
+    if (bridge.routeType == "HYPERLANE_WRAP") {
+      _prepareBridgeTx(PrepareBridgeRequest(
+          walletAddress: walletAddress,
+          recipientAddress: widget.argument.receiverProfile.walletAddress,
+          fromChainId: widget.argument.senderChain.chainId,
+          destinationChainId: widget.argument.receiverChain.chainId,
+          tokenAddress: widget.argument.selectedAsset.token?.address,
+          amount: widget.argument.amount.toString()));
+    } else {
+      _prepareUsdcBridgeTx(PrepareBridgeRequest(
+          walletAddress: walletAddress,
+          recipientAddress: widget.argument.receiverProfile.walletAddress,
+          fromChainId: widget.argument.senderChain.chainId,
+          destinationChainId: widget.argument.receiverChain.chainId,
+          tokenAddress: widget.argument.selectedAsset.token?.address,
+          amount: widget.argument.amount.toString()));
+    }
   }
 
   _relayTransaction(RelayTransactionRequest param) {
-    context.read<AuthBloc>().add(RelayTransactionEvent(param));
+    context.read<AuthBloc>().add(RelayTransactionEvent(
+        param,
+        widget.argument.senderChain.chainId == 43113
+            ? ComethNetworkEnum.avax
+            : ComethNetworkEnum.polygon));
   }
 
   _relayApproveTransaction(RelayTransactionRequest param) {
-    context.read<AuthBloc>().add(RelayApproveTransactionEvent(param));
+    context.read<AuthBloc>().add(RelayApproveTransactionEvent(
+        param,
+        widget.argument.senderChain.chainId == 43113
+            ? ComethNetworkEnum.avax
+            : ComethNetworkEnum.polygon));
+  }
+
+  _relayDestinationTransaction(RelayTransactionRequest param) {
+    context.read<AuthBloc>().add(RelayDestinationTransactionEvent(
+        param,
+        widget.argument.senderChain.chainId == 43113
+            ? ComethNetworkEnum.avax
+            : ComethNetworkEnum.polygon));
   }
 
   _relayCrossTransaction(RelayTransactionRequest param) {
-    context.read<AuthBloc>().add(RelayCrossTransactionEvent(param));
+    context.read<AuthBloc>().add(RelayCrossTransactionEvent(
+        param,
+        widget.argument.senderChain.chainId == 43113
+            ? ComethNetworkEnum.avax
+            : ComethNetworkEnum.polygon));
   }
 
   _saveTransfer(TransferRequest param) {
     context.read<TransferBloc>().add(SaveTransactionEvent(param));
   }
 
-  _prepareApprove(String fromBridgeAddress) async {
+  _prepareApprove(String bridgeAddress, String tokenAddress) async {
     String walletAddress = await SessionService.getWalletAddress();
     userAddress = walletAddress;
     final double pow = widget.argument.selectedAsset.token?.decimals ?? 0;
@@ -516,14 +608,15 @@ class _SendSummaryPageState extends State<SendSummaryPage> {
 
     _prepareTransaction(PrepareErc20Request(
         walletAddress: walletAddress,
-        tokenAddress: widget.argument.selectedAsset.token?.address ?? "",
+        tokenAddress: tokenAddress,
         functionName: "approve",
-        args: [fromBridgeAddress, "$formattedAmount"]));
+        chainId: widget.argument.senderChain.chainId,
+        args: [bridgeAddress, "$formattedAmount"]));
   }
 
-  _getBridge(int fromChainId, int destinationChainId) {
+  _getBridge(int fromChainId, int destinationCHainId, String tokenAddress) {
     context
         .read<TransferBloc>()
-        .add(GetBridgeEvent(fromChainId, destinationChainId));
+        .add(GetBridgeEvent(fromChainId, destinationCHainId, tokenAddress));
   }
 }

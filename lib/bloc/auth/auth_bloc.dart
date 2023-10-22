@@ -14,6 +14,7 @@ import 'package:cengli/utils/fcm_util.dart';
 import 'package:cengli/utils/signer.dart';
 import 'package:cengli/services/session_service.dart';
 import 'package:cengli/values/values.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:velix/velix.dart';
@@ -37,6 +38,8 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         transformer: sequential());
     on<RelayCrossTransactionEvent>(_onRelayCrossTransaction,
         transformer: sequential());
+    on<RelayDestinationTransactionEvent>(_onRelayDestinationTransaction,
+        transformer: sequential());
   }
 
   Future<void> _onCreateWallet(
@@ -48,9 +51,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       String privateKey = wallet.first;
       String ownerAddress = wallet.last;
 
-      //Create wallet on cometh
-      final walletAddress = await _authRepository
-          .createWallet(CreateWalletRequest(ownerAddress: ownerAddress));
+      //Create wallet on cometh avax
+      final walletAddress = await _authRepository.createWallet(
+          CreateWalletRequest(ownerAddress: ownerAddress),
+          Constant.commethAvaxApiKey);
+
+      //Create wallet on cometh polygon
+      await _authRepository.createWallet(
+          CreateWalletRequest(ownerAddress: ownerAddress),
+          Constant.commethPolygonApiKey);
 
       //Save credential
       final prefs = await SharedPreferences.getInstance();
@@ -153,10 +162,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
 
     try {
       final walletAddress = await SessionService.getWalletAddress();
-
-      await _authRepository.relayTransaction(walletAddress, event.param);
+      debugPrint(event.network.toString());
+      await _authRepository.relayTransaction(
+          walletAddress,
+          event.param,
+          event.network == ComethNetworkEnum.avax
+              ? Constant.commethAvaxApiKey
+              : Constant.commethPolygonApiKey);
       emit(const RelayTransactionSuccessState());
     } on AppException catch (error) {
+      emit(RelayTransactionErrorState(error.message));
+    } on ApiException catch (error) {
       emit(RelayTransactionErrorState(error.message));
     } catch (error) {
       emit(RelayTransactionErrorState(error.toString()));
@@ -170,9 +186,16 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final walletAddress = await SessionService.getWalletAddress();
 
-      await _authRepository.relayTransaction(walletAddress, event.param);
+      await _authRepository.relayTransaction(
+          walletAddress,
+          event.param,
+          event.network == ComethNetworkEnum.avax
+              ? Constant.commethAvaxApiKey
+              : Constant.commethPolygonApiKey);
       emit(const RelayApproveTransactionSuccessState());
     } on AppException catch (error) {
+      emit(RelayApproveTransactionErrorState(error.message));
+    } on ApiException catch (error) {
       emit(RelayApproveTransactionErrorState(error.message));
     } catch (error) {
       emit(RelayApproveTransactionErrorState(error.toString()));
@@ -186,12 +209,42 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     try {
       final walletAddress = await SessionService.getWalletAddress();
 
-      await _authRepository.relayTransaction(walletAddress, event.param);
+      await _authRepository.relayTransaction(
+          walletAddress,
+          event.param,
+          event.network == ComethNetworkEnum.avax
+              ? Constant.commethAvaxApiKey
+              : Constant.commethPolygonApiKey);
       emit(const RelayCrossTransactionSuccessState());
     } on AppException catch (error) {
       emit(RelayCrossTransactionErrorState(error.message));
+    } on ApiException catch (error) {
+      emit(RelayCrossTransactionErrorState(error.message));
     } catch (error) {
       emit(RelayCrossTransactionErrorState(error.toString()));
+    }
+  }
+
+  Future<void> _onRelayDestinationTransaction(
+      RelayDestinationTransactionEvent event, Emitter<AuthState> emit) async {
+    emit(const RelayDestinationTransactionLoadingState());
+
+    try {
+      final walletAddress = await SessionService.getWalletAddress();
+
+      await _authRepository.relayTransaction(
+          walletAddress,
+          event.param,
+          event.network == ComethNetworkEnum.avax
+              ? Constant.commethAvaxApiKey
+              : Constant.commethPolygonApiKey);
+      emit(const RelayDestinationTransactionSuccessState());
+    } on AppException catch (error) {
+      emit(RelayDestinationTransactionErrorState(error.message));
+    } on ApiException catch (error) {
+      emit(RelayDestinationTransactionErrorState(error.message));
+    } catch (error) {
+      emit(RelayDestinationTransactionErrorState(error.toString()));
     }
   }
 }

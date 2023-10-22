@@ -151,7 +151,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                                     category: selectedCategory.value.title,
                                     date: date.value,
                                     memberPayId: memberPayId,
-                                    tokenUnit: 'USDC',
+                                    tokenUnit: 'CIDR',
                                     title: titleController.text
                                     // membersCharged:
                                     );
@@ -434,7 +434,7 @@ class _AddExpensePageState extends State<AddExpensePage> {
                 }
               },
               prefix: Text(
-                'USDC',
+                'CIDR',
                 style: KxTypography(
                     type: KxFontType.fieldText2, color: KxColors.neutral500),
               ).padding(),

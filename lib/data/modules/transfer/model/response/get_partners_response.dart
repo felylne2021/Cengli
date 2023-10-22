@@ -2,6 +2,8 @@ import 'package:cengli/data/modules/transfer/model/response/partner_balance_resp
 import 'package:equatable/equatable.dart';
 import 'package:json_annotation/json_annotation.dart';
 
+import 'chain_response.dart';
+
 part 'get_partners_response.g.dart';
 
 @JsonSerializable()
@@ -27,6 +29,9 @@ class GetPartnersResponse extends Equatable {
   @JsonKey(name: 'balances')
   final List<PartnerBalanceResponse>? balances;
 
+  @JsonKey(name: 'chain')
+  final ChainResponse? chain;
+
   const GetPartnersResponse(
       {this.id,
       this.userId,
@@ -34,11 +39,12 @@ class GetPartnersResponse extends Equatable {
       this.name,
       this.createdAt,
       this.updatedAt,
-      this.balances});
+      this.balances,
+      this.chain});
 
   @override
   List<Object?> get props =>
-      [id, userId, address, name, createdAt, updatedAt, balances];
+      [id, userId, address, name, createdAt, updatedAt, balances, chain];
 
   Map<String, dynamic> toJson() => _$GetPartnersResponseToJson(this);
 

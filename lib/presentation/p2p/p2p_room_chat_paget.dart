@@ -63,6 +63,7 @@ class _P2pChatRoomPageState extends ConsumerState<P2pChatRoomPage> {
             leadingCallBack: () => Navigator.of(context).pop(),
             trailingWidget: const SizedBox(),
             trailingCallBack: () {},
+            centerCallback: () {},
             leadingWidget: Container(
               height: 48,
               width: 48,
@@ -105,7 +106,7 @@ class _P2pChatRoomPageState extends ConsumerState<P2pChatRoomPage> {
                               status:
                                   _getStatus(state.orderResponse.status ?? ""),
                               amount:
-                                  "Amount: ${NumberFormat.currency(locale: 'en_US', symbol: '').format(state.orderResponse.amount)} USDC",
+                                  "Amount: ${NumberFormat.currency(locale: 'id_ID', symbol: '').format(state.orderResponse.amount)} CIDR",
                               detailsCallback: () => Navigator.of(context)
                                       .pushNamed(OrderDetailPage.routeName,
                                           arguments: OrderDetailArgument(

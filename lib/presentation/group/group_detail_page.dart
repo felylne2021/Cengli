@@ -147,11 +147,7 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
             decoration: const BoxDecoration(
                 color: KxColors.neutral200, shape: BoxShape.circle),
             child: widget.room.profilePicture == null
-                ? const Icon(
-                    CupertinoIcons.group_solid,
-                    size: 67,
-                    color: KxColors.neutral400,
-                  )
+                ? Image.asset(IMG_GROUP)
                 : CircleAvatar(
                     child: Image.network(
                       widget.room.profilePicture ?? "",
@@ -297,7 +293,7 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                                               MainAxisAlignment.center,
                                           children: [
                                             Text(
-                                              "USDC",
+                                              "CIDR",
                                               style: KxTypography(
                                                   type: KxFontType.subtitle4,
                                                   color: KxColors.neutral700),
@@ -349,7 +345,7 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                                 description:
                                     "Expense: ${totalCharge.toString()}0",
                                 onTap: () {},
-                                money: '-USDC${totalCharge}0',
+                                money: '-CIDR${totalCharge}0',
                               );
                             }),
                           );
@@ -523,7 +519,7 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
               description: "Should pay to ${_findMemberName(payToId)}",
               isShowDivider: true,
               onTap: () {},
-              money: 'USDC ${amount}0');
+              money: 'CIDR ${amount}0');
           datas.add(billsWidget);
         }
       }

@@ -238,34 +238,34 @@ class _P2pPageState extends ConsumerState<P2pPage> {
                                 if (state is GetPartnersSuccessState) {
                                   return Column(
                                       children: List.generate(
-                                          state.partners.length,
-                                          (index) => InkWell(
-                                              onTap: () => Navigator.of(context)
-                                                      .pushNamed(
-                                                          P2pRequestPage
-                                                              .routeName,
-                                                          arguments: P2pArgument(
-                                                              state.partners[
-                                                                  index],
-                                                              widget.argument
-                                                                  .user,
-                                                              widget.argument
-                                                                  .chainId))
-                                                      .then((value) {
-                                                    if (value != null) {
-                                                      currentIndex.value = 1;
-                                                    }
-                                                  }),
-                                              child: P2pItemWidget(
-                                                name: state
-                                                        .partners[index].name ??
-                                                    "",
-                                                quantity: state.partners[index]
-                                                            .balances !=
-                                                        null
-                                                    ? "${NumberFormat.currency(locale: 'en_US', symbol: '').format(state.partners[index].balances?.first.amount ?? 0)} ${state.partners[index].balances?.first.token?.symbol ?? ""}"
-                                                    : "Loading ...",
-                                              ))));
+                                          state.partners.length, (index) {
+                                    final partner = state.partners[index];
+
+                                    return InkWell(
+                                        onTap: () => Navigator.of(context)
+                                                .pushNamed(
+                                                    P2pRequestPage.routeName,
+                                                    arguments: P2pArgument(
+                                                        partner,
+                                                        widget.argument.user,
+                                                        widget
+                                                            .argument.chainId))
+                                                .then((value) {
+                                              if (value != null) {
+                                                currentIndex.value = 1;
+                                              }
+                                            }),
+                                        child: P2pItemWidget(
+                                            name: partner.name ?? "",
+                                            quantity: partner.balances != null
+                                                ? "${NumberFormat.currency(locale: 'en_US', symbol: '').format(partner.balances?.first.amount)} ${partner.balances?.first.token?.symbol ?? ""}"
+                                                : "Loading ...",
+                                            image: partner.chain?.logoURI ?? "",
+                                            chainName: partner.chain?.chainName
+                                                    ?.split(" ")
+                                                    .first ??
+                                                ""));
+                                  }));
                                 } else {
                                   return const CupertinoActivityIndicator()
                                       .padding(const EdgeInsets.only(top: 40))
@@ -415,6 +415,7 @@ class _P2pPageState extends ConsumerState<P2pPage> {
                                 .map((value) => pCAIP10ToWallet(value.wallet))
                                 .toList() ??
                             []);
+                        ref.read(chatRoomProvider).setIsp2p(true);
                         Navigator.of(context).pushNamed(
                             P2pChatRoomPage.routeName,
                             arguments: P2pChatRoomArgument(

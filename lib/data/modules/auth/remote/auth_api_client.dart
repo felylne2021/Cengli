@@ -14,19 +14,22 @@ abstract class AuthApiClient {
   factory AuthApiClient(Dio dio, {String baseUrl}) = _AuthApiClient;
 
   @POST('wallets/init')
-  Future<CreateWalletResponse> createWallet(@Body() CreateWalletRequest param);
+  Future<CreateWalletResponse> createWallet(
+      @Body() CreateWalletRequest param, @Header('apikey') String apiKey);
 
   @POST('webauthn-signer/predict-address')
   Future<SignerAddressResponse> getPredictWalletAddress(
-      @Body() PredictSignerAddressRequest param);
+      @Body() PredictSignerAddressRequest param,
+      @Header('apikey') String apiKey);
 
   @GET('wallets/{ownerAddress}/wallet-address')
   Future<CreateWalletResponse> getWalletAddress(
-      @Path("ownerAddress") String ownerAddress);
+      @Path("ownerAddress") String ownerAddress,
+      @Header('apikey') String apiKey);
 
   @POST('wallets/{walletAddress}/relay')
   Future<RelayTransactionResponse> relayTransaction(
       @Path("walletAddress") String walletAddress,
-      @Body() RelayTransactionRequest param);
-  
+      @Body() RelayTransactionRequest param,
+      @Header('apikey') String apiKey);
 }

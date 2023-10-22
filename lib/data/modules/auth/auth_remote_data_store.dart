@@ -31,23 +31,25 @@ class AuthRemoteDataStore extends AuthRemoteRepository {
   }
 
   @override
-  Future<CreateWalletResponse> createWallet(CreateWalletRequest param) async {
-    return _api.createWallet(param).catchError((error) {
+  Future<CreateWalletResponse> createWallet(
+      CreateWalletRequest param, String apiKey) async {
+    return _api.createWallet(param, apiKey).catchError((error) {
       errorHandler(error);
     });
   }
 
   @override
   Future<SignerAddressResponse> predictSignerAddress(
-      PredictSignerAddressRequest param) async {
-    return _api.getPredictWalletAddress(param).catchError((error) {
+      PredictSignerAddressRequest param, String apiKey) async {
+    return _api.getPredictWalletAddress(param, apiKey).catchError((error) {
       errorHandler(error);
     });
   }
 
   @override
-  Future<CreateWalletResponse> getWalletAddress(String ownerAddres) {
-    return _api.getWalletAddress(ownerAddres).catchError((error) {
+  Future<CreateWalletResponse> getWalletAddress(
+      String ownerAddres, String apiKey) {
+    return _api.getWalletAddress(ownerAddres, apiKey).catchError((error) {
       errorHandler(error);
     });
   }
@@ -80,8 +82,10 @@ class AuthRemoteDataStore extends AuthRemoteRepository {
 
   @override
   Future<RelayTransactionResponse> relayTransaction(
-      String walletAddress, RelayTransactionRequest param) {
-    return _api.relayTransaction(walletAddress, param).catchError((error) {
+      String walletAddress, RelayTransactionRequest param, String apiKey) {
+    return _api
+        .relayTransaction(walletAddress, param, apiKey)
+        .catchError((error) {
       errorHandler(error);
     });
   }

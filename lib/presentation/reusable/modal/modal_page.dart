@@ -107,7 +107,12 @@ class _ModalListPageState extends State<ModalListPage> {
   Widget networkLisItem(String title, String imageUrl, String trailing) {
     return Row(
       children: [
-        Image.network(imageUrl, width: 40, height: 40),
+        ClipOval(
+            child: Image.network(
+          imageUrl,
+          height: 40,
+          width: 40,
+        )),
         16.0.width,
         Text(title,
             style: KxTypography(

@@ -978,7 +978,7 @@ packages:
     description:
       path: "."
       ref: master
-      resolved-ref: "3369159859f8977cef9bd7fa94b158ed5bacb5c6"
+      resolved-ref: "4090ae544d8a0387f29db95e03aed31838312879"
       url: "git@github.com:TNT-BOOM-Studio/Kinetix.git"
     source: git
     version: "1.0.0"
@@ -1406,6 +1406,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.0.4"
+  shimmer:
+    dependency: "direct main"
+    description:
+      name: shimmer
+      sha256: "1f1009b5845a1f88f1c5630212279540486f97409e9fc3f63883e71070d107bf"
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.0.0"
   simple_gesture_detector:
     dependency: transitive
     description:
@@ -1624,7 +1632,7 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: f34bbc1dd24fe3057c4f628cd01f8eb9dd4f3fc1
+      resolved-ref: "907416fd9a937d496603b40b19c3f3857a939597"
       url: "git@github.com:TNT-BOOM-Studio/Velix.git"
     source: git
     version: "0.0.2"

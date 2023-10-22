@@ -28,10 +28,18 @@ class ChatRoomProvider extends ChangeNotifier {
   String _currentChatid = '';
   List<String> _members = [];
   String _groupName = '';
+  bool _isP2p = false;
 
   String get currentChatId => _currentChatid;
   List<String> get members => _members;
   String get groupName => _groupName;
+  bool get isP2p => _isP2p;
+
+  setIsp2p(bool isP2p) {
+    _isP2p = isP2p;
+    notifyListeners();
+    getRoomMessages();
+  }
 
   setCurrentChatId(String chatId) {
     _messageList = _localMessagesCache[chatId] ?? [];
@@ -160,7 +168,7 @@ class ChatRoomProvider extends ChangeNotifier {
             notificationPayload: NotificationPayloadRequest(
                 title: groupName,
                 body: options.messageContent,
-                screen: "chat")));
+                screen: isP2p ? "order" : "chat")));
       }
     } catch (e) {
       updateSending(false);

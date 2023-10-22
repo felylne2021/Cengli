@@ -12,24 +12,26 @@ class AuthApi implements AuthApiClient {
   AuthApi(this._apiClient);
 
   @override
-  Future<CreateWalletResponse> createWallet(CreateWalletRequest param) {
-    return _apiClient.createWallet(param);
+  Future<CreateWalletResponse> createWallet(
+      CreateWalletRequest param, String apiKey) {
+    return _apiClient.createWallet(param, apiKey);
   }
 
   @override
   Future<SignerAddressResponse> getPredictWalletAddress(
-      PredictSignerAddressRequest param) {
-    return _apiClient.getPredictWalletAddress(param);
+      PredictSignerAddressRequest param, String apiKey) {
+    return _apiClient.getPredictWalletAddress(param, apiKey);
   }
 
   @override
-  Future<CreateWalletResponse> getWalletAddress(String ownerAddress) {
-    return _apiClient.getWalletAddress(ownerAddress);
+  Future<CreateWalletResponse> getWalletAddress(
+      String ownerAddress, String apiKey) {
+    return _apiClient.getWalletAddress(ownerAddress, apiKey);
   }
 
   @override
   Future<RelayTransactionResponse> relayTransaction(
-      String walletAddress, RelayTransactionRequest param) {
-    return _apiClient.relayTransaction(walletAddress, param);
+      String walletAddress, RelayTransactionRequest param, String apiKey) {
+    return _apiClient.relayTransaction(walletAddress, param, apiKey);
   }
 }

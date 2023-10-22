@@ -349,12 +349,12 @@ class _TransferApiClient implements TransferApiClient {
   @override
   Future<GetBridgeResponse> getBridge(
     fromChainId,
-    destinationChainId,
+    tokenAddress,
   ) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{
       r'fromChainId': fromChainId,
-      r'destinationChainId': destinationChainId,
+      r'tokenAddress': tokenAddress,
     };
     final _headers = <String, dynamic>{};
     final _data = <String, dynamic>{};
@@ -366,7 +366,7 @@ class _TransferApiClient implements TransferApiClient {
     )
             .compose(
               _dio.options,
-              'transfer/bridge',
+              'transfer/hyperlane-warp-route',
               queryParameters: queryParameters,
               data: _data,
             )
@@ -376,7 +376,7 @@ class _TransferApiClient implements TransferApiClient {
   }
 
   @override
-  Future<String> prepareUsdcTx(param) async {
+  Future<String> prepareUsdcBridgeTx(param) async {
     const _extra = <String, dynamic>{};
     final queryParameters = <String, dynamic>{};
     final _headers = <String, dynamic>{};
@@ -395,6 +395,60 @@ class _TransferApiClient implements TransferApiClient {
         )
         .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
     final value = _result.data!;
+    return value;
+  }
+
+  @override
+  Future<String> prepareBridgeTx(param) async {
+    const _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{};
+    final _headers = <String, dynamic>{};
+    final _data = <String, dynamic>{};
+    _data.addAll(param.toJson());
+    final _result = await _dio.fetch<String>(_setStreamType<String>(Options(
+      method: 'POST',
+      headers: _headers,
+      extra: _extra,
+    )
+        .compose(
+          _dio.options,
+          'cometh/prepare-bridge-transfer-tx',
+          queryParameters: queryParameters,
+          data: _data,
+        )
+        .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
+    final value = _result.data!;
+    return value;
+  }
+
+  @override
+  Future<GetBridgeInfoResponse> getBridgeInfo(
+    fromChainId,
+    destinationChainId,
+    tokenAddress,
+  ) async {
+    const _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{
+      r'fromChainId': fromChainId,
+      r'destinationChainId': destinationChainId,
+      r'tokenAddress': tokenAddress,
+    };
+    final _headers = <String, dynamic>{};
+    final _data = <String, dynamic>{};
+    final _result = await _dio.fetch<Map<String, dynamic>>(
+        _setStreamType<GetBridgeInfoResponse>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              'transfer/bridge',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(baseUrl: baseUrl ?? _dio.options.baseUrl)));
+    final value = GetBridgeInfoResponse.fromJson(_result.data!);
     return value;
   }
 

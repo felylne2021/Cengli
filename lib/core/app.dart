@@ -105,6 +105,9 @@ class _AppState extends State<App> {
       if (payload == "chat") {
         locator<NavigationService>().pushNamed(HomeTabBarPage.routeName,
             arguments: HomeTabBarPage.chatPage);
+      } else if (payload == "order") {
+        locator<NavigationService>().pushNamed(HomeTabBarPage.routeName,
+            arguments: HomeTabBarPage.homePage);
       }
     }
   }

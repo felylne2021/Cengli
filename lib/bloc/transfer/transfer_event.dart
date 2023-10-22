@@ -1,7 +1,7 @@
 import 'package:cengli/data/modules/transfer/model/request/create_order_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/prepare_erc20_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/transfer_request.dart';
-import 'package:cengli/data/modules/transfer/model/request/usdc_prepare_request.dart';
+import 'package:cengli/data/modules/transfer/model/request/prepare_bridge_request.dart';
 import 'package:velix/velix.dart';
 
 import '../../data/modules/transactional/model/group.dart';
@@ -18,6 +18,13 @@ class GetAssetsEvent extends TransferEvent {
 
   @override
   List<Object?> get props => [chainId];
+}
+
+class GetReceiverChainsEvent extends TransferEvent {
+  const GetReceiverChainsEvent();
+
+  @override
+  List<Object?> get props => [];
 }
 
 class GetChainsEvent extends TransferEvent {
@@ -112,18 +119,41 @@ class SaveTransactionEvent extends TransferEvent {
 class GetBridgeEvent extends TransferEvent {
   final int fromChainId;
   final int destinationChainId;
+  final String tokenAddress;
 
-  const GetBridgeEvent(this.fromChainId, this.destinationChainId);
+  const GetBridgeEvent(
+      this.fromChainId, this.destinationChainId, this.tokenAddress);
 
   @override
-  List<Object?> get props => [fromChainId, destinationChainId];
+  List<Object?> get props => [fromChainId, destinationChainId, tokenAddress];
 }
 
-class UsdcPrepareTransferEvent extends TransferEvent {
-  final UsdcPrepareRequest param;
+class PrepareBridgeTransferEvent extends TransferEvent {
+  final PrepareBridgeRequest param;
 
-  const UsdcPrepareTransferEvent(this.param);
+  const PrepareBridgeTransferEvent(this.param);
 
   @override
   List<Object?> get props => [param];
+}
+
+class PrepareUsdcBridgeTransferEvent extends TransferEvent {
+  final PrepareBridgeRequest param;
+
+  const PrepareUsdcBridgeTransferEvent(this.param);
+
+  @override
+  List<Object?> get props => [param];
+}
+
+class GetBridgeInfoEvent extends TransferEvent {
+  final int fromChainId;
+  final int destinationChainId;
+  final String tokenAddress;
+
+  const GetBridgeInfoEvent(
+      this.fromChainId, this.destinationChainId, this.tokenAddress);
+
+  @override
+  List<Object?> get props => [fromChainId, destinationChainId, tokenAddress];
 }

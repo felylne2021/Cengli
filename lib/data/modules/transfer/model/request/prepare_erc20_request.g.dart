@@ -11,6 +11,7 @@ PrepareErc20Request _$PrepareErc20RequestFromJson(Map<String, dynamic> json) =>
       walletAddress: json['walletAddress'] as String?,
       tokenAddress: json['tokenAddress'] as String?,
       functionName: json['functionName'] as String?,
+      chainId: json['chainId'] as int?,
       args: (json['args'] as List<dynamic>?)?.map((e) => e as String).toList(),
     );
 
@@ -20,5 +21,6 @@ Map<String, dynamic> _$PrepareErc20RequestToJson(
       'walletAddress': instance.walletAddress,
       'tokenAddress': instance.tokenAddress,
       'functionName': instance.functionName,
+      'chainId': instance.chainId,
       'args': instance.args,
     };

@@ -9,13 +9,15 @@ class GroupChatAppbar extends StatelessWidget implements PreferredSizeWidget {
       this.leadingWidget,
       required this.leadingCallBack,
       required this.trailingCallBack,
-      required this.trailingWidget})
+      required this.trailingWidget,
+      required this.centerCallback})
       : preferredSize = const Size.fromHeight(65);
   final String appBarTitle;
   final String appBarSubtitle;
   final Widget? leadingWidget;
   final Function() leadingCallBack;
   final Function() trailingCallBack;
+  final Function() centerCallback;
   final Widget trailingWidget;
 
   @override
@@ -38,31 +40,34 @@ class GroupChatAppbar extends StatelessWidget implements PreferredSizeWidget {
             24.0.width,
             leadingWidget ?? const SizedBox(),
             20.0.width,
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+            InkWell(
+                onTap: centerCallback,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      appBarTitle,
-                      style: KxTypography(
-                          type: KxFontType.body1, color: KxColors.neutral700),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          appBarTitle,
+                          style: KxTypography(
+                              type: KxFontType.body1,
+                              color: KxColors.neutral700),
+                        ),
+                        Text(
+                          appBarSubtitle,
+                          style: KxTypography(
+                              type: KxFontType.caption3,
+                              color: KxColors.neutral500),
+                        )
+                      ],
                     ),
-                    Text(
-                      appBarSubtitle,
-                      style: KxTypography(
-                          type: KxFontType.caption3,
-                          color: KxColors.neutral500),
+                    InkWell(
+                      onTap: trailingCallBack,
+                      child: trailingWidget,
                     )
                   ],
-                ),
-                InkWell(
-                  onTap: trailingCallBack,
-                  child: trailingWidget,
-                )
-              ],
-            ).flexible(),
+                )).flexible(),
           ],
         ).padding(const EdgeInsets.fromLTRB(16, 0, 16, 0)),
         const Divider(

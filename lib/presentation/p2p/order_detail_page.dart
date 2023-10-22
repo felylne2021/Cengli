@@ -82,7 +82,7 @@ class _OrderDetailPageState extends State<OrderDetailPage> {
                                 crossAxisAlignment: CrossAxisAlignment.center,
                                 children: [
                                   Text(
-                                    "Amount (USDC)",
+                                    "Amount (CIDR)",
                                     style: KxTypography(
                                         type: KxFontType.body2,
                                         color: KxColors.neutral500),

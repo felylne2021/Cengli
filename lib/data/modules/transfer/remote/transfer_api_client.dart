@@ -2,9 +2,10 @@ import 'package:cengli/data/modules/transfer/model/request/create_order_request.
 import 'package:cengli/data/modules/transfer/model/request/prepare_erc20_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/prepare_tx_request.dart';
 import 'package:cengli/data/modules/transfer/model/request/transfer_request.dart';
-import 'package:cengli/data/modules/transfer/model/request/usdc_prepare_request.dart';
+import 'package:cengli/data/modules/transfer/model/request/prepare_bridge_request.dart';
 import 'package:cengli/data/modules/transfer/model/response/assets_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/chain_response.dart';
+import 'package:cengli/data/modules/transfer/model/response/get_bridge_info_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/get_bridge_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/order_response.dart';
 import 'package:cengli/data/modules/transfer/model/response/get_partners_response.dart';
@@ -67,10 +68,19 @@ abstract class TransferApiClient {
   Future<TransactionDataResponse> prepareComethTx(
       @Body() PrepareTxRequest param);
 
-  @GET('transfer/bridge')
+  @GET('transfer/hyperlane-warp-route')
   Future<GetBridgeResponse> getBridge(@Query('fromChainId') int fromChainId,
-      @Query('destinationChainId') int destinationChainId);
-  
+      @Query('tokenAddress') String tokenAddress);
+
   @POST('cometh/prepare-usdc-bridge-transfer-tx')
-  Future<String> prepareUsdcTx(@Body() UsdcPrepareRequest param);
+  Future<String> prepareUsdcBridgeTx(@Body() PrepareBridgeRequest param);
+
+  @POST('cometh/prepare-bridge-transfer-tx')
+  Future<String> prepareBridgeTx(@Body() PrepareBridgeRequest param);
+
+  @GET('transfer/bridge')
+  Future<GetBridgeInfoResponse> getBridgeInfo(
+      @Query('fromChainId') int fromChainId,
+      @Query('destinationChainId') int destinationChainId,
+      @Query('tokenAddress') String tokenAddress);
 }
