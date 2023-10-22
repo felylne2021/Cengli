@@ -20,12 +20,14 @@ export const CHAINS_CONFIGS = [
         symbol: "USDC",
         decimals: 6,
         logoURI: "https://s2.coinmarketcap.com/static/img/coins/128x128/3408.png",
-        // logoURI: "https://uploads-ssl.webflow.com/64b8238e1907a37bba76fe16/64e5ae34b58617f63ed0db10_Ricksen%404x.png",
-        priceUsd: 1
+        priceUsd: 1,
+        hyperlaneCCTPRoute: {
+          bridgeAddress: '0xfFE648692689bD72Ba223F3feC1D16a0d9e7FAdB'
+        }
       },
       {
         address: '0x430d8B2Cb511DD47AD76f3bC8f9A035645F258a3',
-        name: 'Cengli IDR',
+        name: 'CIDR',
         symbol: 'CIDR',
         decimals: 18,
         logoURI: "https://i.ibb.co/PGC7hK3/CIDR-logo-1.png",
@@ -58,11 +60,14 @@ export const CHAINS_CONFIGS = [
         symbol: "USDC",
         decimals: 6,
         logoURI: "https://s2.coinmarketcap.com/static/img/coins/128x128/3408.png",
-        priceUsd: 1
+        priceUsd: 1,
+        hyperlaneCCTPRoute: {
+          bridgeAddress: '0x..._cctp_mumbai'
+        }
       },
       {
         address: '0xFf93Eba6599163cAA2F88b87aA31cD766219FB0b',
-        name: 'Cengli IDR',
+        name: 'CIDR',
         symbol: 'CIDR',
         decimals: 18,
         logoURI: "https://i.ibb.co/PGC7hK3/CIDR-logo-1.png",

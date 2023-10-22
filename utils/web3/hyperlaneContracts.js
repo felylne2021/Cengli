@@ -13,3 +13,12 @@ export const HyperlaneWarpRouteContract = (chainId = 43113, bridgeAddress) => {
 
   return contract;
 }
+
+const USDCTransferCengliABI = JSON.parse(readFileSync('utils/web3/abi/USDCTransferCengli.json'))
+
+export const HyperlaneCCTPRouteContract = (chainId = 43113, bridgeAddress) => {
+  const provider = getEthersProvider(chainId);
+  const contract = new ethers.Contract(bridgeAddress, USDCTransferCengliABI, provider);
+
+  return contract;
+}

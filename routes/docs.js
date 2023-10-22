@@ -348,6 +348,17 @@ export const docs = async (server) => {
 
       reply.type('text/html').send(styledHtml);
    })
+
+
+   server.get('/cometh/multichain-transfer', async (request, reply) => {
+      const markdownPath = path.join(__dirname, '../docs/multichain-transfer.md');
+      const markdownContent = fs.readFileSync(markdownPath, 'utf-8');
+      const htmlContent = md.render(markdownContent);
+
+      const styledHtml = getStyledHtml(htmlContent);
+
+      reply.type('text/html').send(styledHtml);
+   })
 }
 
 

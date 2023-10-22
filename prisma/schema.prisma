@@ -24,6 +24,7 @@ model Chain {
   comethSponsoredAddresses ComethSponsoredAddress[]
   p2pPartners              P2PPartner[]
   hyperlaneWarpRoutes      HyperlaneWarpRoute[]
+  hyperlaneCCTPRoutes      HyperlaneCCTPRoute[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -40,11 +41,13 @@ model Token {
   logoURI  String
   priceUsd Float
 
-  chain           Chain               @relation(fields: [chainId], references: [chainId], onDelete: Cascade)
-  transactions    Transaction[]
-  partnerBalances PartnerBalance[]
-  orders          P2POrder[]
-  hyperlaneRoutes HyperlaneWarpRoute?
+  chain              Chain               @relation(fields: [chainId], references: [chainId], onDelete: Cascade)
+  transactions       Transaction[]
+  partnerBalances    PartnerBalance[]
+  orders             P2POrder[]
+  
+  hyperlaneRoute     HyperlaneWarpRoute?
+  hyperlaneCCTPRoute HyperlaneCCTPRoute?
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -55,9 +58,23 @@ model Token {
 model HyperlaneWarpRoute {
   id String @id @default(uuid())
 
-  bridgeAddress String
+  bridgeAddress       String
   wrappedTokenAddress String
-  autoswapAddress String 
+  autoswapAddress     String
+
+  chainId Int
+  chain   Chain @relation(fields: [chainId], references: [chainId], onDelete: Cascade)
+
+  tokenAddress String
+  token        Token  @relation(fields: [chainId, tokenAddress], references: [chainId, address], onDelete: Cascade)
+
+  @@unique([chainId, tokenAddress])
+}
+
+model HyperlaneCCTPRoute {
+  id String @id @default(uuid())
+
+  bridgeAddress String
 
   chainId Int
   chain   Chain @relation(fields: [chainId], references: [chainId], onDelete: Cascade)
@@ -85,7 +102,7 @@ model Transaction {
   note String?
 
   tokenId String
-  token Token @relation(fields: [tokenId], references: [id], onDelete: Cascade)
+  token   Token  @relation(fields: [tokenId], references: [id], onDelete: Cascade)
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

@@ -81,36 +81,78 @@ export const transferRoutes = async (server) => {
   // TODO: Get Hyperlane bridge address by its fromChainId and destinationChainId. params: fromChainId, destinationChainId
   server.get('/bridge', async (request, reply) => {
     try {
-      const { fromChainId, destinationChainId } = request.query;
+      const { fromChainId, destinationChainId, tokenAddress } = request.query;
 
-      const fromBridgeAddress = await prismaClient.chain.findFirst({
+      await validateRequiredFields(request.query, ['fromChainId', 'tokenAddress', 'destinationChainId'], reply)
+
+      const fromToken = await prismaClient.token.findFirst({
         where: {
+          address: tokenAddress.toLowerCase(),
           chainId: parseInt(fromChainId)
         },
-        select: {
-          chainId: true,
-          hyperlaneBridgeAddress: true
+        include: {
+          hyperlaneRoute: true,
+          hyperlaneCCTPRoute: true,
         }
       })
 
-      const destinationBridgeAddress = await prismaClient.chain.findFirst({
-        where: {
-          chainId: parseInt(destinationChainId)
-        },
-        select: {
-          chainId: true,
-          hyperlaneBridgeAddress: true
-        }
-      })
-
-      if (!fromBridgeAddress || !destinationBridgeAddress) {
-        return reply.code(404).send({ message: 'Bridge address not found' });
+      if (!fromToken) {
+        return reply.code(404).send({ message: 'Token not found' });
       }
 
-      return reply.code(200).send({
-        fromBridgeAddress: fromBridgeAddress.hyperlaneBridgeAddress,
-        destinationBridgeAddress: destinationBridgeAddress.hyperlaneBridgeAddress
-      });
+      let info = {
+        route: '',
+        description: '',
+        fromBridgeAddress: '',
+        destinationBridgeAddress: ''
+      }
+
+      // If fromToken is USDC, and fromChainId and destinationChainId is not the same, then use CCTP
+      if (fromToken?.hyperlaneCCTPRoute) {
+        const destinationBridgeAddress = await prismaClient.hyperlaneCCTPRoute.findFirst({
+          where: {
+            token: {
+              symbol: fromToken.symbol
+            },
+            chainId: parseInt(destinationChainId)
+          }
+        })
+
+        if (!destinationBridgeAddress) {
+          return reply.code(404).send({ message: `CCTP Bridge address not found, from ${fromChainId} to ${destinationChainId}` });
+        }
+
+        info = {
+          route: 'Hyperlane CCTP',
+          route_type: 'HYPERLANE_CCTP',
+          description: 'Hyperlane CCTP Description here',
+          fromBridgeAddress: fromToken.hyperlaneCCTPRoute.bridgeAddress,
+          destinationBridgeAddress: destinationBridgeAddress.bridgeAddress
+        }
+      } else {
+        const destinationBridgeAddress = await prismaClient.hyperlaneWarpRoute.findFirst({
+          where: {
+            token: {
+              symbol: fromToken.symbol
+            },
+            chainId: parseInt(destinationChainId)
+          }
+        })
+
+        if (!destinationBridgeAddress) {
+          return reply.code(404).send({ message: `Warp Bridge address not found, from ${fromChainId} to ${destinationChainId}` });
+        }
+
+        info = {
+          route: 'Hyperlane Warp',
+          route_type: 'HYPERLANE_WARP',
+          description: 'Hyperlane Warp Description here',
+          fromBridgeAddress: fromToken.hyperlaneRoute.bridgeAddress,
+          destinationBridgeAddress: destinationBridgeAddress.bridgeAddress
+        }
+      }
+
+      return reply.code(200).send(info);
     } catch (error) {
       console.log('Error getting bridge address: ', error);
       return reply.code(500).send({ message: error });

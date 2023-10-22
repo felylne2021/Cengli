@@ -18,7 +18,8 @@ export const dataWorker = async (server) => {
             nativeCurrency: chainConfig.nativeCurrency,
             blockExplorer: chainConfig.blockExplorerUrls,
             logoURI: chainConfig.logoURI,
-            hyperlaneBridgeAddress: chainConfig.hyperlaneBridgeAddress
+            hyperlaneBridgeAddress: chainConfig.hyperlaneBridgeAddress,
+
           },
           create: {
             index: chainConfig.index,
@@ -28,7 +29,7 @@ export const dataWorker = async (server) => {
             nativeCurrency: chainConfig.nativeCurrency,
             blockExplorer: chainConfig.blockExplorerUrls,
             logoURI: chainConfig.logoURI,
-            hyperlaneBridgeAddress: chainConfig.hyperlaneBridgeAddress
+            hyperlaneBridgeAddress: chainConfig.hyperlaneBridgeAddress,
           },
         });
 
@@ -46,6 +47,7 @@ export const dataWorker = async (server) => {
               decimals: token.decimals,
               logoURI: token.logoURI,
               priceUsd: token.priceUsd,
+              usdc_cctp: token.usdc_cctp,
             },
             create: {
               address: token.address,
@@ -77,6 +79,25 @@ export const dataWorker = async (server) => {
                 bridgeAddress: token.hyperlaneWarpRoute.bridgeAddress,
                 wrappedTokenAddress: token.hyperlaneWarpRoute.wrappedTokenAddress,
                 autoswapAddress: token.hyperlaneWarpRoute.autoswapAddress,
+              }
+            })
+          }
+
+          if(token?.hyperlaneCCTPRoute){
+            await prismaClient.hyperlaneCCTPRoute.upsert({
+              where: {
+                chainId_tokenAddress: {
+                  chainId: chainConfig.chainId,
+                  tokenAddress: token.address,
+                }
+              },
+              create: {
+                chainId: chainConfig.chainId,
+                tokenAddress: token.address,
+                bridgeAddress: token.hyperlaneCCTPRoute.bridgeAddress,
+              },
+              update: {
+                bridgeAddress: token.hyperlaneCCTPRoute.bridgeAddress,
               }
             })
           }

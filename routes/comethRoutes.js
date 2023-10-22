@@ -12,7 +12,7 @@ import { prismaClient } from "../utils/prisma.js"
 import { readFileSync } from "fs"
 import { avaxProvider } from "../utils/web3/assetContracts.js"
 import { validateRequiredFields } from "../utils/validator.js"
-import { HyperlaneWarpRouteContract, hyperlaneAvaxContract } from '../utils/web3/hyperlaneContracts.js';
+import { HyperlaneCCTPRouteContract, HyperlaneWarpRouteContract, hyperlaneAvaxContract } from '../utils/web3/hyperlaneContracts.js';
 
 const SafeFactoryABI = JSON.parse(readFileSync("utils/web3/abi/SafeFactory.json", "utf8"))
 const ERC20ABI = JSON.parse(readFileSync("utils/web3/abi/ERC20.json", "utf8"))
@@ -65,9 +65,9 @@ const SafeFactoryContract = (address, provider) => {
   )
 }
 
-const getUserNonce = async (address) => {
+const getUserNonce = async (address, provider) => {
   try {
-    const nonce = Number(await SafeFactoryContract(address).getFunction('nonce')())
+    const nonce = Number(await SafeFactoryContract(address, provider).getFunction('nonce')())
     console.log('nonce', nonce)
 
     return nonce.toString()
@@ -85,12 +85,13 @@ export const comethRoutes = async (server) => {
         targetAddress: address.toLowerCase()
       }
     })
+
     if (!sponsored) {
       return reply.code(400).send(`Address ${address} is not sponsored, please add it to the list`)
     }
   }
 
-  const generateToBeSignedTransaction = async (safeTxDataTyped, walletAddress) => {
+  const generateToBeSignedTransaction = async (safeTxDataTyped, walletAddress, provider) => {
     const toBeSignedTransaction = {
       domain: {
         chainId: 43113,
@@ -107,7 +108,7 @@ export const comethRoutes = async (server) => {
         gasToken: '0x0000000000000000000000000000000000000000',
         refundReceiver: '0x0000000000000000000000000000000000000000',
         // maybe nonce will be converted to bigint in client
-        nonce: safeTxDataTyped.nonce ? safeTxDataTyped.nonce : (await getUserNonce(walletAddress)).toString()
+        nonce: safeTxDataTyped.nonce ? safeTxDataTyped.nonce : (await getUserNonce(walletAddress, provider)).toString()
       }
     }
 
@@ -242,9 +243,9 @@ export const comethRoutes = async (server) => {
       const { walletAddress, tokenAddress, functionName, args, chainId } = request.body
       const { wallet } = getCometh(chainId);
 
-      await validateRequiredFields(request.body, ['walletAddress', 'tokenAddress', 'functionName'], reply)
+      await validateRequiredFields(request.body, ['walletAddress', 'tokenAddress', 'functionName', 'chainId'], reply)
 
-      const provider = avaxProvider
+      const provider = wallet.getProvider();
       const contract = new ethers.Contract(tokenAddress, ERC20ABI, provider);
 
       console.log({
@@ -265,7 +266,7 @@ export const comethRoutes = async (server) => {
       // check sponsored address
       await checkSponsoredAddress(safeTxDataTyped.to, reply)
 
-      const toBeSignedTransaction = await generateToBeSignedTransaction(safeTxDataTyped, walletAddress)
+      const toBeSignedTransaction = await generateToBeSignedTransaction(safeTxDataTyped, walletAddress, provider)
 
       return reply.code(200).send(toBeSignedTransaction)
     } catch (error) {
@@ -284,31 +285,40 @@ export const comethRoutes = async (server) => {
   server.post('/prepare-usdc-bridge-transfer-tx', async (request, reply) => {
     try {
       const { walletAddress, recipientAddress, fromChainId, destinationChainId, amount, tokenAddress } = request.body;
-      await validateRequiredFields(request.body, ['walletAddress', 'recipientAddress', 'fromChainId', 'destinationChainId', 'amount'], reply);
+      await validateRequiredFields(request.body, ['walletAddress', 'recipientAddress', 'fromChainId', 'destinationChainId', 'amount', 'tokenAddress'], reply);
 
       if (parseInt(fromChainId) !== 43113 && parseInt(fromChainId) !== 80001) {
         return reply.code(400).send({ message: 'Only support Avalanche Fuji Testnet (43113) and Polygon Mumbai Testnet (80001)' });
       }
 
-      const { wallet } = getCometh(fromChainId);
-
-      const fromChain = await prismaClient.chain.findFirst({
+      // check if the token supports CCTP
+      const fromToken = await prismaClient.token.findFirst({
         where: {
-          chainId: parseInt(fromChainId)
+          address: tokenAddress.toLowerCase(),
+          chainId: parseInt(fromChainId),
+          hyperlaneCCTPRoute: {
+            isNot: null
+          }
+        },
+        include: {
+          hyperlaneCCTPRoute: true
         }
       })
 
-      const destinationChain = await prismaClient.chain.findFirst({
-        where: {
-          chainId: parseInt(destinationChainId)
-        }
-      })
-
-      if (!fromChain || !destinationChain) {
-        return reply.code(404).send({ message: 'Chain not found, only support Polygon Mumbai Testnet and Avalanche Fuji Testnet' });
+      if (!fromToken) {
+        return reply.code(404).send({ message: 'Token does not support CCTP' });
       }
 
-      const transferTx = await hyperlaneAvaxContract['transferXchainHypERC20'].populateTransaction(destinationChainId, toBytes32(recipientAddress), amount * 10 ** 6, {
+      console.log('fromToken', fromToken)
+
+      const { wallet } = getCometh(fromChainId);
+      const provider = wallet.getProvider();
+
+      const formattedAmount = amount * 10 ** fromToken.decimals
+      console.log('formattedAmount', formattedAmount)
+
+      const contract = await HyperlaneCCTPRouteContract(fromChainId, fromToken.hyperlaneCCTPRoute.bridgeAddress)
+      const transferTx = await contract['transferXchainUSDC'].populateTransaction(parseInt(destinationChainId), toBytes32(recipientAddress), amount * 10 ** fromToken.decimals, {
         from: walletAddress,
         value: "0",
         chainId: fromChainId
@@ -318,8 +328,7 @@ export const comethRoutes = async (server) => {
 
       await checkSponsoredAddress(safeTxDataTyped.to, reply)
 
-      const toBeSignedTransaction = await generateToBeSignedTransaction(safeTxDataTyped, walletAddress)
-      console.log('toBeSignedTransaction', toBeSignedTransaction)
+      const toBeSignedTransaction = await generateToBeSignedTransaction(safeTxDataTyped, walletAddress, provider)
 
       return reply.code(200).send(toBeSignedTransaction)
     } catch (error) {
@@ -338,6 +347,7 @@ export const comethRoutes = async (server) => {
       }
 
       const { wallet } = getCometh(fromChainId);
+      const provider = wallet.getProvider();
 
       const fromBridge = await prismaClient.hyperlaneWarpRoute.findFirst({
         where: {
@@ -354,20 +364,20 @@ export const comethRoutes = async (server) => {
         where: {
           chainId: parseInt(fromChainId),
           address: tokenAddress.toLowerCase(),
-          hyperlaneRoutes: {
+          hyperlaneRoute: {
             isNot: null
           }
         },
         include: {
-          hyperlaneRoutes: true
+          hyperlaneRoute: true
         }
       })
 
-      if (!token || token.hyperlaneRoutes?.bridgeAddress === null) {
+      if (!token || token.hyperlaneRoute?.bridgeAddress === null) {
         return reply.code(404).send({ message: 'Token not found' });
       }
 
-      const warpContract = HyperlaneWarpRouteContract(parseInt(fromChainId), token.hyperlaneRoutes.bridgeAddress)
+      const warpContract = HyperlaneWarpRouteContract(parseInt(fromChainId), token.hyperlaneRoute.bridgeAddress)
       const transferTx = await warpContract['transferXchainHypERC20'].populateTransaction(destinationChainId, toBytes32(recipientAddress), BigInt(amount * 10 ** token.decimals), {
         from: walletAddress,
         value: "0",
@@ -378,7 +388,7 @@ export const comethRoutes = async (server) => {
 
       await checkSponsoredAddress(safeTxDataTyped.to, reply)
 
-      const toBeSignedTransaction = await generateToBeSignedTransaction(safeTxDataTyped, walletAddress)
+      const toBeSignedTransaction = await generateToBeSignedTransaction(safeTxDataTyped, walletAddress, provider)
       console.log('toBeSignedTransaction', toBeSignedTransaction)
 
       return reply.code(200).send(toBeSignedTransaction)
