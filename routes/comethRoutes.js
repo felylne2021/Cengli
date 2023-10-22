@@ -284,8 +284,8 @@ export const comethRoutes = async (server) => {
       const { walletAddress, recipientAddress, fromChainId, destinationChainId, amount, tokenAddress } = request.body;
       await validateRequiredFields(request.body, ['walletAddress', 'recipientAddress', 'fromChainId', 'destinationChainId', 'amount', 'tokenAddress'], reply);
 
-      if (parseInt(fromChainId) !== 43113 && parseInt(fromChainId) !== 80001) {
-        return reply.code(400).send({ message: 'Only support Avalanche Fuji Testnet (43113) and Polygon Mumbai Testnet (80001)' });
+      if (parseInt(fromChainId) !== 43113) {
+        return reply.code(400).send({ message: 'Only support Avalanche Fuji Testnet (43113) for noow' });
       }
 
       // check if the token supports CCTP
