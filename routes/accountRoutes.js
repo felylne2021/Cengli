@@ -18,6 +18,8 @@ export const accountRoutes = async (server) => {
         where: { chainId: parseInt(chainId) }
       });
 
+      console.log('Tokens to be retrieved:', tokensToBeRetrieved);
+      
       const contractByChain = getContractByChain(parseInt(chainId));
 
       const result = await retrieveBalances(tokensToBeRetrieved, address, contractByChain);
@@ -79,10 +81,10 @@ const retrieveBalances = async (tokensToBeRetrieved, address, contractByChain) =
   for (const token of tokensToBeRetrieved) {
     try {
       let balance = Number(await contractByChain.checkBalance(address, token.address));
-      balance = balance / Math.pow(10, token.decimals);
+      balance = parseFloat((balance / Math.pow(10, token.decimals)).toFixed(2));
 
       // console.log('Balance:', balance);
-      totalBalanceUsd += balance;
+      totalBalanceUsd += balance * token.priceUsd;
 
       tokens.push({
         balance,

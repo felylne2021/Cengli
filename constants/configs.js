@@ -37,6 +37,19 @@ export const CHAINS_CONFIGS = [
           wrappedTokenAddress: '0xF4897D343B80F555535328FEFAb378Ca598721C1',
           autoswapAddress: '0x232DDeEC9443845D7De95a3380984A0601436A5d'
         }
+      },
+      {
+        address: '0xFD198839EB71913dD801c2bAA1beC551bAbED1ca',
+        name: 'hypCIDR',
+        symbol: 'hypCIDR',
+        decimals: 18,
+        logoURI: "https://i.ibb.co/PGC7hK3/CIDR-logo-1.png",
+        priceUsd: 1,
+        hyperlaneWarpRoute: {
+          bridgeAddress: '0x...',
+          wrappedTokenAddress: '0x...',
+          autoswapAddress: '0x...'
+        }
       }
     ],
     hyperlaneBridgeAddress: '0x89e2139c21254d799595051E0F3F1F5bA34Ac2c2',
