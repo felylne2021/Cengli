@@ -20,7 +20,7 @@ export const CHAINS_CONFIGS = [
         symbol: "USDC",
         decimals: 6,
         logoURI: "https://s2.coinmarketcap.com/static/img/coins/128x128/3408.png",
-        priceUsd: 1,
+        priceUsd: 15500,
         hyperlaneCCTPRoute: {
           bridgeAddress: '0xfFE648692689bD72Ba223F3feC1D16a0d9e7FAdB'
         }
@@ -60,7 +60,7 @@ export const CHAINS_CONFIGS = [
         symbol: "USDC",
         decimals: 6,
         logoURI: "https://s2.coinmarketcap.com/static/img/coins/128x128/3408.png",
-        priceUsd: 1
+        priceUsd: 15500
       },
       {
         address: '0xFf93Eba6599163cAA2F88b87aA31cD766219FB0b',
@@ -97,7 +97,7 @@ export const CHAINS_CONFIGS = [
         symbol: "USDC",
         decimals: 6,
         logoURI: "https://s2.coinmarketcap.com/static/img/coins/128x128/3408.png",
-        priceUsd: 1,
+        priceUsd: 15500,
         hyperlaneCCTPRoute: {
           bridgeAddress: '0xa0d2cAa1699bC7193a0eAA485160981ECE90f25F'
         }
@@ -150,7 +150,7 @@ export const CHAINS_CONFIGS = [
         symbol: "USDC",
         decimals: 6,
         logoURI: "https://s2.coinmarketcap.com/static/img/coins/128x128/3408.png",
-        priceUsd: 1,
+        priceUsd: 15500,
         hyperlaneCCTPRoute: {
           bridgeAddress: "0x919eaC55E76ea226825e19E5D36ED6B0D65B3DC1"
         }

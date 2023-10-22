@@ -58,6 +58,9 @@ export const accountRoutes = async (server) => {
         },
         orderBy: {
           createdAt: 'desc'
+        },
+        include: {
+          token: true
         }
       })
 
