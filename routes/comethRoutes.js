@@ -279,6 +279,8 @@ export const comethRoutes = async (server) => {
     return '0x' + address.slice(2).padStart(64, '0');
   };
 
+  console.log(toBytes32('0x278A2d5B5C8696882d1D2002cE107efc74704ECf'))
+
   server.post('/prepare-usdc-bridge-transfer-tx', async (request, reply) => {
     try {
       const { walletAddress, recipientAddress, fromChainId, destinationChainId, amount, tokenAddress } = request.body;

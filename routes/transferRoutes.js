@@ -119,22 +119,37 @@ export const transferRoutes = async (server) => {
 
   server.get('/hyperlane-warp-route', async (request, reply) => {
     try {
-      const { fromChainId, tokenAddress } = request.query;
+      const { fromChainId, toChainId, tokenAddress } = request.query;
 
-      await validateRequiredFields(request.query, ['fromChainId', 'tokenAddress'], reply)
+      await validateRequiredFields(request.query, ['fromChainId', 'tokenAddress', 'toChainId'], reply)
 
       const fromBridge = await prismaClient.hyperlaneWarpRoute.findFirst({
         where: {
           tokenAddress: tokenAddress.toLowerCase(),
           chainId: parseInt(fromChainId)
+        },
+        include: {
+          token: true
         }
       })
 
       if (!fromBridge) {
-        return reply.code(404).send({ message: 'Bridge not found, only FUJI and MUMBAI are supported' });
+        return reply.code(404).send({ message: 'Bridge not found, only FUJI and MUMBAI are supported, make sure you input the correct token address' });
       }
 
-      return reply.code(200).send(fromBridge);
+      const destination = await prismaClient.hyperlaneWarpRoute.findFirst({
+        where: {
+          token: {
+            symbol: fromBridge.token.symbol
+          },
+          chainId: parseInt(toChainId)
+        }
+      })
+
+      return reply.code(200).send({
+        ...fromBridge,
+        destinationTokenAddress: destination.tokenAddress
+      });
     } catch (error) {
       console.log('Error getting bridge address: ', error);
       return reply.code(500).send({ message: error });
